@@ -130,17 +130,7 @@ UIPadding.PaddingTop = UDim.new(0, 10)
 UIPadding.PaddingRight = UDim.new(0, 20)
 UIPadding.Parent = Header
 
--- Create global tab inline indicator
-GlobalTabInlineIndicator = Instance.new("Frame")
-GlobalTabInlineIndicator.AnchorPoint = Vector2.new(0.5, 1)
-GlobalTabInlineIndicator.Name = "Inline"
-GlobalTabInlineIndicator.Position = UDim2.new(0.5, 0, 1, -2)
-GlobalTabInlineIndicator.BorderColor3 = Color3.fromRGB(0, 0, 0)
-GlobalTabInlineIndicator.Size = UDim2.new(0, 40, 0, 3)
-GlobalTabInlineIndicator.BorderSizePixel = 0
-GlobalTabInlineIndicator.BackgroundColor3 = Color3.fromRGB(115, 58, 173)
-GlobalTabInlineIndicator.Visible = false
-GlobalTabInlineIndicator.Parent = Header
+
 
 local inlineCorner = Instance.new("UICorner")
 inlineCorner.CornerRadius = UDim.new(0, 30)
