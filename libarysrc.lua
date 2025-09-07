@@ -328,6 +328,59 @@ function Library:SetAccentColor(color, alpha)
     if Build_Date then
         -- no-op; sample place if we later tint other elements
     end
+
+    -- Update library icon
+    if Libary_Icon then
+        Libary_Icon.ImageColor3 = Library.Accent
+    end
+
+    -- Sweep through UI and update common accent elements
+    if ScreenGui then
+        for _, inst in ipairs(ScreenGui:GetDescendants()) do
+            if inst:IsA("Frame") then
+                if inst.Name == "Progress_Bar" or inst.Name == "Pointer" then
+                    inst.BackgroundColor3 = Library.Accent
+                elseif inst.Name == "Slider_BG" then
+                    inst.BackgroundColor3 = Library.Accent
+                    if inst.BackgroundTransparency == nil or inst.BackgroundTransparency == 0 then
+                        inst.BackgroundTransparency = 0.25
+                    end
+                elseif inst.Name == "Toggle_Fill" then
+                    inst.BackgroundColor3 = Library.Accent
+                elseif inst.Name == "Inline" then
+                    inst.BackgroundColor3 = Library.Accent
+                end
+            elseif inst:IsA("ImageLabel") then
+                if inst.Name == "Check_Icon" then
+                    inst.ImageColor3 = Library.Accent
+                elseif inst.Name == "Libary_Icon" then
+                    inst.ImageColor3 = Library.Accent
+                end
+            elseif inst:IsA("TextLabel") then
+                -- Section headers live under the shadow frame
+                if inst.Parent and inst.Parent.Name == "Shadow" then
+                    inst.TextColor3 = Library.Accent
+                end
+            end
+        end
+        -- For dropdown active text, ensure selected options are refreshed
+        for _, container in ipairs(ScreenGui:GetDescendants()) do
+            if container:IsA("Frame") and container.Name == "Dropdown_Container" then
+                for _, item in ipairs(container:GetChildren()) do
+                    if item:IsA("Frame") then
+                        local check = item:FindFirstChild("Check_Icon")
+                        local label = item:FindFirstChild("TextLabel")
+                        if check and label and check:IsA("ImageLabel") and label:IsA("TextLabel") then
+                            if check.ImageTransparency == 0 then
+                                label.TextColor3 = Library.Accent
+                                check.ImageColor3 = Library.Accent
+                            end
+                        end
+                    end
+                end
+            end
+        end
+    end
 end
 
 function Library:CreateTab(config)
