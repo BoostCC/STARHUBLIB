@@ -2363,7 +2363,7 @@ function Library:CreateNotification(config)
     textLabel.BackgroundTransparency = 1
     textLabel.Position = UDim2.new(0, 12, 0, 10) -- 12px padding from left, 10px from top
     textLabel.FontFace = Font.new("rbxassetid://12187365364", Enum.FontWeight.Regular, Enum.FontStyle.Normal)
-    textLabel.TextSize = 14
+    textLabel.TextSize = 16
     textLabel.TextWrapped = true -- Allow text wrapping
     textLabel.TextXAlignment = Enum.TextXAlignment.Left
     textLabel.TextYAlignment = Enum.TextYAlignment.Top
