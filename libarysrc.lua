@@ -376,9 +376,12 @@ function Library:SetAccentColor(color, alpha)
                     inst.TextColor3 = Library.Accent
                     local stroke = inst:FindFirstChildOfClass("UIStroke")
                     if stroke then
-                        stroke.Color = Library.Accent
-                        stroke.Transparency = 0
+                        -- ensure no border is shown
+                        stroke.Transparency = 1
                     end
+                else
+                    local stroke = inst:FindFirstChildOfClass("UIStroke")
+                    if stroke then stroke.Transparency = 1 end
                 end
             end
         end
