@@ -289,6 +289,10 @@ function Library:CreateWindow(config)
         return Library:CreateKeybind(config)
     end
     
+    function window:CreateColorpicker(config)
+        return Library:CreateColorpicker(config)
+    end
+    
     table.insert(Windows, window)
     CurrentWindow = window
     
@@ -397,6 +401,10 @@ function Library:CreateTab(config)
     
     function tab:CreateKeybind(config)
         return Library:CreateKeybind(config)
+    end
+    
+    function tab:CreateColorpicker(config)
+        return Library:CreateColorpicker(config)
     end
     
     table.insert(CurrentWindow.tabs, tab)
@@ -648,6 +656,10 @@ function Library:CreateSection(config)
     
     function section:CreateKeybind(config)
         return Library:CreateKeybind(config, self)
+    end
+    
+    function section:CreateColorpicker(config)
+        return Library:CreateColorpicker(config, self)
     end
     
     section.frame = sectionFrame
@@ -1000,6 +1012,314 @@ UIPadding.Parent = Text_Input
     
     table.insert(section.components, textInput)
     return textInput
+end
+
+function Library:CreateColorpicker(config, section)
+    local colorpicker = {}
+    colorpicker.value = config.defaultColor or Color3.fromRGB(255, 255, 255)
+    colorpicker.callback = config.callback or function() end
+    
+    -- Create colorpicker component
+    local Colorpicker_Component = Instance.new("Frame")
+    Colorpicker_Component.Name = "Colorpicker_Component"
+    Colorpicker_Component.BackgroundTransparency = 1
+    Colorpicker_Component.Position = UDim2.new(0, 0, 0.09732360392808914, 0)
+    Colorpicker_Component.BorderColor3 = Color3.fromRGB(0, 0, 0)
+    Colorpicker_Component.Size = UDim2.new(0, 318, 0, 30)
+    Colorpicker_Component.BorderSizePixel = 0
+    Colorpicker_Component.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    Colorpicker_Component.Parent = section.container
+    
+    local Colorpicker_Text = Instance.new("TextLabel")
+    Colorpicker_Text.FontFace = Font.new("rbxassetid://12187365364", Enum.FontWeight.Regular, Enum.FontStyle.Normal)
+    Colorpicker_Text.TextColor3 = Color3.fromRGB(255, 255, 255)
+    Colorpicker_Text.BorderColor3 = Color3.fromRGB(0, 0, 0)
+    Colorpicker_Text.Text = config.ColorpickerText or "Colorpicker"
+    Colorpicker_Text.Name = "Colorpicker_Text"
+    Colorpicker_Text.AnchorPoint = Vector2.new(0, 0.5)
+    Colorpicker_Text.Size = UDim2.new(0, 1, 0, 1)
+    Colorpicker_Text.BackgroundTransparency = 1
+    Colorpicker_Text.Position = UDim2.new(0.044025156646966934, 0, 0.5, 0)
+    Colorpicker_Text.BorderSizePixel = 0
+    Colorpicker_Text.AutomaticSize = Enum.AutomaticSize.XY
+    Colorpicker_Text.TextSize = 16
+    Colorpicker_Text.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    Colorpicker_Text.Parent = Colorpicker_Component
+    
+    local Color_Frame = Instance.new("Frame")
+    Color_Frame.AnchorPoint = Vector2.new(1, 0.5)
+    Color_Frame.Name = "Color_Frame"
+    Color_Frame.Position = UDim2.new(0.9245283007621765, 0, 0.5, 0)
+    Color_Frame.BorderColor3 = Color3.fromRGB(0, 0, 0)
+    Color_Frame.Size = UDim2.new(0, 40, 0, 20)
+    Color_Frame.BorderSizePixel = 0
+    Color_Frame.BackgroundColor3 = colorpicker.value
+    Color_Frame.Parent = Colorpicker_Component
+    
+    local UICorner = Instance.new("UICorner")
+    UICorner.CornerRadius = UDim.new(0, 4)
+    UICorner.Parent = Color_Frame
+    
+    -- Create colorpicker container (initially hidden)
+    local Container = Instance.new("Frame")
+    Container.Name = "Container"
+    Container.Position = UDim2.new(0.011217948980629444, 0, 0.5920398235321045, 0)
+    Container.BorderColor3 = Color3.fromRGB(0, 0, 0)
+    Container.Size = UDim2.new(0, 225, 0, 190)
+    Container.BorderSizePixel = 0
+    Container.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+    Container.Visible = false
+    Container.ZIndex = 1000
+    Container.Parent = Colorpicker_Component
+    
+    local containerCorner = Instance.new("UICorner")
+    containerCorner.CornerRadius = UDim.new(0, 4)
+    containerCorner.Parent = Container
+    
+    -- Color frame
+    local Colorframe = Instance.new("Frame")
+    Colorframe.Name = "Colorframe"
+    Colorframe.Position = UDim2.new(0.030662434175610542, 0, 0.07098709791898727, 0)
+    Colorframe.BorderColor3 = Color3.fromRGB(0, 0, 0)
+    Colorframe.Size = UDim2.new(0, 169, 0, 169)
+    Colorframe.BorderSizePixel = 0
+    Colorframe.BackgroundColor3 = Color3.fromRGB(255, 0, 4)
+    Colorframe.Parent = Container
+    
+    local Value = Instance.new("ImageLabel")
+    Value.BorderColor3 = Color3.fromRGB(0, 0, 0)
+    Value.Name = "Value"
+    Value.AnchorPoint = Vector2.new(0.5, 0.5)
+    Value.Image = "http://www.roblox.com/asset/?id=14684563800"
+    Value.BackgroundTransparency = 1
+    Value.Position = UDim2.new(0.5, 0, 0.5, 0)
+    Value.Size = UDim2.new(0, 169, 0, 169)
+    Value.BorderSizePixel = 0
+    Value.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    Value.Parent = Colorframe
+    
+    -- Alpha slider
+    local Alpha = Instance.new("TextButton")
+    Alpha.FontFace = Font.new("rbxasset://fonts/families/SourceSansPro.json", Enum.FontWeight.Regular, Enum.FontStyle.Normal)
+    Alpha.TextColor3 = Color3.fromRGB(0, 0, 0)
+    Alpha.BorderColor3 = Color3.fromRGB(0, 0, 0)
+    Alpha.Text = ""
+    Alpha.AutoButtonColor = false
+    Alpha.AnchorPoint = Vector2.new(1, 0.5)
+    Alpha.Size = UDim2.new(0.9940828680992126, 0, 0.11366861313581467, -1)
+    Alpha.Name = "Alpha"
+    Alpha.Position = UDim2.new(1.6952662467956543, 0, 0.49112436175346375, 0)
+    Alpha.Rotation = -90
+    Alpha.BorderSizePixel = 0
+    Alpha.TextSize = 14
+    Alpha.BackgroundColor3 = Color3.fromRGB(255, 0, 4)
+    Alpha.Parent = Colorframe
+    
+    local Checkers = Instance.new("ImageLabel")
+    Checkers.ScaleType = Enum.ScaleType.Tile
+    Checkers.BorderColor3 = Color3.fromRGB(0, 0, 0)
+    Checkers.Name = "Checkers"
+    Checkers.Size = UDim2.new(0.9940828680992126, 0, 1, 0)
+    Checkers.AnchorPoint = Vector2.new(0.5, 0.5)
+    Checkers.Image = "http://www.roblox.com/asset/?id=18274452449"
+    Checkers.TileSize = UDim2.new(0, 18, 0, 18)
+    Checkers.Position = UDim2.new(0.5, 0, 0.5, 0)
+    Checkers.Rotation = -180
+    Checkers.BorderSizePixel = 0
+    Checkers.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    Checkers.Parent = Alpha
+    
+    local UIGradient = Instance.new("UIGradient")
+    UIGradient.Transparency = NumberSequence.new{
+        NumberSequenceKeypoint.new(0, 1),
+        NumberSequenceKeypoint.new(1, 0)
+    }
+    UIGradient.Parent = Checkers
+    
+    local AlphaDragger = Instance.new("ImageLabel")
+    AlphaDragger.BorderColor3 = Color3.fromRGB(0, 0, 0)
+    AlphaDragger.Name = "Dragger"
+    AlphaDragger.Size = UDim2.new(0, 25, 0, 8)
+    AlphaDragger.AnchorPoint = Vector2.new(0.5, 0.5)
+    AlphaDragger.Image = "rbxassetid://107912043359755"
+    AlphaDragger.BackgroundTransparency = 1
+    AlphaDragger.Position = UDim2.new(0.5, 0, 0.5, 0)
+    AlphaDragger.Rotation = -90
+    AlphaDragger.BorderSizePixel = 0
+    AlphaDragger.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    AlphaDragger.Parent = Checkers
+    
+    local AlphaDraggerLine = Instance.new("Frame")
+    AlphaDraggerLine.Name = "Dragger"
+    AlphaDraggerLine.BorderColor3 = Color3.fromRGB(0, 0, 0)
+    AlphaDraggerLine.Size = UDim2.new(0, 1, 1, 0)
+    AlphaDraggerLine.BorderSizePixel = 0
+    AlphaDraggerLine.BackgroundColor3 = Color3.fromRGB(255, 0, 4)
+    AlphaDraggerLine.Parent = Alpha
+    
+    -- Hue slider
+    local Hue = Instance.new("ImageButton")
+    Hue.BorderColor3 = Color3.fromRGB(0, 0, 0)
+    Hue.AnchorPoint = Vector2.new(0, 0.5)
+    Hue.Image = "http://www.roblox.com/asset/?id=14684557999"
+    Hue.Name = "Hue"
+    Hue.Position = UDim2.new(1.0094738006591797, 0, 0.49673840403556824, 0)
+    Hue.Size = UDim2.new(0.1120000034570694, -1, 1.0479999780654907, -8)
+    Hue.BorderSizePixel = 0
+    Hue.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    Hue.Parent = Colorframe
+    
+    local UIStroke = Instance.new("UIStroke")
+    UIStroke.Color = Color3.fromRGB(26, 26, 26)
+    UIStroke.LineJoinMode = Enum.LineJoinMode.Miter
+    UIStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+    UIStroke.Parent = Hue
+    
+    local HueDragger = Instance.new("ImageLabel")
+    HueDragger.BorderColor3 = Color3.fromRGB(0, 0, 0)
+    HueDragger.Name = "Dragger"
+    HueDragger.AnchorPoint = Vector2.new(0.5, 0)
+    HueDragger.Image = "rbxassetid://107912043359755"
+    HueDragger.BackgroundTransparency = 1
+    HueDragger.Position = UDim2.new(0.49999937415122986, 0, -0.02365296334028244, 0)
+    HueDragger.Size = UDim2.new(0, 25, 0, 8)
+    HueDragger.BorderSizePixel = 0
+    HueDragger.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    HueDragger.Parent = Hue
+    
+    -- Color picker
+    local Picker = Instance.new("Frame")
+    Picker.BorderColor3 = Color3.fromRGB(0, 0, 0)
+    Picker.AnchorPoint = Vector2.new(0.5, 0.5)
+    Picker.BackgroundTransparency = 1
+    Picker.Position = UDim2.new(0.5, 0, 0.5, 0)
+    Picker.Name = "Picker"
+    Picker.Size = UDim2.new(0, 10, 0, 10)
+    Picker.BorderSizePixel = 0
+    Picker.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    Picker.Parent = Colorframe
+    
+    local pickerCorner = Instance.new("UICorner")
+    pickerCorner.CornerRadius = UDim.new(0, 50)
+    pickerCorner.Parent = Picker
+    
+    local pickerStroke = Instance.new("UIStroke")
+    pickerStroke.Color = Color3.fromRGB(255, 255, 255)
+    pickerStroke.Parent = Picker
+    
+    -- Click functionality for color frame
+    local colorButton = Instance.new("TextButton")
+    colorButton.BackgroundTransparency = 1
+    colorButton.Size = UDim2.new(1, 0, 1, 0)
+    colorButton.Text = ""
+    colorButton.ZIndex = 1001
+    colorButton.Parent = Colorpicker_Component
+    
+    colorButton.MouseButton1Click:Connect(function()
+        Container.Visible = not Container.Visible
+    end)
+    
+    -- Color picker functionality
+    local function updateColor()
+        Color_Frame.BackgroundColor3 = colorpicker.value
+        colorpicker.callback(colorpicker.value)
+    end
+    
+    -- Hue slider functionality
+    local hueConnection
+    Hue.MouseButton1Down:Connect(function()
+        hueConnection = UserInputService.InputChanged:Connect(function(input)
+            if input.UserInputType == Enum.UserInputType.MouseMovement then
+                local mousePos = UserInputService:GetMouseLocation()
+                local huePos = Hue.AbsolutePosition
+                local hueSize = Hue.AbsoluteSize
+                
+                local relativeY = math.clamp((mousePos.Y - huePos.Y) / hueSize.Y, 0, 1)
+                HueDragger.Position = UDim2.new(0.5, 0, relativeY, 0)
+                
+                local hue = relativeY * 360
+                local hsv = Color3.fromHSV(hue / 360, 1, 1)
+                colorpicker.value = hsv
+                updateColor()
+            end
+        end)
+    end)
+    
+    UserInputService.InputEnded:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+            if hueConnection then
+                hueConnection:Disconnect()
+                hueConnection = nil
+            end
+        end
+    end)
+    
+    -- Color picker functionality
+    local pickerConnection
+    Colorframe.MouseButton1Down:Connect(function()
+        pickerConnection = UserInputService.InputChanged:Connect(function(input)
+            if input.UserInputType == Enum.UserInputType.MouseMovement then
+                local mousePos = UserInputService:GetMouseLocation()
+                local framePos = Colorframe.AbsolutePosition
+                local frameSize = Colorframe.AbsoluteSize
+                
+                local relativeX = math.clamp((mousePos.X - framePos.X) / frameSize.X, 0, 1)
+                local relativeY = math.clamp((mousePos.Y - framePos.Y) / frameSize.Y, 0, 1)
+                
+                Picker.Position = UDim2.new(relativeX, 0, relativeY, 0)
+                
+                local hue = HueDragger.Position.Y.Scale * 360
+                local saturation = relativeX
+                local value = 1 - relativeY
+                
+                colorpicker.value = Color3.fromHSV(hue / 360, saturation, value)
+                updateColor()
+            end
+        end)
+    end)
+    
+    UserInputService.InputEnded:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+            if pickerConnection then
+                pickerConnection:Disconnect()
+                pickerConnection = nil
+            end
+        end
+    end)
+    
+    -- Alpha slider functionality
+    local alphaConnection
+    Alpha.MouseButton1Down:Connect(function()
+        alphaConnection = UserInputService.InputChanged:Connect(function(input)
+            if input.UserInputType == Enum.UserInputType.MouseMovement then
+                local mousePos = UserInputService:GetMouseLocation()
+                local alphaPos = Alpha.AbsolutePosition
+                local alphaSize = Alpha.AbsoluteSize
+                
+                local relativeX = math.clamp((mousePos.X - alphaPos.X) / alphaSize.X, 0, 1)
+                AlphaDragger.Position = UDim2.new(relativeX, 0, 0.5, 0)
+                
+                -- Update alpha (transparency)
+                local currentColor = colorpicker.value
+                local alpha = 1 - relativeX
+                -- Note: Roblox Color3 doesn't support alpha directly, this is for visual feedback
+            end
+        end)
+    end)
+    
+    UserInputService.InputEnded:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+            if alphaConnection then
+                alphaConnection:Disconnect()
+                alphaConnection = nil
+            end
+        end
+    end)
+    
+    -- Initialize with default color
+    updateColor()
+    
+    return colorpicker
 end
 
 function Library:CreateDropdown(config, section)
