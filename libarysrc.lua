@@ -20,11 +20,11 @@ local BlockDragging = false
 local ModalOverlay = nil
 local PopupOpenCount = 0
 
--- Create the main ScreenGui
+-- Create the main ScreenGui in CoreGui
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Global
 ScreenGui.ResetOnSpawn = false
-ScreenGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
+ScreenGui.Parent = game:GetService("CoreGui")
 
 -- Modal overlay to capture outside clicks and block dragging when popups are open
 ModalOverlay = Instance.new("TextButton")
@@ -2248,15 +2248,14 @@ function Library:CreateNotification(config)
         progressColor = Color3.fromRGB(1, 255, 141)
     end
     
-    -- Create notification frame with dynamic sizing
+    -- Create notification frame with fixed sizing
     local notificationFrame = Instance.new("Frame")
     notificationFrame.Name = "Notification_Frame"
     notificationFrame.Position = UDim2.new(0, 0, 0.8371886014938354, 0)
     notificationFrame.BorderColor3 = Color3.fromRGB(0, 0, 0)
-    notificationFrame.Size = UDim2.new(0, 250, 0, 1) -- Start with minimal height, will auto-size
+    notificationFrame.Size = UDim2.new(0, 300, 0, 60) -- Fixed size
     notificationFrame.BorderSizePixel = 0
     notificationFrame.BackgroundColor3 = backgroundColor
-    notificationFrame.AutomaticSize = Enum.AutomaticSize.Y -- Auto-size based on content
     notificationFrame.Parent = NotificationContainer
     
     local UICorner = Instance.new("UICorner")
@@ -2332,7 +2331,7 @@ function Library:CreateNotification(config)
     end
     progressGradient.Parent = progressBar
     
-    -- Text label with proper positioning and sizing
+    -- Text label with fixed sizing
     local textLabel = Instance.new("TextLabel")
     textLabel.RichText = true
     textLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -2358,13 +2357,12 @@ function Library:CreateNotification(config)
     end
     
     textLabel.Text = typePrefix .. notification.text
-    textLabel.Size = UDim2.new(1, -24, 0, 1) -- Full width minus padding
+    textLabel.Size = UDim2.new(1, -24, 0, 40) -- Fixed height, full width minus padding
     textLabel.AnchorPoint = Vector2.new(0, 0)
     textLabel.BorderSizePixel = 0
     textLabel.BackgroundTransparency = 1
-    textLabel.Position = UDim2.new(0, 12, 0, 12) -- 12px padding from top and left
+    textLabel.Position = UDim2.new(0, 12, 0, 10) -- 12px padding from left, 10px from top
     textLabel.FontFace = Font.new("rbxassetid://12187365364", Enum.FontWeight.Regular, Enum.FontStyle.Normal)
-    textLabel.AutomaticSize = Enum.AutomaticSize.Y -- Auto-size height based on text
     textLabel.TextSize = 14
     textLabel.TextWrapped = true -- Allow text wrapping
     textLabel.TextXAlignment = Enum.TextXAlignment.Left
@@ -2380,83 +2378,30 @@ function Library:CreateNotification(config)
     -- Add to active notifications
     table.insert(ActiveNotifications, notification)
     
-    -- Enhanced smooth and unique animations
-    -- Start with notification off-screen to the right and scaled down
-    notificationFrame.Size = UDim2.new(0, 0, 0, 0)
-    notificationFrame.Position = UDim2.new(1, 20, 0, 0) -- Start off-screen to the right
+    -- Simple appear animation
+    notificationFrame.Size = UDim2.new(0, 0, 0, 60)
     notificationFrame.BackgroundTransparency = 1
-    notificationFrame.Rotation = 5 -- Slight rotation for unique effect
     textLabel.TextTransparency = 1
-    textLabel.TextStrokeTransparency = 0
-    textLabel.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
-    progressBar.Size = UDim2.new(0, 0, 1, 0) -- Start at 0 width, full height
-    progressBar.BackgroundTransparency = 1
+    progressBar.Size = UDim2.new(0, 0, 1, 0) -- Start at 0 width
+    progressBar.BackgroundTransparency = 0
     
-    -- Initialize glow effect
-    local glowEffect = notificationFrame:FindFirstChild("UIStroke")
-    if glowEffect then
-        glowEffect.Transparency = 1
-    end
-    
-    -- Multi-stage entrance animation
-    -- Stage 1: Quick slide in from right with rotation and glow
+    -- Simple slide in animation
     local slideIn = createTween(notificationFrame, {
-        Position = UDim2.new(0, 0, 0, 0),
-        Size = UDim2.new(0, 250, 0, 1), -- Width 250, height will auto-size
-        BackgroundTransparency = 0,
-        Rotation = 0
-    }, 0.4, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
+        Size = UDim2.new(0, 300, 0, 60),
+        BackgroundTransparency = 0
+    }, 0.3, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
     slideIn:Play()
     
-    -- Glow effect animation
-    if glowEffect then
-        local glowIn = createTween(glowEffect, {
-            Transparency = 0.7
-        }, 0.3, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
-        glowIn:Play()
-    end
-    
-    -- Stage 2: Text fade in with slight delay and bounce
-    task.wait(0.1) -- Small delay for staggered effect
     local textFadeIn = createTween(textLabel, {
-        TextTransparency = 0,
-        TextStrokeTransparency = 1
+        TextTransparency = 0
     }, 0.3, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
     textFadeIn:Play()
     
-    -- Stage 3: Progress bar appears with smooth expansion
-    task.wait(0.15) -- Another small delay
-    local progressAppear = createTween(progressBar, {
-        BackgroundTransparency = 0
-    }, 0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
-    progressAppear:Play()
-    
-    -- Enhanced progress bar animation with dynamic effects
-    task.wait(0.2) -- Wait for progress bar to appear first
+    -- Progress bar animation - moves from left to right
     local progressTween = createTween(progressBar, {
-        Size = UDim2.new(1, 0, 1, 0) -- Full width and height of progressBG
+        Size = UDim2.new(1, 0, 1, 0) -- Full width of progressBG
     }, notification.duration, Enum.EasingStyle.Linear, Enum.EasingDirection.Out)
     progressTween:Play()
-    
-    -- Add a subtle pulsing effect to the progress bar
-    local pulseConnection
-    pulseConnection = task.spawn(function()
-        while not notification.isClosing and progressBar.Parent do
-            local pulseTween = createTween(progressBar, {
-                Size = UDim2.new(progressBar.Size.X.Scale, progressBar.Size.X.Offset + 2, 0, 5)
-            }, 0.5, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut)
-            pulseTween:Play()
-            pulseTween.Completed:Wait()
-            
-            if not notification.isClosing and progressBar.Parent then
-                local pulseBack = createTween(progressBar, {
-                    Size = UDim2.new(progressBar.Size.X.Scale, progressBar.Size.X.Offset - 2, 0, 5)
-                }, 0.5, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut)
-                pulseBack:Play()
-                pulseBack.Completed:Wait()
-            end
-        end
-    end)
     
     -- Auto-close after duration
     task.spawn(function()
@@ -2466,31 +2411,12 @@ function Library:CreateNotification(config)
         end
     end)
     
-    -- Click to close functionality with hover effects
+    -- Simple click to close functionality
     local clickButton = Instance.new("TextButton")
     clickButton.BackgroundTransparency = 1
     clickButton.Size = UDim2.new(1, 0, 1, 0)
     clickButton.Text = ""
     clickButton.Parent = notificationFrame
-    
-    -- Hover effects for better interactivity
-    clickButton.MouseEnter:Connect(function()
-        if not notification.isClosing then
-            local hoverTween = createTween(notificationFrame, {
-                Size = UDim2.new(0, 260, 0, 1) -- Slightly larger on hover, height auto-sizes
-            }, 0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
-            hoverTween:Play()
-        end
-    end)
-    
-    clickButton.MouseLeave:Connect(function()
-        if not notification.isClosing then
-            local normalTween = createTween(notificationFrame, {
-                Size = UDim2.new(0, 250, 0, 1) -- Back to normal size, height auto-sizes
-            }, 0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
-            normalTween:Play()
-        end
-    end)
     
     clickButton.MouseButton1Click:Connect(function()
         if not notification.isClosing then
@@ -2509,42 +2435,19 @@ function Library:CloseNotification(notification)
     -- Call onClose callback
     notification.onClose(notification)
     
-    -- Enhanced smooth and unique exit animation
-    -- Stage 1: Quick text fade out with stroke effect
+    -- Simple disappear animation
+    local fadeOut = createTween(notification.frame, {
+        Size = UDim2.new(0, 0, 0, 60),
+        BackgroundTransparency = 1
+    }, 0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.In)
+    fadeOut:Play()
+    
     local textFadeOut = createTween(notification.textLabel, {
-        TextTransparency = 1,
-        TextStrokeTransparency = 0
-    }, 0.15, Enum.EasingStyle.Quart, Enum.EasingDirection.In)
+        TextTransparency = 1
+    }, 0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.In)
     textFadeOut:Play()
     
-    -- Stage 2: Progress bar shrinks and fades
-    local progressShrink = createTween(notification.progressBar, {
-        Size = UDim2.new(0, 0, 1, 0), -- Shrink width to 0, keep height
-        BackgroundTransparency = 1
-    }, 0.2, Enum.EasingStyle.Back, Enum.EasingDirection.In)
-    progressShrink:Play()
-    
-    -- Stage 3: Main frame slides out to the right with rotation and scale
-    task.wait(0.1) -- Small delay for staggered effect
-    
-    -- Glow effect fade out
-    local glowEffect = notification.frame:FindFirstChild("UIStroke")
-    if glowEffect then
-        local glowOut = createTween(glowEffect, {
-            Transparency = 1
-        }, 0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.In)
-        glowOut:Play()
-    end
-    
-    local slideOut = createTween(notification.frame, {
-        Position = UDim2.new(1, 20, 0, 0), -- Slide off-screen to the right
-        Size = UDim2.new(0, 0, 0, 0), -- Shrink to nothing
-        BackgroundTransparency = 1,
-        Rotation = -5 -- Slight rotation for unique effect
-    }, 0.3, Enum.EasingStyle.Back, Enum.EasingDirection.In)
-    slideOut:Play()
-    
-    slideOut.Completed:Connect(function()
+    fadeOut.Completed:Connect(function()
         notification.frame:Destroy()
         -- Remove from active notifications
         for i, notif in ipairs(ActiveNotifications) do
@@ -2625,11 +2528,11 @@ function Library:Reload()
     NotificationContainer = nil
     ActiveNotifications = {}
     
-    -- Recreate the main ScreenGui
+    -- Recreate the main ScreenGui in CoreGui
     ScreenGui = Instance.new("ScreenGui")
     ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Global
     ScreenGui.ResetOnSpawn = false
-    ScreenGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
+    ScreenGui.Parent = game:GetService("CoreGui")
     
     -- Recreate Modal overlay
     ModalOverlay = Instance.new("TextButton")
