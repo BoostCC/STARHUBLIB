@@ -2270,16 +2270,15 @@ function Library:CreateNotification(config)
     glowEffect.Thickness = 1
     glowEffect.Parent = notificationFrame
     
-    -- Progress background with proper positioning
+    -- Progress background with proper positioning and padding
     local progressBG = Instance.new("Frame")
     progressBG.Name = "Progress_BG"
     progressBG.AnchorPoint = Vector2.new(0, 1) -- Anchor to bottom
-    progressBG.Position = UDim2.new(0, 12, 1, -8) -- 12px from left, 8px from bottom
+    progressBG.Position = UDim2.new(0, 16, 1, -8) -- 16px from left, 8px from bottom
     progressBG.BorderColor3 = Color3.fromRGB(0, 0, 0)
-    progressBG.Size = UDim2.new(0, 1, 0, 4) -- Auto-size width, 4px height
+    progressBG.Size = UDim2.new(1, -32, 0, 4) -- Full width minus 16px left and 16px right padding, 4px height
     progressBG.BorderSizePixel = 0
     progressBG.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
-    progressBG.AutomaticSize = Enum.AutomaticSize.X -- Auto-size width
     progressBG.Parent = notificationFrame
     
     local progressBGCorner = Instance.new("UICorner")
@@ -2363,7 +2362,7 @@ function Library:CreateNotification(config)
     textLabel.AnchorPoint = Vector2.new(0, 0)
     textLabel.BorderSizePixel = 0
     textLabel.BackgroundTransparency = 1
-    textLabel.Position = UDim2.new(0, 12, 0, 10) -- 12px padding from left, 10px from top
+    textLabel.Position = UDim2.new(0, 16, 0, 10) -- 16px padding from left, 10px from top
     textLabel.FontFace = Font.new("rbxassetid://12187365364", Enum.FontWeight.Regular, Enum.FontStyle.Normal)
     textLabel.TextSize = 18 -- Bigger text
     textLabel.AutomaticSize = Enum.AutomaticSize.X -- Auto-size width based on text
@@ -2381,26 +2380,31 @@ function Library:CreateNotification(config)
     -- Add to active notifications
     table.insert(ActiveNotifications, notification)
     
-    -- Simple appear animation
+    -- Unique and fast appear animation
     notificationFrame.Size = UDim2.new(0, 0, 0, 60)
     notificationFrame.BackgroundTransparency = 1
+    notificationFrame.Position = UDim2.new(1, 20, 0, 0) -- Start off-screen to the right
     textLabel.TextTransparency = 1
     progressBar.Size = UDim2.new(0, 0, 1, 0) -- Start at 0 width
     progressBar.BackgroundTransparency = 0
     
-    -- Simple slide in animation
+    -- Fast slide in from right with bounce
     local slideIn = createTween(notificationFrame, {
+        Position = UDim2.new(0, 0, 0, 0),
         Size = UDim2.new(0, 1, 0, 60), -- Auto-size width
         BackgroundTransparency = 0
-    }, 0.3, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+    }, 0.4, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
     slideIn:Play()
     
+    -- Text fade in with slight delay
+    task.wait(0.1)
     local textFadeIn = createTween(textLabel, {
         TextTransparency = 0
-    }, 0.3, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+    }, 0.25, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
     textFadeIn:Play()
     
     -- Progress bar animation - moves from left to right
+    task.wait(0.15)
     local progressTween = createTween(progressBar, {
         Size = UDim2.new(1, 0, 1, 0) -- Full width of progressBG
     }, notification.duration, Enum.EasingStyle.Linear, Enum.EasingDirection.Out)
@@ -2438,19 +2442,28 @@ function Library:CloseNotification(notification)
     -- Call onClose callback
     notification.onClose(notification)
     
-    -- Simple disappear animation
-    local fadeOut = createTween(notification.frame, {
-        Size = UDim2.new(0, 0, 0, 60),
-        BackgroundTransparency = 1
-    }, 0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.In)
-    fadeOut:Play()
-    
+    -- Unique and fast disappear animation
     local textFadeOut = createTween(notification.textLabel, {
         TextTransparency = 1
-    }, 0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.In)
+    }, 0.15, Enum.EasingStyle.Quart, Enum.EasingDirection.In)
     textFadeOut:Play()
     
-    fadeOut.Completed:Connect(function()
+    -- Progress bar shrinks first
+    local progressShrink = createTween(notification.progressBar, {
+        Size = UDim2.new(0, 0, 1, 0)
+    }, 0.2, Enum.EasingStyle.Back, Enum.EasingDirection.In)
+    progressShrink:Play()
+    
+    -- Main frame slides out to right with scale
+    task.wait(0.1)
+    local slideOut = createTween(notification.frame, {
+        Position = UDim2.new(1, 20, 0, 0), -- Slide off-screen to the right
+        Size = UDim2.new(0, 0, 0, 60),
+        BackgroundTransparency = 1
+    }, 0.3, Enum.EasingStyle.Back, Enum.EasingDirection.In)
+    slideOut:Play()
+    
+    slideOut.Completed:Connect(function()
         notification.frame:Destroy()
         -- Remove from active notifications
         for i, notif in ipairs(ActiveNotifications) do
