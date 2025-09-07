@@ -132,12 +132,13 @@ UIPadding.Parent = Header
 
 -- Create global tab inline indicator
 GlobalTabInlineIndicator = Instance.new("Frame")
-GlobalTabInlineIndicator.Name = "TabInlineIndicator"
+GlobalTabInlineIndicator.AnchorPoint = Vector2.new(0.5, 1)
+GlobalTabInlineIndicator.Name = "Inline"
+GlobalTabInlineIndicator.Position = UDim2.new(0.7507575750350952, 0, 1, 0)
+GlobalTabInlineIndicator.BorderColor3 = Color3.fromRGB(0, 0, 0)
 GlobalTabInlineIndicator.Size = UDim2.new(0, 65, 0, 4)
-GlobalTabInlineIndicator.Position = UDim2.new(0, 0, 1, 4)
-GlobalTabInlineIndicator.AnchorPoint = Vector2.new(0, 0)
-GlobalTabInlineIndicator.BackgroundColor3 = Color3.fromRGB(115, 58, 173)
 GlobalTabInlineIndicator.BorderSizePixel = 0
+GlobalTabInlineIndicator.BackgroundColor3 = Color3.fromRGB(115, 58, 173)
 GlobalTabInlineIndicator.Visible = false
 GlobalTabInlineIndicator.Parent = Header
 
@@ -458,22 +459,17 @@ function Library:SwitchTab(tab)
         -- Calculate position to center under the tab
         local tabPosition = tab.tabFrame.Position
         local tabSize = tab.tabFrame.Size
-        local inlineWidth = 65
         
         -- Calculate the center position of the tab
         local tabCenterX = tabPosition.X.Offset + (tabSize.X.Offset / 2)
         
         -- Position the inline indicator centered under the tab
-        local indicatorX = tabCenterX - (inlineWidth / 2)
-        
-        GlobalTabInlineIndicator.Position = UDim2.new(0, indicatorX, 1, 4)
-        GlobalTabInlineIndicator.Size = UDim2.new(0, inlineWidth, 0, 4)
+        GlobalTabInlineIndicator.Position = UDim2.new(0, tabCenterX, 1, 0)
         GlobalTabInlineIndicator.Visible = true
         
         -- Animate the inline indicator smoothly
         local inlineTween = createTween(GlobalTabInlineIndicator, {
-            Position = UDim2.new(0, indicatorX, 1, 4),
-            Size = UDim2.new(0, inlineWidth, 0, 4)
+            Position = UDim2.new(0, tabCenterX, 1, 0)
         }, 0.3, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
         inlineTween:Play()
     end
