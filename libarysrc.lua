@@ -456,20 +456,22 @@ function Library:SwitchTab(tab)
     
     -- Show and animate global inline indicator
     if GlobalTabInlineIndicator and tab.tabFrame then
-        -- Calculate position to center under the tab
+        -- Calculate position to center under the tab using relative positioning
         local tabPosition = tab.tabFrame.Position
         local tabSize = tab.tabFrame.Size
         
-        -- Calculate the center position of the tab
+        -- Calculate the center position of the tab relative to the Header
         local tabCenterX = tabPosition.X.Offset + (tabSize.X.Offset / 2)
+        local headerWidth = Header.AbsoluteSize.X
+        local relativeX = tabCenterX / headerWidth
         
         -- Position the inline indicator centered under the tab
-        GlobalTabInlineIndicator.Position = UDim2.new(0, tabCenterX, 1, 0)
+        GlobalTabInlineIndicator.Position = UDim2.new(relativeX, 0, 1, 0)
         GlobalTabInlineIndicator.Visible = true
         
         -- Animate the inline indicator smoothly
         local inlineTween = createTween(GlobalTabInlineIndicator, {
-            Position = UDim2.new(0, tabCenterX, 1, 0)
+            Position = UDim2.new(relativeX, 0, 1, 0)
         }, 0.3, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
         inlineTween:Play()
     end
