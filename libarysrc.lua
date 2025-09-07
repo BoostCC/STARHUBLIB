@@ -409,66 +409,129 @@ function Library:SwitchTab(tab)
             end
         end
         
-        -- Update current tab appearance to inactive
+        -- Animate current tab to inactive state with smooth transition
         if CurrentTab.tabFrame then
-            CurrentTab.tabFrame.BackgroundTransparency = 1 -- No background
+            -- Smooth background fade out
+            local bgTween = createTween(CurrentTab.tabFrame, {
+                BackgroundTransparency = 1
+            }, 0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+            bgTween:Play()
+            
             local icon = CurrentTab.tabFrame:FindFirstChild("Tab_Icon")
             local text = icon and icon:FindFirstChild("Tab_Name")
             if icon and text then
-                icon.ImageColor3 = Color3.fromRGB(58, 58, 58) -- Gray icon
-                text.TextColor3 = Color3.fromRGB(58, 58, 58) -- Gray text
+                -- Smooth color transition to gray
+                local iconTween = createTween(icon, {
+                    ImageColor3 = Color3.fromRGB(58, 58, 58)
+                }, 0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+                iconTween:Play()
+                
+                local textTween = createTween(text, {
+                    TextColor3 = Color3.fromRGB(58, 58, 58)
+                }, 0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+                textTween:Play()
             end
         end
         
-        -- Hide global inline indicator
+        -- Hide global inline indicator with smooth fade
         if GlobalTabInlineIndicator then
-            GlobalTabInlineIndicator.Visible = false
+            local fadeTween = createTween(GlobalTabInlineIndicator, {
+                Size = UDim2.new(0, 0, 0, 2)
+            }, 0.15, Enum.EasingStyle.Back, Enum.EasingDirection.In)
+            fadeTween:Play()
+            
+            fadeTween.Completed:Connect(function()
+                GlobalTabInlineIndicator.Visible = false
+            end)
         end
     end
     
     CurrentTab = tab
     
-    -- Show new tab sections
+    -- Show new tab sections with smooth fade in
     for _, section in pairs(tab.sections.left) do
         if section.frame then
             section.frame.Visible = true
+            section.frame.BackgroundTransparency = 1
+            local sectionTween = createTween(section.frame, {
+                BackgroundTransparency = 0
+            }, 0.3, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+            sectionTween:Play()
         end
     end
     for _, section in pairs(tab.sections.right) do
         if section.frame then
             section.frame.Visible = true
+            section.frame.BackgroundTransparency = 1
+            local sectionTween = createTween(section.frame, {
+                BackgroundTransparency = 0
+            }, 0.3, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+            sectionTween:Play()
         end
     end
     
-    -- Update new tab appearance to active
+    -- Animate new tab to active state with unique effects
     if tab.tabFrame then
-        tab.tabFrame.BackgroundTransparency = 0 -- Show background
-        tab.tabFrame.BackgroundColor3 = Color3.fromRGB(16, 16, 16) -- Dark gray background
-        tab.tabFrame.BorderSizePixel = 0
-        tab.tabFrame.BorderColor3 = Color3.fromRGB(0, 0, 0)
+        -- Smooth background fade in with slight scale effect
+        tab.tabFrame.BackgroundTransparency = 1
+        tab.tabFrame.Size = UDim2.new(0, 90, 0, 38) -- Start slightly smaller
+        
+        local bgTween = createTween(tab.tabFrame, {
+            BackgroundTransparency = 0,
+            Size = UDim2.new(0, 95, 0, 42) -- Grow to normal size
+        }, 0.25, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
+        bgTween:Play()
+        
         local icon = tab.tabFrame:FindFirstChild("Tab_Icon")
         local text = icon and icon:FindFirstChild("Tab_Name")
         if icon and text then
-            icon.ImageColor3 = Color3.fromRGB(115, 58, 173) -- Purple icon
-            text.TextColor3 = Color3.fromRGB(115, 58, 173) -- Purple text
+            -- Start with gray and animate to purple with bounce effect
+            icon.ImageColor3 = Color3.fromRGB(58, 58, 58)
+            text.TextColor3 = Color3.fromRGB(58, 58, 58)
+            
+            -- Icon scale animation
+            icon.Size = UDim2.new(0, 18, 0, 18)
+            local iconScaleTween = createTween(icon, {
+                Size = UDim2.new(0, 20, 0, 20)
+            }, 0.2, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
+            iconScaleTween:Play()
+            
+            -- Color transition with slight delay for smooth effect
+            local iconTween = createTween(icon, {
+                ImageColor3 = Color3.fromRGB(115, 58, 173)
+            }, 0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+            iconTween:Play()
+            
+            local textTween = createTween(text, {
+                TextColor3 = Color3.fromRGB(115, 58, 173)
+            }, 0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+            textTween:Play()
         end
     end
     
-    -- Show and animate global inline indicator
+    -- Show and animate global inline indicator with unique effects
     if GlobalTabInlineIndicator and tab.tabFrame then
-        -- Position the inline indicator inside the active tab at the bottom middle
+        -- Position the inline indicator inside the active tab
         GlobalTabInlineIndicator.Parent = tab.tabFrame
         GlobalTabInlineIndicator.Position = UDim2.new(0.5, 0, 1, 0)
+        GlobalTabInlineIndicator.Size = UDim2.new(0, 0, 0, 2) -- Start with no width
         GlobalTabInlineIndicator.Visible = true
         
-        -- Animate the inline indicator smoothly
-        local inlineTween = createTween(GlobalTabInlineIndicator, {
-            Position = UDim2.new(0.5, 0, 1, 0)
-        }, 0.3, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
-        inlineTween:Play()
+        -- Multi-stage animation for the inline indicator
+        local stage1 = createTween(GlobalTabInlineIndicator, {
+            Size = UDim2.new(0, 26, 0, 2) -- Grow to half width
+        }, 0.15, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+        stage1:Play()
+        
+        stage1.Completed:Connect(function()
+            local stage2 = createTween(GlobalTabInlineIndicator, {
+                Size = UDim2.new(0, 52, 0, 2) -- Grow to full width
+            }, 0.1, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
+            stage2:Play()
+        end)
     end
     
-    -- Update current tab display
+    -- Update current tab display with smooth transition
     Current_Tab_Value.Text = tab.text
 end
 
