@@ -1302,7 +1302,8 @@ function Library:CreateColorpicker(config, section)
     HueDragger.Parent = Hue
     HueDragger.ZIndex = 1202
     
-    -- Alpha slider (vertical) with checkers
+    --[[
+    -- Alpha slider (vertical) with checkers - COMMENTED OUT FOR NOW
     local Alpha = Instance.new("TextButton")
     Alpha.FontFace = Font.new("rbxasset://fonts/families/SourceSansPro.json", Enum.FontWeight.Regular, Enum.FontStyle.Normal)
     Alpha.TextColor3 = Color3.fromRGB(0, 0, 0)
@@ -1362,11 +1363,12 @@ function Library:CreateColorpicker(config, section)
     AlphaDraggerLine.BorderSizePixel = 0
     AlphaDraggerLine.BackgroundColor3 = Color3.fromRGB(255, 0, 4)
     AlphaDraggerLine.Parent = Alpha
+    --]]
     
     -- State
     local currentHue = 0
     local currentS, currentV = 1, 1
-    local currentA = 1
+    local currentA = 1 -- Alpha disabled for now
     
     local function updateSVFrame()
         SVFrame.BackgroundColor3 = Color3.fromHSV(currentHue, 1, 1)
@@ -1479,7 +1481,8 @@ function Library:CreateColorpicker(config, section)
         updateColor()
     end)
     
-    -- Start drag when clicking alpha bar or its checker overlay
+    --[[
+    -- Start drag when clicking alpha bar or its checker overlay - COMMENTED OUT FOR NOW
     Alpha.MouseButton1Down:Connect(function(input)
         draggingAlpha = true
         BlockDragging = true
@@ -1502,6 +1505,7 @@ function Library:CreateColorpicker(config, section)
             updateColor()
         end
     end)
+    --]]
     
     UserInputService.InputEnded:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 then
@@ -1525,13 +1529,15 @@ function Library:CreateColorpicker(config, section)
         end
     end
     
-    -- Connect to mouse leave events as fallback
+    --[[
+    -- Connect to mouse leave events as fallback - COMMENTED OUT FOR NOW
     Alpha.MouseLeave:Connect(function()
         if draggingAlpha then
             draggingAlpha = false
             BlockDragging = false
         end
     end)
+    --]]
     
     Hue.MouseLeave:Connect(function()
         if draggingHue then
@@ -1568,6 +1574,7 @@ function Library:CreateColorpicker(config, section)
             updateSVFrame()
             updateColor()
         end
+        --[[
         if draggingAlpha then
             local absPos = Checkers.AbsolutePosition
             local absSize = Checkers.AbsoluteSize
@@ -1576,6 +1583,7 @@ function Library:CreateColorpicker(config, section)
             AlphaDragger.Position = UDim2.new(0.5, 0, ry, 0)
             updateColor()
         end
+        --]]
     end)
     
     -- Initialize
@@ -1585,7 +1593,7 @@ function Library:CreateColorpicker(config, section)
         updateSVFrame()
         SVPicker.Position = UDim2.new(currentS, 0, 1 - currentV, 0)
         HueDragger.Position = UDim2.new(0.5, 0, currentHue, 0)
-        AlphaDragger.Position = UDim2.new(0.5, 0, 1 - currentA, 0)
+        -- AlphaDragger.Position = UDim2.new(0.5, 0, 1 - currentA, 0) -- COMMENTED OUT FOR NOW
         updateColor()
     end
     
