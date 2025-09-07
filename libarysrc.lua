@@ -16,6 +16,7 @@ local DragStartPosition = nil
 local GlobalTabInlineIndicator = nil
 local BlockDragging = false
 local ModalOverlay = nil
+local PopupOpenCount = 0
 
 -- Create the main ScreenGui
 local ScreenGui = Instance.new("ScreenGui")
@@ -1184,9 +1185,12 @@ function Library:CreateColorpicker(config, section)
     end
     
     -- Open/close picker
+    -- Only the color frame opens the picker (not the label)
     local openButton = Instance.new("TextButton")
     openButton.BackgroundTransparency = 1
-    openButton.Size = UDim2.new(1, 0, 1, 0)
+    openButton.Size = UDim2.new(0, 40, 0, 20)
+    openButton.Position = Color_Frame.Position
+    openButton.AnchorPoint = Color_Frame.AnchorPoint
     openButton.Text = ""
     openButton.Parent = Colorpicker_Component
     openButton.ZIndex = 1203
@@ -1208,6 +1212,7 @@ function Library:CreateColorpicker(config, section)
             local grow = createTween(PickerContainer, {Size = UDim2.new(0, 225, 0, 190)}, 0.25, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
             grow:Play()
             -- enable modal overlay to intercept clicks and block dragging
+            PopupOpenCount = PopupOpenCount + 1
             ModalOverlay.Visible = true
             BlockDragging = true
         else
@@ -1218,8 +1223,11 @@ function Library:CreateColorpicker(config, section)
             shrink.Completed:Connect(function()
                 PickerContainer.Visible = false
             end)
-            ModalOverlay.Visible = false
-            BlockDragging = false
+            PopupOpenCount = math.max(0, PopupOpenCount - 1)
+            if PopupOpenCount == 0 then
+                ModalOverlay.Visible = false
+                BlockDragging = false
+            end
         end
     end)
 
@@ -1236,8 +1244,11 @@ function Library:CreateColorpicker(config, section)
         shrink.Completed:Connect(function()
             PickerContainer.Visible = false
         end)
-        ModalOverlay.Visible = false
-        BlockDragging = false
+        PopupOpenCount = math.max(0, PopupOpenCount - 1)
+        if PopupOpenCount == 0 then
+            ModalOverlay.Visible = false
+            BlockDragging = false
+        end
     end)
     
     -- Drag handling
@@ -1628,6 +1639,9 @@ UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
             Dropdown_Container.Visible = true
             Dropdown_Container.Size = UDim2.new(0, 279, 0, 0)
             Dropdown_Container.BackgroundTransparency = 1
+            PopupOpenCount = PopupOpenCount + 1
+            ModalOverlay.Visible = true
+            BlockDragging = true
             
             -- Fade in background first
             local fadeIn = createTween(Dropdown_Container, {
@@ -1661,6 +1675,11 @@ UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
             
             closeTween.Completed:Connect(function()
                 Dropdown_Container.Visible = false
+                PopupOpenCount = math.max(0, PopupOpenCount - 1)
+                if PopupOpenCount == 0 then
+                    ModalOverlay.Visible = false
+                    BlockDragging = false
+                end
             end)
             
             -- Rotate arrow back with smooth easing
