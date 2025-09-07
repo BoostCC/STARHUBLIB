@@ -556,19 +556,19 @@ function Library:CreateSection(config)
     
     -- Add methods to section object
     function section:CreateToggle(config)
-        return Library:CreateToggle(config)
+        return Library:CreateToggle(config, self)
     end
     
     function section:CreateSlider(config)
-        return Library:CreateSlider(config)
+        return Library:CreateSlider(config, self)
     end
     
     function section:CreateTextInput(config)
-        return Library:CreateTextInput(config)
+        return Library:CreateTextInput(config, self)
     end
     
     function section:CreateKeybind(config)
-        return Library:CreateKeybind(config)
+        return Library:CreateKeybind(config, self)
     end
     
     section.frame = sectionFrame
@@ -577,13 +577,15 @@ function Library:CreateSection(config)
     return section
 end
 
-function Library:CreateToggle(config)
-    if not CurrentTab or not CurrentTab.sections.left[1] and not CurrentTab.sections.right[1] then
-        error("No section created. Call CreateSection first.")
-        return
+function Library:CreateToggle(config, section)
+    if not section then
+        if not CurrentTab or not CurrentTab.sections.left[1] and not CurrentTab.sections.right[1] then
+            error("No section created. Call CreateSection first.")
+            return
+        end
+        section = CurrentTab.sections.left[1] or CurrentTab.sections.right[1]
     end
     
-    local section = CurrentTab.sections.left[1] or CurrentTab.sections.right[1]
     local container = section.frame:FindFirstChild(section.position .. "_Container")
     
     local toggle = {
@@ -697,13 +699,15 @@ function Library:CreateToggle(config)
     return toggle
 end
 
-function Library:CreateSlider(config)
-    if not CurrentTab or not CurrentTab.sections.left[1] and not CurrentTab.sections.right[1] then
-        error("No section created. Call CreateSection first.")
-        return
+function Library:CreateSlider(config, section)
+    if not section then
+        if not CurrentTab or not CurrentTab.sections.left[1] and not CurrentTab.sections.right[1] then
+            error("No section created. Call CreateSection first.")
+            return
+        end
+        section = CurrentTab.sections.left[1] or CurrentTab.sections.right[1]
     end
     
-    local section = CurrentTab.sections.left[1] or CurrentTab.sections.right[1]
     local container = section.frame:FindFirstChild(section.position .. "_Container")
     
     local slider = {
@@ -841,13 +845,15 @@ function Library:CreateSlider(config)
     return slider
 end
 
-function Library:CreateTextInput(config)
-    if not CurrentTab or not CurrentTab.sections.left[1] and not CurrentTab.sections.right[1] then
-        error("No section created. Call CreateSection first.")
-        return
+function Library:CreateTextInput(config, section)
+    if not section then
+        if not CurrentTab or not CurrentTab.sections.left[1] and not CurrentTab.sections.right[1] then
+            error("No section created. Call CreateSection first.")
+            return
+        end
+        section = CurrentTab.sections.left[1] or CurrentTab.sections.right[1]
     end
     
-    local section = CurrentTab.sections.left[1] or CurrentTab.sections.right[1]
     local container = section.frame:FindFirstChild(section.position .. "_Container")
     
     local textInput = {
@@ -903,13 +909,15 @@ function Library:CreateTextInput(config)
     return textInput
 end
 
-function Library:CreateKeybind(config)
-    if not CurrentTab or not CurrentTab.sections.left[1] and not CurrentTab.sections.right[1] then
-        error("No section created. Call CreateSection first.")
-        return
+function Library:CreateKeybind(config, section)
+    if not section then
+        if not CurrentTab or not CurrentTab.sections.left[1] and not CurrentTab.sections.right[1] then
+            error("No section created. Call CreateSection first.")
+            return
+        end
+        section = CurrentTab.sections.left[1] or CurrentTab.sections.right[1]
     end
     
-    local section = CurrentTab.sections.left[1] or CurrentTab.sections.right[1]
     local container = section.frame:FindFirstChild(section.position .. "_Container")
     
     local keybind = {
