@@ -345,6 +345,19 @@ function Library:SetAccentColor(color, alpha)
     if Libary_Icon then
         Libary_Icon.ImageColor3 = Library.Accent
     end
+    
+    -- Update watermark elements
+    if Watermark_Frame then
+        local watermarkIcon = Watermark_Frame:FindFirstChild("Libary_Icon")
+        local watermarkInline = Watermark_Frame:FindFirstChild("Inline")
+        
+        if watermarkIcon then
+            watermarkIcon.ImageColor3 = Library.Accent
+        end
+        if watermarkInline then
+            watermarkInline.BackgroundColor3 = Library.Accent
+        end
+    end
 
     -- Sweep through UI and update common accent elements
     if ScreenGui then
@@ -2253,7 +2266,7 @@ function Library:CreateWatermark()
     
     -- Create library icon
     local Libary_Icon = Instance.new("ImageLabel")
-    Libary_Icon.ImageColor3 = Color3.fromRGB(170, 85, 255)
+    Libary_Icon.ImageColor3 = Library.Accent -- Use current accent color
     Libary_Icon.BorderColor3 = Color3.fromRGB(0, 0, 0)
     Libary_Icon.Name = "Libary_Icon"
     Libary_Icon.AnchorPoint = Vector2.new(0.5, 0.5)
@@ -2274,7 +2287,7 @@ function Library:CreateWatermark()
     Inline.Size = UDim2.new(1, 1, 0, 4)
     Inline.BorderSizePixel = 0
     Inline.AutomaticSize = Enum.AutomaticSize.XY
-    Inline.BackgroundColor3 = Library.Accent
+    Inline.BackgroundColor3 = Library.Accent -- Use current accent color
     Inline.Parent = Watermark_Frame
     
     -- Add corner radius to inline
@@ -3001,10 +3014,10 @@ MainFrame.Visible = true
     UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
     UIListLayout.Parent = NotificationContainer
 
-    -- Recreate watermark
+    
     Library:CreateWatermark()
     
-    -- Update watermark text with cheat name if available
+
     if Libary_Name and Libary_Name.Text and Watermark_Frame then
         local watermarkText = Watermark_Frame:FindFirstChild("Libary_Name")
         if watermarkText then
