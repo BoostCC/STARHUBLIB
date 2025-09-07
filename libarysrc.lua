@@ -396,7 +396,10 @@ function Library:CreateTab(config)
 end
 
 function Library:SwitchTab(tab)
-    if CurrentTab then
+    -- Check if we're clicking the same tab
+    local isSameTab = CurrentTab == tab
+    
+    if CurrentTab and not isSameTab then
         -- Hide current tab sections with smooth fade
         for _, section in pairs(CurrentTab.sections.left) do
             if section.frame then
