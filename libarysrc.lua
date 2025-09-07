@@ -337,6 +337,19 @@ function Library:SetAccentColor(color, alpha)
     if Libary_Icon then
         Libary_Icon.ImageColor3 = Library.Accent
     end
+    
+    -- Update watermark elements
+    if Watermark_Frame then
+        local watermarkIcon = Watermark_Frame:FindFirstChild("Libary_Icon")
+        local watermarkInline = Watermark_Frame:FindFirstChild("Inline")
+        
+        if watermarkIcon then
+            watermarkIcon.ImageColor3 = Library.Accent
+        end
+        if watermarkInline then
+            watermarkInline.BackgroundColor3 = Library.Accent
+        end
+    end
 
     -- Sweep through UI and update common accent elements
     if ScreenGui then
@@ -2234,7 +2247,7 @@ function Library:CreateWatermark(cheatName)
     Libary_Name.AnchorPoint = Vector2.new(0.5, 0.5)
     Libary_Name.Size = UDim2.new(0, 1, 0, 1)
     Libary_Name.BackgroundTransparency = 1
-    Libary_Name.Position = UDim2.new(0.5922440886497498, 0, 0.4835820496082306, 0)
+    Libary_Name.Position = UDim2.new(0, 35, 0.5, 0)
     Libary_Name.BorderSizePixel = 0
     Libary_Name.AutomaticSize = Enum.AutomaticSize.XY
     Libary_Name.TextSize = 21
@@ -2243,7 +2256,7 @@ function Library:CreateWatermark(cheatName)
     
     -- Create library icon
     local Libary_Icon = Instance.new("ImageLabel")
-    Libary_Icon.ImageColor3 = Color3.fromRGB(170, 85, 255)
+    Libary_Icon.ImageColor3 = Library.Accent
     Libary_Icon.BorderColor3 = Color3.fromRGB(0, 0, 0)
     Libary_Icon.Name = "Libary_Icon"
     Libary_Icon.AnchorPoint = Vector2.new(0.5, 0.5)
