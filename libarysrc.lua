@@ -1479,7 +1479,7 @@ function Library:CreateColorpicker(config, section)
         local absSize = Checkers.AbsoluteSize
         local ry = math.clamp((input.Position.Y - absPos.Y) / absSize.Y, 0, 1)
         currentA = 1 - ry
-        AlphaDragger.Position = UDim2.new(ry, 0, 0.5, 0)
+        AlphaDragger.Position = UDim2.new(0.5, 0, ry, 0)
         updateColor()
     end)
     Checkers.InputBegan:Connect(function(input)
@@ -1490,7 +1490,7 @@ function Library:CreateColorpicker(config, section)
             local absSize = Checkers.AbsoluteSize
             local ry = math.clamp((input.Position.Y - absPos.Y) / absSize.Y, 0, 1)
             currentA = 1 - ry
-            AlphaDragger.Position = UDim2.new(ry, 0, 0.5, 0)
+            AlphaDragger.Position = UDim2.new(0.5, 0, ry, 0)
             updateColor()
         end
     end)
@@ -1542,7 +1542,7 @@ function Library:CreateColorpicker(config, section)
         updateSVFrame()
         SVPicker.Position = UDim2.new(currentS, 0, 1 - currentV, 0)
         HueDragger.Position = UDim2.new(0.5, 0, currentHue, 0)
-        AlphaDragger.Position = UDim2.new(1 - currentA, 0, 0.5, 0)
+        AlphaDragger.Position = UDim2.new(0.5, 0, 1 - currentA, 0)
         updateColor()
     end
     
