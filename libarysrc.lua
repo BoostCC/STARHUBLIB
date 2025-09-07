@@ -2206,6 +2206,14 @@ function Library:CreateNotification(config)
     
     -- Create notification container if it doesn't exist
     if not NotificationContainer then
+        -- Ensure ScreenGui exists
+        if not ScreenGui then
+            ScreenGui = Instance.new("ScreenGui")
+            ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Global
+            ScreenGui.ResetOnSpawn = false
+            ScreenGui.Parent = game:GetService("CoreGui")
+        end
+        
         NotificationContainer = Instance.new("Frame")
         NotificationContainer.Name = "NotificationContainer"
         NotificationContainer.BorderColor3 = Color3.fromRGB(0, 0, 0)
@@ -2388,22 +2396,28 @@ function Library:CreateNotification(config)
     progressBar.BackgroundTransparency = 0
     
     -- Simple slide in animation with proper easing
-    local slideIn = createTween(notificationFrame, {
-        Size = UDim2.new(0, 1, 0, 60), -- Auto-size width
-        BackgroundTransparency = 0
-    }, 0.4, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
-    slideIn:Play()
+    if notificationFrame and createTween then
+        local slideIn = createTween(notificationFrame, {
+            Size = UDim2.new(0, 1, 0, 60), -- Auto-size width
+            BackgroundTransparency = 0
+        }, 0.4, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
+        slideIn:Play()
+    end
     
-    local textFadeIn = createTween(textLabel, {
-        TextTransparency = 0
-    }, 0.4, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
-    textFadeIn:Play()
+    if textLabel and createTween then
+        local textFadeIn = createTween(textLabel, {
+            TextTransparency = 0
+        }, 0.4, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+        textFadeIn:Play()
+    end
     
     -- Progress bar animation - moves from left to right
-    local progressTween = createTween(progressBar, {
-        Size = UDim2.new(1, 0, 1, 0) -- Full width of progressBG
-    }, notification.duration, Enum.EasingStyle.Linear, Enum.EasingDirection.Out)
-    progressTween:Play()
+    if progressBar and createTween then
+        local progressTween = createTween(progressBar, {
+            Size = UDim2.new(1, 0, 1, 0) -- Full width of progressBG
+        }, notification.duration, Enum.EasingStyle.Linear, Enum.EasingDirection.Out)
+        progressTween:Play()
+    end
     
     -- Auto-close after duration
     task.spawn(function()
@@ -2438,27 +2452,33 @@ function Library:CloseNotification(notification)
     notification.onClose(notification)
     
     -- Simple disappear animation with proper easing
-    local fadeOut = createTween(notification.frame, {
-        Size = UDim2.new(0, 0, 0, 60),
-        BackgroundTransparency = 1
-    }, 0.3, Enum.EasingStyle.Back, Enum.EasingDirection.In)
-    fadeOut:Play()
-    
-    local textFadeOut = createTween(notification.textLabel, {
-        TextTransparency = 1
-    }, 0.3, Enum.EasingStyle.Quart, Enum.EasingDirection.In)
-    textFadeOut:Play()
-    
-    fadeOut.Completed:Connect(function()
-        notification.frame:Destroy()
-        -- Remove from active notifications
-        for i, notif in ipairs(ActiveNotifications) do
-            if notif == notification then
-                table.remove(ActiveNotifications, i)
-                break
+    if notification.frame and createTween then
+        local fadeOut = createTween(notification.frame, {
+            Size = UDim2.new(0, 0, 0, 60),
+            BackgroundTransparency = 1
+        }, 0.3, Enum.EasingStyle.Back, Enum.EasingDirection.In)
+        fadeOut:Play()
+        
+        fadeOut.Completed:Connect(function()
+            if notification.frame then
+                notification.frame:Destroy()
             end
-        end
-    end)
+            -- Remove from active notifications
+            for i, notif in ipairs(ActiveNotifications) do
+                if notif == notification then
+                    table.remove(ActiveNotifications, i)
+                    break
+                end
+            end
+        end)
+    end
+    
+    if notification.textLabel and createTween then
+        local textFadeOut = createTween(notification.textLabel, {
+            TextTransparency = 1
+        }, 0.3, Enum.EasingStyle.Quart, Enum.EasingDirection.In)
+        textFadeOut:Play()
+    end
 end
 
 function Library:CloseAllNotifications()
