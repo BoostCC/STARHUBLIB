@@ -940,11 +940,12 @@ function Library:CreateTextInput(config, section)
     TextInput_Component.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
     TextInput_Component.Parent = container
     
-    local Text_Input = Instance.new("TextLabel")
+    local Text_Input = Instance.new("TextBox")
     Text_Input.FontFace = Font.new("rbxassetid://12187365364", Enum.FontWeight.SemiBold, Enum.FontStyle.Normal)
     Text_Input.TextColor3 = Color3.fromRGB(109, 109, 109)
     Text_Input.BorderColor3 = Color3.fromRGB(0, 0, 0)
-    Text_Input.Text = textInput.text
+    Text_Input.PlaceholderText = textInput.text
+    Text_Input.Text = ""
     Text_Input.AnchorPoint = Vector2.new(0, 0.5)
     Text_Input.Size = UDim2.new(0, 279, 0, 40)
     Text_Input.Name = "Text_Input"
@@ -963,20 +964,26 @@ function Library:CreateTextInput(config, section)
     UIPadding.PaddingLeft = UDim.new(0, 12)
     UIPadding.Parent = Text_Input
     
-    -- Click to edit functionality
-    local clickButton = Instance.new("TextButton")
-    clickButton.BackgroundTransparency = 1
-    clickButton.Size = UDim2.new(1, 0, 1, 0)
-    clickButton.Text = ""
-    clickButton.Parent = TextInput_Component
+    -- Text input functionality
+    Text_Input.FocusLost:Connect(function(enterPressed)
+        textInput.value = Text_Input.Text
+        textInput.callback(Text_Input.Text)
+    end)
     
-    clickButton.MouseButton1Click:Connect(function()
-        local newText = game:GetService("TextService"):GetStringAsync(textInput.text, Text_Input.TextBounds.X, Text_Input.Font, Text_Input.TextSize)
-        -- In a real implementation, you'd use a proper text input dialog
-        -- For now, we'll simulate it
-        textInput.value = newText
-        Text_Input.Text = newText
-        textInput.callback(newText)
+    -- Focus gained animation
+    Text_Input.Focused:Connect(function()
+        local focusTween = createTween(Text_Input, {
+            TextColor3 = Color3.fromRGB(115, 58, 173)
+        }, 0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+        focusTween:Play()
+    end)
+    
+    -- Focus lost animation
+    Text_Input.FocusLost:Connect(function()
+        local unfocusTween = createTween(Text_Input, {
+            TextColor3 = Color3.fromRGB(109, 109, 109)
+        }, 0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+        unfocusTween:Play()
     end)
     
     table.insert(section.components, textInput)
