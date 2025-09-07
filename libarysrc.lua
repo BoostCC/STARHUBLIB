@@ -1018,8 +1018,19 @@ function Library:CreateDropdown(config, section)
         options = config.Options or {"Option 1", "Option 2", "Option 3"},
         callback = config.Callback or function() end,
         value = config.Default or config.Options[1] or "Option 1",
-        isOpen = false
+        isOpen = false,
+        multiSelect = config.MultiSelect or false,
+        selectedValues = config.MultiSelect and {} or nil
     }
+    
+    -- Initialize multi-select values
+    if dropdown.multiSelect then
+        if config.Default and type(config.Default) == "table" then
+            dropdown.selectedValues = config.Default
+        else
+            dropdown.selectedValues = {}
+        end
+    end
     
     -- Create dropdown component
     local Dropdown_Component = Instance.new("Frame")
@@ -1050,7 +1061,7 @@ function Library:CreateDropdown(config, section)
     Dropdown_Value.FontFace = Font.new("rbxassetid://12187365364", Enum.FontWeight.SemiBold, Enum.FontStyle.Normal)
     Dropdown_Value.TextColor3 = Color3.fromRGB(109, 109, 109)
     Dropdown_Value.BorderColor3 = Color3.fromRGB(0, 0, 0)
-    Dropdown_Value.Text = dropdown.value
+    Dropdown_Value.Text = dropdown.multiSelect and (table.concat(dropdown.selectedValues, ", ") or "Select Options") or dropdown.value
     Dropdown_Value.Name = "Dropdown_Value"
     Dropdown_Value.Size = UDim2.new(0, 1, 0, 1)
     Dropdown_Value.BackgroundTransparency = 1
@@ -1074,7 +1085,7 @@ function Library:CreateDropdown(config, section)
     
     -- Create dropdown container (initially hidden)
     local Dropdown_Container = Instance.new("Frame")
-    Dropdown_Container.Size = UDim2.new(0, 279, 0, 1)
+    Dropdown_Container.Size = UDim2.new(0, 279, 0, 0)
     Dropdown_Container.Name = "Dropdown_Container"
     Dropdown_Container.Position = UDim2.new(0.4874213933944702, 0, 0.5, 20)
     Dropdown_Container.AnchorPoint = Vector2.new(0.5, 0)
@@ -1083,6 +1094,7 @@ function Library:CreateDropdown(config, section)
     Dropdown_Container.AutomaticSize = Enum.AutomaticSize.Y
     Dropdown_Container.BackgroundColor3 = Color3.fromRGB(23, 23, 23)
     Dropdown_Container.Visible = false
+    Dropdown_Container.BackgroundTransparency = 1
     Dropdown_Container.Parent = Dropdown_Component
     
     local containerCorner = Instance.new("UICorner")
@@ -1150,58 +1162,104 @@ function Library:CreateDropdown(config, section)
         optionButton.Parent = Frame
         
         optionButton.MouseButton1Click:Connect(function()
-            -- Update dropdown value
-            dropdown.value = option
-            Dropdown_Value.Text = option
-            
-            -- Update all option frames
-            for j, frame in ipairs(optionFrames) do
-                local checkIcon = frame:FindFirstChild("Check_Icon")
-                local textLabel = frame:FindFirstChild("TextLabel")
+            if dropdown.multiSelect then
+                -- Multi-select logic
+                local isSelected = table.find(dropdown.selectedValues, option)
                 
-                if j == i then
-                    -- Selected option - show check icon with smooth animation
-                    textLabel.TextColor3 = Color3.fromRGB(142, 71, 232)
-                    
-                    -- Smooth slide in animation for check icon
-                    local slideIn = createTween(checkIcon, {
-                        Position = UDim2.new(0.9070789217948914, 0, 0.5, 0),
-                        ImageTransparency = 0
-                    }, 0.3, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
-                    slideIn:Play()
+                if isSelected then
+                    -- Remove from selection
+                    table.remove(dropdown.selectedValues, isSelected)
                 else
-                    -- Unselected option - hide check icon with fast fade out
+                    -- Add to selection
+                    table.insert(dropdown.selectedValues, option)
+                end
+                
+                -- Update display text
+                if #dropdown.selectedValues > 0 then
+                    Dropdown_Value.Text = table.concat(dropdown.selectedValues, ", ")
+                else
+                    Dropdown_Value.Text = "Select Options"
+                end
+                
+                -- Update check icon for this option
+                local checkIcon = Frame:FindFirstChild("Check_Icon")
+                local textLabel = Frame:FindFirstChild("TextLabel")
+                
+                if isSelected then
+                    -- Unselected - hide check icon with fast fade out
                     textLabel.TextColor3 = Color3.fromRGB(52, 52, 52)
                     
-                    -- Fast fade out and slide out animation
                     local slideOut = createTween(checkIcon, {
                         Position = UDim2.new(1.2, 0, 0.5, 0),
                         ImageTransparency = 1
                     }, 0.15, Enum.EasingStyle.Quart, Enum.EasingDirection.In)
                     slideOut:Play()
+                else
+                    -- Selected - show check icon with smooth animation
+                    textLabel.TextColor3 = Color3.fromRGB(142, 71, 232)
+                    
+                    local slideIn = createTween(checkIcon, {
+                        Position = UDim2.new(0.9070789217948914, 0, 0.5, 0),
+                        ImageTransparency = 0
+                    }, 0.3, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+                    slideIn:Play()
                 end
+                
+                dropdown.callback(dropdown.selectedValues)
+            else
+                -- Single-select logic
+                dropdown.value = option
+                Dropdown_Value.Text = option
+                
+                -- Update all option frames
+                for j, frame in ipairs(optionFrames) do
+                    local checkIcon = frame:FindFirstChild("Check_Icon")
+                    local textLabel = frame:FindFirstChild("TextLabel")
+                    
+                    if j == i then
+                        -- Selected option - show check icon with smooth animation
+                        textLabel.TextColor3 = Color3.fromRGB(142, 71, 232)
+                        
+                        -- Smooth slide in animation for check icon
+                        local slideIn = createTween(checkIcon, {
+                            Position = UDim2.new(0.9070789217948914, 0, 0.5, 0),
+                            ImageTransparency = 0
+                        }, 0.3, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+                        slideIn:Play()
+                    else
+                        -- Unselected option - hide check icon with fast fade out
+                        textLabel.TextColor3 = Color3.fromRGB(52, 52, 52)
+                        
+                        -- Fast fade out and slide out animation
+                        local slideOut = createTween(checkIcon, {
+                            Position = UDim2.new(1.2, 0, 0.5, 0),
+                            ImageTransparency = 1
+                        }, 0.15, Enum.EasingStyle.Quart, Enum.EasingDirection.In)
+                        slideOut:Play()
+                    end
+                end
+                
+                -- Close dropdown for single-select
+                dropdown.isOpen = false
+                Dropdown_Container.Visible = false
+                
+                -- Rotate arrow back
+                local arrowTween = createTween(ImageLabel, {
+                    Rotation = 0
+                }, 0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+                arrowTween:Play()
+                
+                dropdown.callback(option)
             end
-            
-            -- Close dropdown
-            dropdown.isOpen = false
-            Dropdown_Container.Visible = false
-            
-            -- Rotate arrow back
-            local arrowTween = createTween(ImageLabel, {
-                Rotation = 0
-            }, 0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
-            arrowTween:Play()
-            
-            dropdown.callback(option)
         end)
         
         table.insert(optionFrames, Frame)
     end
     
-    -- Set initial selected option
-    if dropdown.value then
+    -- Set initial selected options
+    if dropdown.multiSelect then
         for i, option in ipairs(dropdown.options) do
-            if option == dropdown.value then
+            if table.find(dropdown.selectedValues, option) then
                 local frame = optionFrames[i]
                 local checkIcon = frame:FindFirstChild("Check_Icon")
                 local textLabel = frame:FindFirstChild("TextLabel")
@@ -1209,6 +1267,20 @@ function Library:CreateDropdown(config, section)
                 textLabel.TextColor3 = Color3.fromRGB(142, 71, 232)
                 checkIcon.Position = UDim2.new(0.9070789217948914, 0, 0.5, 0)
                 checkIcon.ImageTransparency = 0
+            end
+        end
+    else
+        if dropdown.value then
+            for i, option in ipairs(dropdown.options) do
+                if option == dropdown.value then
+                    local frame = optionFrames[i]
+                    local checkIcon = frame:FindFirstChild("Check_Icon")
+                    local textLabel = frame:FindFirstChild("TextLabel")
+                    
+                    textLabel.TextColor3 = Color3.fromRGB(142, 71, 232)
+                    checkIcon.Position = UDim2.new(0.9070789217948914, 0, 0.5, 0)
+                    checkIcon.ImageTransparency = 0
+                end
             end
         end
     end
@@ -1224,35 +1296,49 @@ function Library:CreateDropdown(config, section)
         dropdown.isOpen = not dropdown.isOpen
         
         if dropdown.isOpen then
-            -- Open dropdown with smooth animation
+            -- Open dropdown with ultra-smooth animation
             Dropdown_Container.Visible = true
-            Dropdown_Container.Size = UDim2.new(0, 279, 0, 1)
+            Dropdown_Container.Size = UDim2.new(0, 279, 0, 0)
+            Dropdown_Container.BackgroundTransparency = 1
             
+            -- Fade in background first
+            local fadeIn = createTween(Dropdown_Container, {
+                BackgroundTransparency = 0
+            }, 0.15, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+            fadeIn:Play()
+            
+            -- Then expand size with smooth easing
             local openTween = createTween(Dropdown_Container, {
                 Size = UDim2.new(0, 279, 0, #dropdown.options * 20 + 13)
-            }, 0.3, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+            }, 0.4, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
             openTween:Play()
             
-            -- Rotate arrow 180 degrees
+            -- Rotate arrow with smooth easing
             local arrowTween = createTween(ImageLabel, {
                 Rotation = 180
-            }, 0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+            }, 0.3, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
             arrowTween:Play()
         else
-            -- Close dropdown with smooth animation
+            -- Close dropdown with ultra-smooth animation
             local closeTween = createTween(Dropdown_Container, {
-                Size = UDim2.new(0, 279, 0, 1)
-            }, 0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.In)
+                Size = UDim2.new(0, 279, 0, 0)
+            }, 0.25, Enum.EasingStyle.Back, Enum.EasingDirection.In)
             closeTween:Play()
+            
+            -- Fade out background
+            local fadeOut = createTween(Dropdown_Container, {
+                BackgroundTransparency = 1
+            }, 0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.In)
+            fadeOut:Play()
             
             closeTween.Completed:Connect(function()
                 Dropdown_Container.Visible = false
             end)
             
-            -- Rotate arrow back
+            -- Rotate arrow back with smooth easing
             local arrowTween = createTween(ImageLabel, {
                 Rotation = 0
-            }, 0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+            }, 0.3, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
             arrowTween:Play()
         end
     end)
