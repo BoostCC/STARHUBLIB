@@ -1,4 +1,4 @@
-\-- STARHUB UI Library
+-- STARHUB UI Library
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
@@ -2387,9 +2387,6 @@ function Library:CreateNotification(config)
     progressBar.Size = UDim2.new(0, 0, 1, 0) -- Start at 0 width
     progressBar.BackgroundTransparency = 0
     
-    -- Wait a frame for text to properly size
-    task.wait()
-    
     -- Simple slide in animation with proper easing
     local slideIn = createTween(notificationFrame, {
         Size = UDim2.new(0, 1, 0, 60), -- Auto-size width
@@ -2530,8 +2527,23 @@ function Library:Reload()
     DragStart = nil
     DragStartPosition = nil
     GlobalTabInlineIndicator = nil
+    if NotificationContainer then
+        NotificationContainer:Destroy()
+    end
     NotificationContainer = nil
     ActiveNotifications = {}
+    
+    -- Recreate notification container
+    NotificationContainer = Instance.new("Frame")
+    NotificationContainer.Name = "NotificationContainer"
+    NotificationContainer.BorderColor3 = Color3.fromRGB(0, 0, 0)
+    NotificationContainer.Size = UDim2.new(0, 1, 0, 1)
+    NotificationContainer.BorderSizePixel = 0
+    NotificationContainer.BackgroundTransparency = 1
+    NotificationContainer.Position = UDim2.new(0.8169070482254028, 0, 0.014925372786819935, 0)
+    NotificationContainer.AutomaticSize = Enum.AutomaticSize.XY
+    NotificationContainer.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    NotificationContainer.Parent = ScreenGui
     
     -- Recreate the main ScreenGui in CoreGui
     ScreenGui = Instance.new("ScreenGui")
