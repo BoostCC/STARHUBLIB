@@ -2206,14 +2206,6 @@ function Library:CreateNotification(config)
     
     -- Create notification container if it doesn't exist
     if not NotificationContainer then
-        -- Ensure ScreenGui exists
-        if not ScreenGui then
-            ScreenGui = Instance.new("ScreenGui")
-            ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Global
-            ScreenGui.ResetOnSpawn = false
-            ScreenGui.Parent = game:GetService("CoreGui")
-        end
-        
         NotificationContainer = Instance.new("Frame")
         NotificationContainer.Name = "NotificationContainer"
         NotificationContainer.BorderColor3 = Color3.fromRGB(0, 0, 0)
@@ -2256,12 +2248,12 @@ function Library:CreateNotification(config)
         progressColor = Color3.fromRGB(1, 255, 141)
     end
     
-    -- Create notification frame with proper auto-sizing
+    -- Create notification frame with auto-sizing width
     local notificationFrame = Instance.new("Frame")
     notificationFrame.Name = "Notification_Frame"
     notificationFrame.Position = UDim2.new(0, 0, 0.8371886014938354, 0)
     notificationFrame.BorderColor3 = Color3.fromRGB(0, 0, 0)
-    notificationFrame.Size = UDim2.new(0, 1, 0, 60) -- Start with minimal width, fixed height
+    notificationFrame.Size = UDim2.new(0, 1, 0, 60) -- Auto-size width, fixed height
     notificationFrame.BorderSizePixel = 0
     notificationFrame.BackgroundColor3 = backgroundColor
     notificationFrame.AutomaticSize = Enum.AutomaticSize.X -- Auto-size width based on content
@@ -2278,62 +2270,23 @@ function Library:CreateNotification(config)
     glowEffect.Thickness = 1
     glowEffect.Parent = notificationFrame
     
-    -- Text label with proper sizing (create first so frame can auto-size)
-    local textLabel = Instance.new("TextLabel")
-    textLabel.RichText = true
-    textLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-    textLabel.BorderColor3 = Color3.fromRGB(0, 0, 0)
-    
-    -- Format text with type prefix
-    local typePrefix = ""
-    if notification.type == "success" then
-        typePrefix = '<font color="#01ff8d">SUCCESS</font> '
-    elseif notification.type == "warning" then
-        typePrefix = '<font color="#ffc107">WARNING</font> '
-    elseif notification.type == "error" then
-        typePrefix = '<font color="#dc3545">ERROR</font> '
-    elseif notification.type == "custom" and notification.color then
-        local hexColor = string.format("#%02x%02x%02x", 
-            math.floor(notification.color.R * 255),
-            math.floor(notification.color.G * 255),
-            math.floor(notification.color.B * 255)
-        )
-        typePrefix = '<font color="' .. hexColor .. '">CUSTOM</font> '
-    else
-        typePrefix = '<font color="#01ff8d">SUCCESS</font> '
-    end
-    
-    textLabel.Text = typePrefix .. notification.text
-    textLabel.Size = UDim2.new(0, 1, 0, 40) -- Auto-size width, fixed height
-    textLabel.AnchorPoint = Vector2.new(0, 0)
-    textLabel.BorderSizePixel = 0
-    textLabel.BackgroundTransparency = 1
-    textLabel.Position = UDim2.new(0, 16, 0, 10) -- 16px padding from left, 10px from top
-    textLabel.FontFace = Font.new("rbxassetid://12187365364", Enum.FontWeight.Regular, Enum.FontStyle.Normal)
-    textLabel.TextSize = 18 -- Bigger text
-    textLabel.AutomaticSize = Enum.AutomaticSize.X -- Auto-size width based on text
-    textLabel.TextWrapped = false -- No text wrapping
-    textLabel.TextXAlignment = Enum.TextXAlignment.Left
-    textLabel.TextYAlignment = Enum.TextYAlignment.Top
-    textLabel.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-    textLabel.Parent = notificationFrame
-    
-    -- Progress background with proper positioning and padding
+    -- Progress background with proper positioning
     local progressBG = Instance.new("Frame")
     progressBG.Name = "Progress_BG"
     progressBG.AnchorPoint = Vector2.new(0, 1) -- Anchor to bottom
-    progressBG.Position = UDim2.new(0, 16, 1, -8) -- 16px from left, 8px from bottom
+    progressBG.Position = UDim2.new(0, 12, 1, -8) -- 12px from left, 8px from bottom
     progressBG.BorderColor3 = Color3.fromRGB(0, 0, 0)
-    progressBG.Size = UDim2.new(1, -32, 0, 4) -- Full width minus 16px left and 16px right padding, 4px height
+    progressBG.Size = UDim2.new(0, 1, 0, 4) -- Auto-size width, 4px height
     progressBG.BorderSizePixel = 0
     progressBG.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+    progressBG.AutomaticSize = Enum.AutomaticSize.X -- Auto-size width
     progressBG.Parent = notificationFrame
     
     local progressBGCorner = Instance.new("UICorner")
     progressBGCorner.CornerRadius = UDim.new(0, 50)
     progressBGCorner.Parent = progressBG
     
-    -- Progress bar with proper sizing and right padding
+    -- Progress bar with proper sizing
     local progressBar = Instance.new("Frame")
     progressBar.AnchorPoint = Vector2.new(0, 0.5)
     progressBar.Name = "Progress_Bar"
@@ -2380,6 +2333,46 @@ function Library:CreateNotification(config)
     end
     progressGradient.Parent = progressBar
     
+    -- Text label with fixed sizing
+    local textLabel = Instance.new("TextLabel")
+    textLabel.RichText = true
+    textLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+    textLabel.BorderColor3 = Color3.fromRGB(0, 0, 0)
+    
+    -- Format text with type prefix
+    local typePrefix = ""
+    if notification.type == "success" then
+        typePrefix = '<font color="#01ff8d">SUCCESS</font> '
+    elseif notification.type == "warning" then
+        typePrefix = '<font color="#ffc107">WARNING</font> '
+    elseif notification.type == "error" then
+        typePrefix = '<font color="#dc3545">ERROR</font> '
+    elseif notification.type == "custom" and notification.color then
+        local hexColor = string.format("#%02x%02x%02x", 
+            math.floor(notification.color.R * 255),
+            math.floor(notification.color.G * 255),
+            math.floor(notification.color.B * 255)
+        )
+        typePrefix = '<font color="' .. hexColor .. '">CUSTOM</font> '
+    else
+        typePrefix = '<font color="#01ff8d">SUCCESS</font> '
+    end
+    
+    textLabel.Text = typePrefix .. notification.text
+    textLabel.Size = UDim2.new(0, 1, 0, 40) -- Auto-size width, fixed height
+    textLabel.AnchorPoint = Vector2.new(0, 0)
+    textLabel.BorderSizePixel = 0
+    textLabel.BackgroundTransparency = 1
+    textLabel.Position = UDim2.new(0, 12, 0, 10) -- 12px padding from left, 10px from top
+    textLabel.FontFace = Font.new("rbxassetid://12187365364", Enum.FontWeight.Regular, Enum.FontStyle.Normal)
+    textLabel.TextSize = 18 -- Bigger text
+    textLabel.AutomaticSize = Enum.AutomaticSize.X -- Auto-size width based on text
+    textLabel.TextWrapped = false -- No text wrapping
+    textLabel.TextXAlignment = Enum.TextXAlignment.Left
+    textLabel.TextYAlignment = Enum.TextYAlignment.Top
+    textLabel.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    textLabel.Parent = notificationFrame
+    
     -- Store references
     notification.frame = notificationFrame
     notification.progressBar = progressBar
@@ -2395,29 +2388,23 @@ function Library:CreateNotification(config)
     progressBar.Size = UDim2.new(0, 0, 1, 0) -- Start at 0 width
     progressBar.BackgroundTransparency = 0
     
-    -- Simple slide in animation with proper easing
-    if notificationFrame and createTween then
-        local slideIn = createTween(notificationFrame, {
-            Size = UDim2.new(0, 1, 0, 60), -- Auto-size width
-            BackgroundTransparency = 0
-        }, 0.4, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
-        slideIn:Play()
-    end
+    -- Simple slide in animation
+    local slideIn = createTween(notificationFrame, {
+        Size = UDim2.new(0, 1, 0, 60), -- Auto-size width
+        BackgroundTransparency = 0
+    }, 0.3, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+    slideIn:Play()
     
-    if textLabel and createTween then
-        local textFadeIn = createTween(textLabel, {
-            TextTransparency = 0
-        }, 0.4, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
-        textFadeIn:Play()
-    end
+    local textFadeIn = createTween(textLabel, {
+        TextTransparency = 0
+    }, 0.3, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+    textFadeIn:Play()
     
     -- Progress bar animation - moves from left to right
-    if progressBar and createTween then
-        local progressTween = createTween(progressBar, {
-            Size = UDim2.new(1, 0, 1, 0) -- Full width of progressBG
-        }, notification.duration, Enum.EasingStyle.Linear, Enum.EasingDirection.Out)
-        progressTween:Play()
-    end
+    local progressTween = createTween(progressBar, {
+        Size = UDim2.new(1, 0, 1, 0) -- Full width of progressBG
+    }, notification.duration, Enum.EasingStyle.Linear, Enum.EasingDirection.Out)
+    progressTween:Play()
     
     -- Auto-close after duration
     task.spawn(function()
@@ -2451,34 +2438,28 @@ function Library:CloseNotification(notification)
     -- Call onClose callback
     notification.onClose(notification)
     
-    -- Simple disappear animation with proper easing
-    if notification.frame and createTween then
-        local fadeOut = createTween(notification.frame, {
-            Size = UDim2.new(0, 0, 0, 60),
-            BackgroundTransparency = 1
-        }, 0.3, Enum.EasingStyle.Back, Enum.EasingDirection.In)
-        fadeOut:Play()
-        
-        fadeOut.Completed:Connect(function()
-            if notification.frame then
-                notification.frame:Destroy()
-            end
-            -- Remove from active notifications
-            for i, notif in ipairs(ActiveNotifications) do
-                if notif == notification then
-                    table.remove(ActiveNotifications, i)
-                    break
-                end
-            end
-        end)
-    end
+    -- Simple disappear animation
+    local fadeOut = createTween(notification.frame, {
+        Size = UDim2.new(0, 0, 0, 60),
+        BackgroundTransparency = 1
+    }, 0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.In)
+    fadeOut:Play()
     
-    if notification.textLabel and createTween then
-        local textFadeOut = createTween(notification.textLabel, {
-            TextTransparency = 1
-        }, 0.3, Enum.EasingStyle.Quart, Enum.EasingDirection.In)
-        textFadeOut:Play()
-    end
+    local textFadeOut = createTween(notification.textLabel, {
+        TextTransparency = 1
+    }, 0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.In)
+    textFadeOut:Play()
+    
+    fadeOut.Completed:Connect(function()
+        notification.frame:Destroy()
+        -- Remove from active notifications
+        for i, notif in ipairs(ActiveNotifications) do
+            if notif == notification then
+                table.remove(ActiveNotifications, i)
+                break
+            end
+        end
+    end)
 end
 
 function Library:CloseAllNotifications()
@@ -2547,23 +2528,8 @@ function Library:Reload()
     DragStart = nil
     DragStartPosition = nil
     GlobalTabInlineIndicator = nil
-    if NotificationContainer then
-        NotificationContainer:Destroy()
-    end
     NotificationContainer = nil
     ActiveNotifications = {}
-    
-    -- Recreate notification container
-    NotificationContainer = Instance.new("Frame")
-    NotificationContainer.Name = "NotificationContainer"
-    NotificationContainer.BorderColor3 = Color3.fromRGB(0, 0, 0)
-    NotificationContainer.Size = UDim2.new(0, 1, 0, 1)
-    NotificationContainer.BorderSizePixel = 0
-    NotificationContainer.BackgroundTransparency = 1
-    NotificationContainer.Position = UDim2.new(0.8169070482254028, 0, 0.014925372786819935, 0)
-    NotificationContainer.AutomaticSize = Enum.AutomaticSize.XY
-    NotificationContainer.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-    NotificationContainer.Parent = ScreenGui
     
     -- Recreate the main ScreenGui in CoreGui
     ScreenGui = Instance.new("ScreenGui")
