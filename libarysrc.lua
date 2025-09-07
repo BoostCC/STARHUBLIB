@@ -1471,16 +1471,28 @@ function Library:CreateColorpicker(config, section)
         updateColor()
     end)
     
+    -- Start drag when clicking alpha bar or its checker overlay
     Alpha.MouseButton1Down:Connect(function(input)
         draggingAlpha = true
         BlockDragging = true
-        local absPos = Alpha.AbsolutePosition
-        local absSize = Alpha.AbsoluteSize
-        -- Parent is rotated -90, so move along local X to track vertical visually
-        local rx = math.clamp((input.Position.X - absPos.X) / absSize.X, 0, 1)
-        currentA = 1 - rx
-        AlphaDragger.Position = UDim2.new(rx, 0, 0.5, 0)
+        local absPos = Checkers.AbsolutePosition
+        local absSize = Checkers.AbsoluteSize
+        local ry = math.clamp((input.Position.Y - absPos.Y) / absSize.Y, 0, 1)
+        currentA = 1 - ry
+        AlphaDragger.Position = UDim2.new(0.5, 0, ry, 0)
         updateColor()
+    end)
+    Checkers.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+            draggingAlpha = true
+            BlockDragging = true
+            local absPos = Checkers.AbsolutePosition
+            local absSize = Checkers.AbsoluteSize
+            local ry = math.clamp((input.Position.Y - absPos.Y) / absSize.Y, 0, 1)
+            currentA = 1 - ry
+            AlphaDragger.Position = UDim2.new(0.5, 0, ry, 0)
+            updateColor()
+        end
     end)
     
     UserInputService.InputEnded:Connect(function(input)
@@ -1514,11 +1526,11 @@ function Library:CreateColorpicker(config, section)
             updateColor()
         end
         if draggingAlpha then
-            local absPos = Alpha.AbsolutePosition
-            local absSize = Alpha.AbsoluteSize
-            local rx = math.clamp((input.Position.X - absPos.X) / absSize.X, 0, 1)
-            currentA = 1 - rx
-            AlphaDragger.Position = UDim2.new(rx, 0, 0.5, 0)
+            local absPos = Checkers.AbsolutePosition
+            local absSize = Checkers.AbsoluteSize
+            local ry = math.clamp((input.Position.Y - absPos.Y) / absSize.Y, 0, 1)
+            currentA = 1 - ry
+            AlphaDragger.Position = UDim2.new(0.5, 0, ry, 0)
             updateColor()
         end
     end)
@@ -1530,7 +1542,7 @@ function Library:CreateColorpicker(config, section)
         updateSVFrame()
         SVPicker.Position = UDim2.new(currentS, 0, 1 - currentV, 0)
         HueDragger.Position = UDim2.new(0.5, 0, currentHue, 0)
-        AlphaDragger.Position = UDim2.new(1 - currentA, 0, 0.5, 0)
+        AlphaDragger.Position = UDim2.new(0.5, 0, 1 - currentA, 0)
         updateColor()
     end
     
