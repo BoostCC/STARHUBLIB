@@ -4,6 +4,8 @@ local UserInputService = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
 
 local Library = {}
+Library.Accent = Color3.fromRGB(155, 77, 255)
+Library.AccentTransparent = Color3.fromRGB(155, 77, 255)
 local Windows = {}
 local CurrentWindow = nil
 local CurrentTab = nil
@@ -314,6 +316,20 @@ function Library:CreateWindow(config)
     return window
 end
 
+-- Accent color API
+function Library:SetAccentColor(color, alpha)
+    -- fallback to default if not provided
+    Library.Accent = color or Library.Accent or Color3.fromRGB(155, 77, 255)
+    local a = alpha
+    -- Update inline and headings
+    if GlobalTabInlineIndicator then
+        GlobalTabInlineIndicator.BackgroundColor3 = Library.Accent
+    end
+    if Build_Date then
+        -- no-op; sample place if we later tint other elements
+    end
+end
+
 function Library:CreateTab(config)
     if not CurrentWindow then
         error("No window created. Call CreateWindow first.")
@@ -538,12 +554,12 @@ function Library:SwitchTab(tab)
             
             -- Color transition with slight delay
             local iconTween = createTween(icon, {
-                ImageColor3 = Color3.fromRGB(115, 58, 173)
+                ImageColor3 = Library.Accent
             }, 0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
             iconTween:Play()
             
             local textTween = createTween(text, {
-                TextColor3 = Color3.fromRGB(115, 58, 173)
+                TextColor3 = Library.Accent
             }, 0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
             textTween:Play()
         end
@@ -646,7 +662,7 @@ function Library:CreateSection(config)
     -- Section name
     local sectionName = Instance.new("TextLabel")
     sectionName.FontFace = Font.new("rbxassetid://12187365364", Enum.FontWeight.Medium, Enum.FontStyle.Normal)
-    sectionName.TextColor3 = Color3.fromRGB(115, 58, 173)
+    sectionName.TextColor3 = Library.Accent
     sectionName.Text = sectionText
     sectionName.BackgroundTransparency = 1
     sectionName.Size = UDim2.new(0, 1, 0, 1)
@@ -767,7 +783,7 @@ function Library:CreateToggle(config, section)
     toggleFill.Size = UDim2.new(0, 20, 0, 20)
     toggleFill.Position = UDim2.new(0.5, 0, 0.5, 0)
     toggleFill.AnchorPoint = Vector2.new(0.5, 0.5)
-    toggleFill.BackgroundColor3 = Color3.fromRGB(155, 77, 255)
+    toggleFill.BackgroundColor3 = Library.Accent
     toggleFill.Parent = toggleButton
     
     local fillCorner = Instance.new("UICorner")
@@ -888,7 +904,7 @@ function Library:CreateSlider(config, section)
     progressBar.Size = UDim2.new(0, 0, 0, 3)
     progressBar.Position = UDim2.new(0, 0, 0.5, 0)
     progressBar.AnchorPoint = Vector2.new(0, 0.5)
-    progressBar.BackgroundColor3 = Color3.fromRGB(115, 58, 173)
+    progressBar.BackgroundColor3 = Library.Accent
     progressBar.Parent = sliderBG
     
     local progressCorner = Instance.new("UICorner")
@@ -900,7 +916,7 @@ function Library:CreateSlider(config, section)
     pointer.Size = UDim2.new(0, 15, 0, 15)
     pointer.Position = UDim2.new(1, 0, 0.5, 0)
     pointer.AnchorPoint = Vector2.new(1, 0.5)
-    pointer.BackgroundColor3 = Color3.fromRGB(155, 77, 255)
+    pointer.BackgroundColor3 = Library.Accent
     pointer.Parent = progressBar
     
     local pointerCorner = Instance.new("UICorner")
@@ -1595,7 +1611,7 @@ UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
         TextLabel.Parent = Frame
         
         local Check_Icon = Instance.new("ImageLabel")
-        Check_Icon.ImageColor3 = Color3.fromRGB(155, 77, 255)
+        Check_Icon.ImageColor3 = Library.Accent
         Check_Icon.BorderColor3 = Color3.fromRGB(0, 0, 0)
         Check_Icon.Name = "Check_Icon"
         Check_Icon.AnchorPoint = Vector2.new(0.5, 0.5)
@@ -1657,7 +1673,7 @@ UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
                     slideOut:Play()
                 else
                     -- Selected - show check icon with smooth animation
-                    textLabel.TextColor3 = Color3.fromRGB(142, 71, 232)
+                    textLabel.TextColor3 = Library.Accent
                     
                     local slideIn = createTween(checkIcon, {
                         Position = UDim2.new(0.9070789217948914, 0, 0.5, 0),
@@ -1679,7 +1695,7 @@ UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
                     
                     if j == i then
                         -- Selected option - show check icon with smooth animation
-                        textLabel.TextColor3 = Color3.fromRGB(142, 71, 232)
+                        textLabel.TextColor3 = Library.Accent
                         
                         -- Smooth slide in animation for check icon
                         local slideIn = createTween(checkIcon, {
@@ -1734,7 +1750,7 @@ UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
                 local checkIcon = frame:FindFirstChild("Check_Icon")
                 local textLabel = frame:FindFirstChild("TextLabel")
                 
-                textLabel.TextColor3 = Color3.fromRGB(142, 71, 232)
+                textLabel.TextColor3 = Library.Accent
                 checkIcon.Position = UDim2.new(0.9070789217948914, 0, 0.5, 0)
                 checkIcon.ImageTransparency = 0
             end
@@ -1747,7 +1763,7 @@ UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
                     local checkIcon = frame:FindFirstChild("Check_Icon")
                     local textLabel = frame:FindFirstChild("TextLabel")
                     
-                    textLabel.TextColor3 = Color3.fromRGB(142, 71, 232)
+                    textLabel.TextColor3 = Library.Accent
                     checkIcon.Position = UDim2.new(0.9070789217948914, 0, 0.5, 0)
                     checkIcon.ImageTransparency = 0
                 end
