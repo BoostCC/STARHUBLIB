@@ -350,12 +350,12 @@ function Library:SetAccentColor(color, alpha)
                     inst.BackgroundColor3 = Library.Accent
                 elseif inst.Name == "Slider_BG" then
                     inst.BackgroundColor3 = Library.Accent
-                    if inst.BackgroundTransparency == nil or inst.BackgroundTransparency == 0 then
-                        inst.BackgroundTransparency = 0.25
-                    end
+                    inst.BackgroundTransparency = 0.75
                 elseif inst.Name == "Toggle_Fill" then
                     inst.BackgroundColor3 = Library.Accent
                 elseif inst.Name == "Inline" then
+                    inst.BackgroundColor3 = Library.Accent
+                elseif inst.Name == "Shadow" then
                     inst.BackgroundColor3 = Library.Accent
                 end
             elseif inst:IsA("ImageLabel") then
@@ -953,7 +953,7 @@ function Library:CreateSlider(config, section)
     sliderBG.Size = UDim2.new(0, 278, 0, 3)
     sliderBG.Position = UDim2.new(0.4887655973434448, 0, 0.6625000238418579, 0)
     sliderBG.AnchorPoint = Vector2.new(0.5, 0.5)
-    sliderBG.BackgroundColor3 = Color3.fromRGB(115, 58, 173)
+    sliderBG.BackgroundColor3 = Library.Accent
     sliderBG.BackgroundTransparency = 0.75
     sliderBG.Parent = sliderFrame
     
@@ -1992,7 +1992,7 @@ function Library:CreateKeybind(config, section)
             keybindButton.Text = "..."
             
             -- Smooth animation for listening state
-            local listeningTween = createTween(keybindButton, {TextColor3 = Color3.fromRGB(115, 58, 173)}, 0.2)
+            local listeningTween = createTween(keybindButton, {TextColor3 = Library.Accent}, 0.2)
             listeningTween:Play()
             
             -- Listen for key input
