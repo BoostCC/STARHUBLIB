@@ -1259,10 +1259,15 @@ function Library:CreateToggle(config)
     toggleText.TextSize = 16
     toggleText.Parent = toggleButton
     
+    -- Store inactive color
+    local inactiveColor = Color3.fromRGB(52, 52, 52)
+    local activeColor = Color3.fromRGB(255, 255, 255)
+    
     -- Click functionality
     local clickButton = Instance.new("TextButton")
     clickButton.BackgroundTransparency = 1
     clickButton.Size = UDim2.new(1, 0, 1, 0)
+    clickButton.Text = ""
     clickButton.Parent = toggleFrame
     
     clickButton.MouseButton1Click:Connect(function()
@@ -1275,6 +1280,10 @@ function Library:CreateToggle(config)
             
             local iconTween = createTween(checkIcon, {ImageTransparency = 0}, 0.2)
             iconTween:Play()
+            
+            -- Set active color
+            local colorTween = createTween(toggleText, {TextColor3 = activeColor}, 0.2)
+            colorTween:Play()
         else
             -- Fast reverse effect
             local shrinkTween = createTween(toggleFill, {Size = UDim2.new(0, 0, 0, 0)}, 0.1)
@@ -1282,14 +1291,19 @@ function Library:CreateToggle(config)
             
             local iconTween = createTween(checkIcon, {ImageTransparency = 1}, 0.1)
             iconTween:Play()
+            
+            -- Set inactive color
+            local colorTween = createTween(toggleText, {TextColor3 = inactiveColor}, 0.1)
+            colorTween:Play()
         end
         
         toggle.callback(toggle.value)
     end)
     
-    -- Initially hide the fill
+    -- Initially hide the fill and set inactive color
     toggleFill.Size = UDim2.new(0, 0, 0, 0)
     checkIcon.ImageTransparency = 1
+    toggleText.TextColor3 = inactiveColor
     
     table.insert(section.components, toggle)
     return toggle
@@ -1387,6 +1401,7 @@ function Library:CreateSlider(config)
     local sliderButton = Instance.new("TextButton")
     sliderButton.BackgroundTransparency = 1
     sliderButton.Size = UDim2.new(1, 0, 1, 0)
+    sliderButton.Text = ""
     sliderButton.Parent = sliderFrame
     
     local isDragging = false
@@ -1484,6 +1499,7 @@ function Library:CreateTextInput(config)
     local clickButton = Instance.new("TextButton")
     clickButton.BackgroundTransparency = 1
     clickButton.Size = UDim2.new(1, 0, 1, 0)
+    clickButton.Text = ""
     clickButton.Parent = inputFrame
     
     clickButton.MouseButton1Click:Connect(function()
@@ -1572,15 +1588,59 @@ function Library:CreateKeybind(config)
             connection = UserInputService.InputBegan:Connect(function(input, gameProcessed)
                 if gameProcessed then return end
                 
+                local keyName = nil
+                
+                -- Handle keyboard input
                 if input.UserInputType == Enum.UserInputType.Keyboard then
-                    keybind.key = input.KeyCode.Name
-                    keybindButton.Text = keybind.key
+                    local keyCode = input.KeyCode
+                    
+                    -- Skip WASD movement keys
+                    if keyCode == Enum.KeyCode.W or keyCode == Enum.KeyCode.A or 
+                       keyCode == Enum.KeyCode.S or keyCode == Enum.KeyCode.D then
+                        return
+                    end
+                    
+                    keyName = keyCode.Name
+                end
+                
+                -- Handle mouse input
+                if input.UserInputType == Enum.UserInputType.MouseButton1 then
+                    keyName = "MouseButton1"
+                elseif input.UserInputType == Enum.UserInputType.MouseButton2 then
+                    keyName = "MouseButton2"
+                elseif input.UserInputType == Enum.UserInputType.MouseButton3 then
+                    keyName = "MouseButton3"
+                end
+                
+                -- Handle other input types
+                if input.UserInputType == Enum.UserInputType.Gamepad1 then
+                    keyName = "Gamepad1"
+                elseif input.UserInputType == Enum.UserInputType.Gamepad2 then
+                    keyName = "Gamepad2"
+                elseif input.UserInputType == Enum.UserInputType.Gamepad3 then
+                    keyName = "Gamepad3"
+                elseif input.UserInputType == Enum.UserInputType.Gamepad4 then
+                    keyName = "Gamepad4"
+                elseif input.UserInputType == Enum.UserInputType.Gamepad5 then
+                    keyName = "Gamepad5"
+                elseif input.UserInputType == Enum.UserInputType.Gamepad6 then
+                    keyName = "Gamepad6"
+                elseif input.UserInputType == Enum.UserInputType.Gamepad7 then
+                    keyName = "Gamepad7"
+                elseif input.UserInputType == Enum.UserInputType.Gamepad8 then
+                    keyName = "Gamepad8"
+                end
+                
+                -- If we got a valid key, set it
+                if keyName then
+                    keybind.key = keyName
+                    keybindButton.Text = keyName
                     
                     -- Smooth animation back to normal
                     local normalTween = createTween(keybindButton, {TextColor3 = Color3.fromRGB(255, 255, 255)}, 0.2)
                     normalTween:Play()
                     
-                    keybind.callback(keybind.key)
+                    keybind.callback(keyName)
                     isListening = false
                     connection:Disconnect()
                 end
