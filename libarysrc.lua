@@ -336,6 +336,14 @@ function Library:SetAccentColor(color, alpha)
 
     -- Sweep through UI and update common accent elements
     if ScreenGui then
+        -- Update active tab icon/text immediately
+        if CurrentTab and CurrentTab.tabFrame then
+            local icon = CurrentTab.tabFrame:FindFirstChild("Tab_Icon")
+            local text = icon and icon:FindFirstChild("Tab_Name")
+            if icon then icon.ImageColor3 = Library.Accent end
+            if text then text.TextColor3 = Library.Accent end
+        end
+
         for _, inst in ipairs(ScreenGui:GetDescendants()) do
             if inst:IsA("Frame") then
                 if inst.Name == "Progress_Bar" or inst.Name == "Pointer" then
@@ -697,7 +705,7 @@ function Library:CreateSection(config)
     local shadow = Instance.new("Frame")
     shadow.Name = "Shadow"
     shadow.Size = UDim2.new(0, 318, 0, 40)
-    shadow.BackgroundColor3 = Color3.fromRGB(170, 85, 255)
+    shadow.BackgroundColor3 = Library.Accent
     shadow.BackgroundTransparency = 0.9
     shadow.Parent = sectionFrame
     
@@ -850,6 +858,7 @@ function Library:CreateToggle(config, section)
     checkIcon.Position = UDim2.new(0.5, 0, 0.5, 0)
     checkIcon.AnchorPoint = Vector2.new(0.5, 0.5)
     checkIcon.BackgroundTransparency = 1
+    checkIcon.ImageColor3 = Color3.fromRGB(255, 255, 255)
     checkIcon.Parent = toggleFill
     
     local toggleText = Instance.new("TextLabel")
@@ -945,7 +954,7 @@ function Library:CreateSlider(config, section)
     sliderBG.Position = UDim2.new(0.4887655973434448, 0, 0.6625000238418579, 0)
     sliderBG.AnchorPoint = Vector2.new(0.5, 0.5)
     sliderBG.BackgroundColor3 = Color3.fromRGB(115, 58, 173)
-    sliderBG.BackgroundTransparency = 0.25
+    sliderBG.BackgroundTransparency = 0.75
     sliderBG.Parent = sliderFrame
     
     local bgCorner = Instance.new("UICorner")
