@@ -33,7 +33,7 @@ ModalOverlay.AutoButtonColor = false
 ModalOverlay.Visible = false
 ModalOverlay.Size = UDim2.fromScale(1, 1)
 ModalOverlay.Position = UDim2.fromOffset(0, 0)
-ModalOverlay.ZIndex = 1199
+ModalOverlay.ZIndex = 999
 ModalOverlay.Parent = ScreenGui
 
 local MainFrame = Instance.new("Frame")
@@ -1989,7 +1989,7 @@ function Library:Reload()
     ModalOverlay.Visible = false
     ModalOverlay.Size = UDim2.fromScale(1, 1)
     ModalOverlay.Position = UDim2.fromOffset(0, 0)
-    ModalOverlay.ZIndex = 1199
+    ModalOverlay.ZIndex = 999
     ModalOverlay.Parent = ScreenGui
     
     -- Recreate MainFrame
