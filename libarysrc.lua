@@ -360,7 +360,9 @@ function Library:SetAccentColor(color, alpha)
                 end
             elseif inst:IsA("ImageLabel") then
                 if inst.Name == "Check_Icon" then
-                    inst.ImageColor3 = Library.Accent
+                    if not inst:GetAttribute("ForceWhite") then
+                        inst.ImageColor3 = Library.Accent
+                    end
                 elseif inst.Name == "Libary_Icon" then
                     inst.ImageColor3 = Library.Accent
                 end
@@ -859,6 +861,7 @@ function Library:CreateToggle(config, section)
     checkIcon.AnchorPoint = Vector2.new(0.5, 0.5)
     checkIcon.BackgroundTransparency = 1
     checkIcon.ImageColor3 = Color3.fromRGB(255, 255, 255)
+    checkIcon:SetAttribute("ForceWhite", true)
     checkIcon.Parent = toggleFill
     
     local toggleText = Instance.new("TextLabel")
