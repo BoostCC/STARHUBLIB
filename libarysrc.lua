@@ -572,6 +572,11 @@ function Library:SwitchTab(tab)
             end
         end
         
+        -- Hide config container if current tab is config tab
+        if CurrentTab.isConfigTab and CurrentTab.configContainer then
+            CurrentTab.configContainer.Visible = false
+        end
+        
         -- Animate current tab to inactive with clean transition
         if CurrentTab.tabFrame then
             -- Smooth background fade out
@@ -599,26 +604,38 @@ function Library:SwitchTab(tab)
     
     CurrentTab = tab
     
-    -- Show new tab sections with fast, clean slide-fade in
-    for _, section in pairs(tab.sections.left) do
-        if section.frame then
-            section.frame.Visible = true
-            section.frame.BackgroundTransparency = 1
-            -- start slightly lower and faded
-            section.frame.Position = section.targetPosition + UDim2.new(0, 0, 0, 10)
-            local move = createTween(section.frame, {Position = section.targetPosition}, 0.18, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
-            local fade = createTween(section.frame, {BackgroundTransparency = 0}, 0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
-            move:Play(); fade:Play()
+    -- Handle config tab differently
+    if tab.isConfigTab then
+        -- Show config container
+        if tab.configContainer then
+            tab.configContainer.Visible = true
+            -- Load configs if not already loaded
+            if tab.configHolder and #tab.configHolder:GetChildren() <= 1 then -- Only UIListLayout
+                Library:LoadConfigsFromFiles()
+            end
         end
-    end
-    for _, section in pairs(tab.sections.right) do
-        if section.frame then
-            section.frame.Visible = true
-            section.frame.BackgroundTransparency = 1
-            section.frame.Position = section.targetPosition + UDim2.new(0, 0, 0, 10)
-            local move = createTween(section.frame, {Position = section.targetPosition}, 0.18, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
-            local fade = createTween(section.frame, {BackgroundTransparency = 0}, 0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
-            move:Play(); fade:Play()
+    else
+        -- Show new tab sections with fast, clean slide-fade in
+        for _, section in pairs(tab.sections.left) do
+            if section.frame then
+                section.frame.Visible = true
+                section.frame.BackgroundTransparency = 1
+                -- start slightly lower and faded
+                section.frame.Position = section.targetPosition + UDim2.new(0, 0, 0, 10)
+                local move = createTween(section.frame, {Position = section.targetPosition}, 0.18, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+                local fade = createTween(section.frame, {BackgroundTransparency = 0}, 0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+                move:Play(); fade:Play()
+            end
+        end
+        for _, section in pairs(tab.sections.right) do
+            if section.frame then
+                section.frame.Visible = true
+                section.frame.BackgroundTransparency = 1
+                section.frame.Position = section.targetPosition + UDim2.new(0, 0, 0, 10)
+                local move = createTween(section.frame, {Position = section.targetPosition}, 0.18, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+                local fade = createTween(section.frame, {BackgroundTransparency = 0}, 0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+                move:Play(); fade:Play()
+            end
         end
     end
     
@@ -2709,8 +2726,8 @@ function Library:CreateNewConfig()
     -- Add to configs list
     table.insert(Configs, config)
     
-    -- Create config tab
-    Library:CreateConfigTab(config)
+    -- Create config section
+    Library:CreateConfigSection(config)
     
     -- Show notification
     Library:NotifySuccess("Config created successfully!", 3)
@@ -2754,7 +2771,205 @@ function Library:LoadConfigsFromFiles()
     }
     
     table.insert(Configs, sampleConfig)
-    Library:CreateConfigTab(sampleConfig)
+    Library:CreateConfigSection(sampleConfig)
+end
+
+function Library:CreateConfigSection(config)
+    if not CurrentTab or not CurrentTab.isConfigTab or not CurrentTab.configHolder then
+        return
+    end
+    
+    local section = Instance.new("Frame")
+    section.Name = "Section"
+    section.Size = UDim2.new(1, 0, 0, 70)
+    section.BorderSizePixel = 0
+    section.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+    section.Parent = CurrentTab.configHolder
+    
+    local UICorner = Instance.new("UICorner")
+    UICorner.CornerRadius = UDim.new(0, 4)
+    UICorner.Parent = section
+    
+    -- Config icon
+    local Config_ICON = Instance.new("ImageLabel")
+    Config_ICON.ImageColor3 = Color3.fromRGB(81, 81, 81)
+    Config_ICON.Image = "rbxassetid://98527607765894"
+    Config_ICON.BackgroundTransparency = 1
+    Config_ICON.Position = UDim2.new(0.021056829020380974, 0, 0.20778155326843262, 0)
+    Config_ICON.Size = UDim2.new(0, 36, 0, 40)
+    Config_ICON.Parent = section
+    
+    -- Author image
+    local Author_IMG = Instance.new("Frame")
+    Author_IMG.AnchorPoint = Vector2.new(1, 1)
+    Author_IMG.BackgroundTransparency = 0.25
+    Author_IMG.Position = UDim2.new(1, 0, 1, 0)
+    Author_IMG.Name = "Author_IMG"
+    Author_IMG.Size = UDim2.new(0, 18, 0, 18)
+    Author_IMG.BorderSizePixel = 0
+    Author_IMG.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+    Author_IMG.Parent = Config_ICON
+    
+    local AuthorCorner = Instance.new("UICorner")
+    AuthorCorner.CornerRadius = UDim.new(0, 50)
+    AuthorCorner.Parent = Author_IMG
+    
+    local AuthorStroke = Instance.new("UIStroke")
+    AuthorStroke.Color = Library.Accent
+    AuthorStroke.Parent = Author_IMG
+    
+    local Display_Author = Instance.new("ImageLabel")
+    Display_Author.Name = "Display_Author"
+    Display_Author.AnchorPoint = Vector2.new(0.5, 0.5)
+    Display_Author.Image = "rbxasset://textures/ui/GuiImagePlaceholder.png"
+    Display_Author.BackgroundTransparency = 1
+    Display_Author.Position = UDim2.new(0.5, 0, 0.5, 0)
+    Display_Author.Size = UDim2.new(0, 18, 0, 18)
+    Display_Author.Parent = Author_IMG
+    
+    local DisplayCorner = Instance.new("UICorner")
+    DisplayCorner.CornerRadius = UDim.new(0, 50)
+    DisplayCorner.Parent = Display_Author
+    
+    -- Load author image
+    if config.authorId then
+        pcall(function()
+            Display_Author.Image = "https://www.roblox.com/headshot-thumbnail/image?userId=" .. config.authorId .. "&width=150&height=150&format=png"
+        end)
+    end
+    
+    -- Config name
+    local Config_Name = Instance.new("TextLabel")
+    Config_Name.FontFace = Font.new("rbxassetid://12187365364", Enum.FontWeight.SemiBold, Enum.FontStyle.Normal)
+    Config_Name.TextColor3 = Library.Accent
+    Config_Name.Text = config.name or "Unnamed Config"
+    Config_Name.Name = "Config_Name"
+    Config_Name.Size = UDim2.new(0, 1, 0, 1)
+    Config_Name.BackgroundTransparency = 1
+    Config_Name.Position = UDim2.new(0.0989999994635582, 0, 0.2150000035762787, 4)
+    Config_Name.BorderSizePixel = 0
+    Config_Name.AutomaticSize = Enum.AutomaticSize.XY
+    Config_Name.TextSize = 16
+    Config_Name.Parent = section
+    
+    -- Config date
+    local Config_Date = Instance.new("TextLabel")
+    Config_Date.FontFace = Font.new("rbxassetid://12187365364", Enum.FontWeight.SemiBold, Enum.FontStyle.Normal)
+    Config_Date.TextColor3 = Color3.fromRGB(81, 81, 81)
+    Config_Date.Text = '<font color="#ffffff">' .. (config.authorName or "Unknown") .. '</font> CREATED AT ' .. (config.date or "Unknown")
+    Config_Date.Name = "Config_Date"
+    Config_Date.Size = UDim2.new(0, 1, 0, 1)
+    Config_Date.BorderSizePixel = 0
+    Config_Date.BackgroundTransparency = 1
+    Config_Date.Position = UDim2.new(0.09900002926588058, 0, 0.5004285573959351, 5)
+    Config_Date.RichText = true
+    Config_Date.AutomaticSize = Enum.AutomaticSize.XY
+    Config_Date.TextSize = 12
+    Config_Date.Parent = section
+    
+    -- Load button
+    local Load_Config = Instance.new("TextButton")
+    Load_Config.FontFace = Font.new("rbxassetid://12187365364", Enum.FontWeight.Regular, Enum.FontStyle.Normal)
+    Load_Config.TextColor3 = Color3.fromRGB(134, 134, 134)
+    Load_Config.Text = "Load"
+    Load_Config.AnchorPoint = Vector2.new(1, 0.5)
+    Load_Config.Name = "Load_Config"
+    Load_Config.Position = UDim2.new(0.9662400484085083, 0, 0.4879786968231201, 0)
+    Load_Config.Size = UDim2.new(0, 115, 0, 35)
+    Load_Config.BorderSizePixel = 0
+    Load_Config.TextSize = 16
+    Load_Config.BackgroundColor3 = Color3.fromRGB(24, 24, 24)
+    Load_Config.Parent = section
+    
+    local LoadPadding = Instance.new("UIPadding")
+    LoadPadding.PaddingTop = UDim.new(0, 5)
+    LoadPadding.PaddingBottom = UDim.new(0, 5)
+    LoadPadding.PaddingRight = UDim.new(0, 5)
+    LoadPadding.PaddingLeft = UDim.new(0, 5)
+    LoadPadding.Parent = Load_Config
+    
+    local LoadCorner = Instance.new("UICorner")
+    LoadCorner.Parent = Load_Config
+    
+    local LoadIconHolder = Instance.new("Frame")
+    LoadIconHolder.AnchorPoint = Vector2.new(0, 0.5)
+    LoadIconHolder.Name = "Icon_Holder"
+    LoadIconHolder.Position = UDim2.new(-0.07777797430753708, 0, 0.5, 0)
+    LoadIconHolder.Size = UDim2.new(0, 35, 0, 35)
+    LoadIconHolder.BorderSizePixel = 0
+    LoadIconHolder.BackgroundColor3 = Color3.fromRGB(22, 22, 22)
+    LoadIconHolder.Parent = Load_Config
+    
+    local LoadIconCorner = Instance.new("UICorner")
+    LoadIconCorner.Parent = LoadIconHolder
+    
+    local Load_Icon = Instance.new("ImageLabel")
+    Load_Icon.ImageColor3 = Color3.fromRGB(159, 159, 159)
+    Load_Icon.Name = "Load_Icon"
+    Load_Icon.AnchorPoint = Vector2.new(0.5, 0.5)
+    Load_Icon.Image = "rbxassetid://132976298748516"
+    Load_Icon.BackgroundTransparency = 1
+    Load_Icon.Position = UDim2.new(0.5, 0, 0.5, 0)
+    Load_Icon.Size = UDim2.new(0, 15, 0, 15)
+    Load_Icon.Parent = LoadIconHolder
+    
+    -- Delete button
+    local Delete_Config = Instance.new("TextButton")
+    Delete_Config.FontFace = Font.new("rbxassetid://12187365364", Enum.FontWeight.Regular, Enum.FontStyle.Normal)
+    Delete_Config.TextColor3 = Color3.fromRGB(134, 134, 134)
+    Delete_Config.Text = "Delete"
+    Delete_Config.AnchorPoint = Vector2.new(1, 0.5)
+    Delete_Config.Name = "Delete_Config"
+    Delete_Config.Position = UDim2.new(0.7478492259979248, 0, 0.4879786968231201, 0)
+    Delete_Config.Size = UDim2.new(0, 115, 0, 35)
+    Delete_Config.BorderSizePixel = 0
+    Delete_Config.TextSize = 16
+    Delete_Config.BackgroundColor3 = Color3.fromRGB(24, 24, 24)
+    Delete_Config.Parent = section
+    
+    local DeletePadding = Instance.new("UIPadding")
+    DeletePadding.PaddingTop = UDim.new(0, 5)
+    DeletePadding.PaddingBottom = UDim.new(0, 5)
+    DeletePadding.PaddingRight = UDim.new(0, 5)
+    DeletePadding.PaddingLeft = UDim.new(0, 5)
+    DeletePadding.Parent = Delete_Config
+    
+    local DeleteCorner = Instance.new("UICorner")
+    DeleteCorner.Parent = Delete_Config
+    
+    local DeleteIconHolder = Instance.new("Frame")
+    DeleteIconHolder.AnchorPoint = Vector2.new(0, 0.5)
+    DeleteIconHolder.Name = "Icon_Holder"
+    DeleteIconHolder.Position = UDim2.new(-0.07777797430753708, 0, 0.5, 0)
+    DeleteIconHolder.Size = UDim2.new(0, 35, 0, 35)
+    DeleteIconHolder.BorderSizePixel = 0
+    DeleteIconHolder.BackgroundColor3 = Color3.fromRGB(22, 22, 22)
+    DeleteIconHolder.Parent = Delete_Config
+    
+    local DeleteIconCorner = Instance.new("UICorner")
+    DeleteIconCorner.Parent = DeleteIconHolder
+    
+    local Delete_Icon = Instance.new("ImageLabel")
+    Delete_Icon.ImageColor3 = Color3.fromRGB(159, 159, 159)
+    Delete_Icon.Name = "Delete_Icon"
+    Delete_Icon.AnchorPoint = Vector2.new(0.5, 0.5)
+    Delete_Icon.Image = "rbxassetid://81288781766435"
+    Delete_Icon.BackgroundTransparency = 1
+    Delete_Icon.Position = UDim2.new(0.5, 0, 0.5, 0)
+    Delete_Icon.Size = UDim2.new(0, 15, 0, 15)
+    Delete_Icon.Parent = DeleteIconHolder
+    
+    -- Button connections
+    Load_Config.MouseButton1Click:Connect(function()
+        Library:LoadConfig(config)
+    end)
+    
+    Delete_Config.MouseButton1Click:Connect(function()
+        Library:DeleteConfig(config)
+        section:Destroy()
+    end)
+    
+    return section
 end
 
 function Library:OpenConfigPage()
@@ -2784,10 +2999,94 @@ function Library:CreateConfigTabForWindow(config)
         icon = config.icon or "rbxassetid://133833791023200",
         tabFrame = nil,
         tabContainer = nil,
-        isConfigTab = true
+        isConfigTab = true,
+        configContainer = nil
     }
     
-    -- Create tab frame
+    -- Create config container (like the example you provided)
+    local configContainer = Instance.new("Frame")
+    configContainer.BorderColor3 = Color3.fromRGB(0, 0, 0)
+    configContainer.AnchorPoint = Vector2.new(0.5, 1)
+    configContainer.Name = "Config_Container"
+    configContainer.Position = UDim2.new(0.5, 0, 1, 0)
+    configContainer.Size = UDim2.new(0, 652, 0, 418)
+    configContainer.ZIndex = 2
+    configContainer.BorderSizePixel = 0
+    configContainer.BackgroundColor3 = Color3.fromRGB(16, 16, 16)
+    configContainer.Visible = false
+    configContainer.Parent = MainFrame.Container
+    
+    local UICorner = Instance.new("UICorner")
+    UICorner.Parent = configContainer
+    
+    -- Create config holder
+    local Config_Holder = Instance.new("ScrollingFrame")
+    Config_Holder.ScrollBarImageColor3 = Library.Accent
+    Config_Holder.Active = true
+    Config_Holder.BorderColor3 = Color3.fromRGB(0, 0, 0)
+    Config_Holder.ScrollBarThickness = 1
+    Config_Holder.BackgroundTransparency = 1
+    Config_Holder.Position = UDim2.new(0.029141103848814964, 0, 0.10000000149011612, 0)
+    Config_Holder.Name = "Config_Holder"
+    Config_Holder.Size = UDim2.new(0, 609, 0, 360)
+    Config_Holder.BorderSizePixel = 0
+    Config_Holder.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    Config_Holder.Parent = configContainer
+    
+    local UIListLayout = Instance.new("UIListLayout")
+    UIListLayout.Padding = UDim.new(0, 4)
+    UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+    UIListLayout.Parent = Config_Holder
+    
+    -- Create header with create button
+    local Header = Instance.new("Frame")
+    Header.Name = "Header"
+    Header.Size = UDim2.new(1, 0, 0, 50)
+    Header.BorderSizePixel = 0
+    Header.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+    Header.Parent = configContainer
+    
+    local HeaderCorner = Instance.new("UICorner")
+    HeaderCorner.CornerRadius = UDim.new(0, 4)
+    HeaderCorner.Parent = Header
+    
+    local Title = Instance.new("TextLabel")
+    Title.FontFace = Font.new("rbxassetid://12187365364", Enum.FontWeight.SemiBold, Enum.FontStyle.Normal)
+    Title.TextColor3 = Color3.fromRGB(255, 255, 255)
+    Title.Text = "Config Manager"
+    Title.Size = UDim2.new(0, 1, 0, 1)
+    Title.Position = UDim2.new(0, 20, 0.5, 0)
+    Title.AnchorPoint = Vector2.new(0, 0.5)
+    Title.BackgroundTransparency = 1
+    Title.AutomaticSize = Enum.AutomaticSize.XY
+    Title.TextSize = 18
+    Title.Parent = Header
+    
+    local CreateButton = Instance.new("TextButton")
+    CreateButton.FontFace = Font.new("rbxassetid://12187365364", Enum.FontWeight.Regular, Enum.FontStyle.Normal)
+    CreateButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+    CreateButton.Text = "Create Config"
+    CreateButton.AnchorPoint = Vector2.new(1, 0.5)
+    CreateButton.Position = UDim2.new(1, -20, 0.5, 0)
+    CreateButton.Size = UDim2.new(0, 120, 0, 35)
+    CreateButton.BorderSizePixel = 0
+    CreateButton.TextSize = 14
+    CreateButton.BackgroundColor3 = Library.Accent
+    CreateButton.Parent = Header
+    
+    local CreateCorner = Instance.new("UICorner")
+    CreateCorner.Parent = CreateButton
+    
+    -- Button connection
+    CreateButton.MouseButton1Click:Connect(function()
+        Library:CreateNewConfig()
+    end)
+    
+    -- Store references
+    tab.configContainer = configContainer
+    tab.configHolder = Config_Holder
+    
+    -- Create tab frame (same as normal tabs)
     local tabFrame = Instance.new("Frame")
     tabFrame.Name = "Tab_Frame"
     tabFrame.Size = UDim2.new(0, 1, 0, 1)
@@ -2842,7 +3141,7 @@ function Library:CreateConfigTabForWindow(config)
     tab.tabFrame = tabFrame
     tab.tabContainer = tabContainer
     
-    -- Click handler - opens config page instead of switching tabs
+    -- Click handler - switches to config tab like normal tab
     local clickButton = Instance.new("TextButton")
     clickButton.Size = UDim2.new(1, 0, 1, 0)
     clickButton.BackgroundTransparency = 1
@@ -2850,7 +3149,7 @@ function Library:CreateConfigTabForWindow(config)
     clickButton.Parent = tabFrame
     
     clickButton.MouseButton1Click:Connect(function()
-        Library:OpenConfigPage()
+        Library:SwitchTab(tab)
     end)
     
     -- Add to window tabs
