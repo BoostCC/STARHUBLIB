@@ -340,7 +340,7 @@ function Library:SetAccentColor(color, alpha)
     
     -- Update watermark elements
     if Watermark_Frame then
-        local watermarkIcon = Watermark_Frame:FindFirstChild("Libary_Icon")
+        local watermarkIcon = Watermark_Frame:FindFirstChild("Watermark_Icon")
         local watermarkInline = Watermark_Frame:FindFirstChild("Inline")
         
         if watermarkIcon then
@@ -2259,7 +2259,7 @@ function Library:CreateWatermark(cheatName)
     local Libary_Icon = Instance.new("ImageLabel")
     Libary_Icon.ImageColor3 = Library.Accent
     Libary_Icon.BorderColor3 = Color3.fromRGB(0, 0, 0)
-    Libary_Icon.Name = "Libary_Icon"
+    Libary_Icon.Name = "Watermark_Icon"
     Libary_Icon.AnchorPoint = Vector2.new(0.5, 0.5)
     Libary_Icon.Image = "rbxassetid://132964100967987"
     Libary_Icon.BackgroundTransparency = 1
