@@ -1598,16 +1598,41 @@ function Library:CreateKeybind(config)
                         return
                     end
                     
-                    keyName = keyCode.Name
+                    -- Simplify keyboard key names
+                    if keyCode == Enum.KeyCode.LeftShift then
+                        keyName = "LShift"
+                    elseif keyCode == Enum.KeyCode.RightShift then
+                        keyName = "RShift"
+                    elseif keyCode == Enum.KeyCode.LeftControl then
+                        keyName = "LCtrl"
+                    elseif keyCode == Enum.KeyCode.RightControl then
+                        keyName = "RCtrl"
+                    elseif keyCode == Enum.KeyCode.LeftAlt then
+                        keyName = "LAlt"
+                    elseif keyCode == Enum.KeyCode.RightAlt then
+                        keyName = "RAlt"
+                    elseif keyCode == Enum.KeyCode.Return then
+                        keyName = "Enter"
+                    elseif keyCode == Enum.KeyCode.Escape then
+                        keyName = "Esc"
+                    elseif keyCode == Enum.KeyCode.Backspace then
+                        keyName = "Back"
+                    elseif keyCode == Enum.KeyCode.Tab then
+                        keyName = "Tab"
+                    elseif keyCode == Enum.KeyCode.Space then
+                        keyName = "Space"
+                    else
+                        keyName = keyCode.Name
+                    end
                 end
                 
                 -- Handle mouse input
                 if input.UserInputType == Enum.UserInputType.MouseButton1 then
-                    keyName = "MouseButton1"
+                    keyName = "LMB"
                 elseif input.UserInputType == Enum.UserInputType.MouseButton2 then
-                    keyName = "MouseButton2"
+                    keyName = "RMB"
                 elseif input.UserInputType == Enum.UserInputType.MouseButton3 then
-                    keyName = "MouseButton3"
+                    keyName = "MMB"
                 end
                 
                 -- Handle gamepad input (controller buttons)
@@ -1619,7 +1644,35 @@ function Library:CreateKeybind(config)
                        gamepad == Enum.KeyCode.DPadUp or gamepad == Enum.KeyCode.DPadDown then
                         return
                     end
-                    keyName = "Gamepad1_" .. gamepad.Name
+                    
+                    -- Simplify gamepad button names
+                    if gamepad == Enum.KeyCode.ButtonA then
+                        keyName = "A"
+                    elseif gamepad == Enum.KeyCode.ButtonB then
+                        keyName = "B"
+                    elseif gamepad == Enum.KeyCode.ButtonX then
+                        keyName = "X"
+                    elseif gamepad == Enum.KeyCode.ButtonY then
+                        keyName = "Y"
+                    elseif gamepad == Enum.KeyCode.ButtonStart then
+                        keyName = "Start"
+                    elseif gamepad == Enum.KeyCode.ButtonSelect then
+                        keyName = "Select"
+                    elseif gamepad == Enum.KeyCode.ButtonL1 then
+                        keyName = "LB"
+                    elseif gamepad == Enum.KeyCode.ButtonR1 then
+                        keyName = "RB"
+                    elseif gamepad == Enum.KeyCode.ButtonL2 then
+                        keyName = "LT"
+                    elseif gamepad == Enum.KeyCode.ButtonR2 then
+                        keyName = "RT"
+                    elseif gamepad == Enum.KeyCode.ButtonL3 then
+                        keyName = "LS"
+                    elseif gamepad == Enum.KeyCode.ButtonR3 then
+                        keyName = "RS"
+                    else
+                        keyName = gamepad.Name
+                    end
                 elseif input.UserInputType == Enum.UserInputType.Gamepad2 then
                     local gamepad = input.KeyCode
                     if gamepad == Enum.KeyCode.Thumbstick1 or gamepad == Enum.KeyCode.Thumbstick2 or
@@ -1627,7 +1680,7 @@ function Library:CreateKeybind(config)
                        gamepad == Enum.KeyCode.DPadUp or gamepad == Enum.KeyCode.DPadDown then
                         return
                     end
-                    keyName = "Gamepad2_" .. gamepad.Name
+                    keyName = "P2_" .. gamepad.Name
                 elseif input.UserInputType == Enum.UserInputType.Gamepad3 then
                     local gamepad = input.KeyCode
                     if gamepad == Enum.KeyCode.Thumbstick1 or gamepad == Enum.KeyCode.Thumbstick2 or
@@ -1635,7 +1688,7 @@ function Library:CreateKeybind(config)
                        gamepad == Enum.KeyCode.DPadUp or gamepad == Enum.KeyCode.DPadDown then
                         return
                     end
-                    keyName = "Gamepad3_" .. gamepad.Name
+                    keyName = "P3_" .. gamepad.Name
                 elseif input.UserInputType == Enum.UserInputType.Gamepad4 then
                     local gamepad = input.KeyCode
                     if gamepad == Enum.KeyCode.Thumbstick1 or gamepad == Enum.KeyCode.Thumbstick2 or
@@ -1643,7 +1696,7 @@ function Library:CreateKeybind(config)
                        gamepad == Enum.KeyCode.DPadUp or gamepad == Enum.KeyCode.DPadDown then
                         return
                     end
-                    keyName = "Gamepad4_" .. gamepad.Name
+                    keyName = "P4_" .. gamepad.Name
                 elseif input.UserInputType == Enum.UserInputType.Gamepad5 then
                     local gamepad = input.KeyCode
                     if gamepad == Enum.KeyCode.Thumbstick1 or gamepad == Enum.KeyCode.Thumbstick2 or
@@ -1651,7 +1704,7 @@ function Library:CreateKeybind(config)
                        gamepad == Enum.KeyCode.DPadUp or gamepad == Enum.KeyCode.DPadDown then
                         return
                     end
-                    keyName = "Gamepad5_" .. gamepad.Name
+                    keyName = "P5_" .. gamepad.Name
                 elseif input.UserInputType == Enum.UserInputType.Gamepad6 then
                     local gamepad = input.KeyCode
                     if gamepad == Enum.KeyCode.Thumbstick1 or gamepad == Enum.KeyCode.Thumbstick2 or
@@ -1659,7 +1712,7 @@ function Library:CreateKeybind(config)
                        gamepad == Enum.KeyCode.DPadUp or gamepad == Enum.KeyCode.DPadDown then
                         return
                     end
-                    keyName = "Gamepad6_" .. gamepad.Name
+                    keyName = "P6_" .. gamepad.Name
                 elseif input.UserInputType == Enum.UserInputType.Gamepad7 then
                     local gamepad = input.KeyCode
                     if gamepad == Enum.KeyCode.Thumbstick1 or gamepad == Enum.KeyCode.Thumbstick2 or
@@ -1667,7 +1720,7 @@ function Library:CreateKeybind(config)
                        gamepad == Enum.KeyCode.DPadUp or gamepad == Enum.KeyCode.DPadDown then
                         return
                     end
-                    keyName = "Gamepad7_" .. gamepad.Name
+                    keyName = "P7_" .. gamepad.Name
                 elseif input.UserInputType == Enum.UserInputType.Gamepad8 then
                     local gamepad = input.KeyCode
                     if gamepad == Enum.KeyCode.Thumbstick1 or gamepad == Enum.KeyCode.Thumbstick2 or
@@ -1675,7 +1728,7 @@ function Library:CreateKeybind(config)
                        gamepad == Enum.KeyCode.DPadUp or gamepad == Enum.KeyCode.DPadDown then
                         return
                     end
-                    keyName = "Gamepad8_" .. gamepad.Name
+                    keyName = "P8_" .. gamepad.Name
                 end
                 
                 -- If we got a valid key, set it
