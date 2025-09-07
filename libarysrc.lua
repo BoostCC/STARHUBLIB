@@ -339,12 +339,7 @@ function Library:SetAccentColor(color, alpha)
     end
     
     -- Update watermark elements
-    if Watermark_Icon then
-        Watermark_Icon.ImageColor3 = Library.Accent
-    end
-    if Watermark_Inline then
-        Watermark_Inline.BackgroundColor3 = Library.Accent
-    end
+    Library:UpdateWatermarkAccent()
 
     -- Sweep through UI and update common accent elements
     if ScreenGui then
@@ -2204,8 +2199,6 @@ local Watermark_Frame = nil
 local WatermarkScreenGui = nil
 local WatermarkEnabled = true
 local WatermarkDragging = false
-local Watermark_Icon = nil
-local Watermark_Inline = nil
 
 function Library:CreateWatermark(cheatName)
     if Watermark_Frame then return end
@@ -2253,35 +2246,35 @@ function Library:CreateWatermark(cheatName)
     Libary_Name.Parent = Watermark_Frame
     
     -- Create library icon
-    Watermark_Icon = Instance.new("ImageLabel")
-    Watermark_Icon.ImageColor3 = Library.Accent
-    Watermark_Icon.BorderColor3 = Color3.fromRGB(0, 0, 0)
-    Watermark_Icon.Name = "Watermark_Icon"
-    Watermark_Icon.AnchorPoint = Vector2.new(0.5, 0.5)
-    Watermark_Icon.Image = "rbxassetid://132964100967987"
-    Watermark_Icon.BackgroundTransparency = 1
-    Watermark_Icon.Position = UDim2.new(0.17633333802223206, 1, 0.4620000123977661, 0)
-    Watermark_Icon.Size = UDim2.new(0, 20, 0, 20)
-    Watermark_Icon.BorderSizePixel = 0
-    Watermark_Icon.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-    Watermark_Icon.Parent = Watermark_Frame
+    local Libary_Icon = Instance.new("ImageLabel")
+    Libary_Icon.ImageColor3 = Library.Accent
+    Libary_Icon.BorderColor3 = Color3.fromRGB(0, 0, 0)
+    Libary_Icon.Name = "Watermark_Icon"
+    Libary_Icon.AnchorPoint = Vector2.new(0.5, 0.5)
+    Libary_Icon.Image = "rbxassetid://132964100967987"
+    Libary_Icon.BackgroundTransparency = 1
+    Libary_Icon.Position = UDim2.new(0.17633333802223206, 1, 0.4620000123977661, 0)
+    Libary_Icon.Size = UDim2.new(0, 20, 0, 20)
+    Libary_Icon.BorderSizePixel = 0
+    Libary_Icon.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    Libary_Icon.Parent = Watermark_Frame
     
     -- Create inline accent
-    Watermark_Inline = Instance.new("Frame")
-    Watermark_Inline.BorderColor3 = Library.Accent
-    Watermark_Inline.AnchorPoint = Vector2.new(0, 1)
-    Watermark_Inline.Name = "Inline"
-    Watermark_Inline.Position = UDim2.new(0, 0, 1, 0)
-    Watermark_Inline.Size = UDim2.new(1, 1, 0, 4)
-    Watermark_Inline.BorderSizePixel = 0
-    Watermark_Inline.AutomaticSize = Enum.AutomaticSize.XY
-    Watermark_Inline.BackgroundColor3 = Library.Accent
-    Watermark_Inline.Parent = Watermark_Frame
+    local Inline = Instance.new("Frame")
+    Inline.BorderColor3 = Library.Accent
+    Inline.AnchorPoint = Vector2.new(0, 1)
+    Inline.Name = "Inline"
+    Inline.Position = UDim2.new(0, 0, 1, 0)
+    Inline.Size = UDim2.new(1, 1, 0, 4)
+    Inline.BorderSizePixel = 0
+    Inline.AutomaticSize = Enum.AutomaticSize.XY
+    Inline.BackgroundColor3 = Library.Accent
+    Inline.Parent = Watermark_Frame
     
     -- Add corner radius to inline
     local InlineCorner = Instance.new("UICorner")
     InlineCorner.CornerRadius = UDim.new(0, 6)
-    InlineCorner.Parent = Watermark_Inline
+    InlineCorner.Parent = Inline
     
     -- Make watermark draggable when menu is open
     local dragConnection
@@ -2332,6 +2325,9 @@ function Library:CreateWatermark(cheatName)
     Libary_Name:GetPropertyChangedSignal("Text"):Connect(updateWatermarkSize)
     updateWatermarkSize() -- Initial sizing
     
+    -- Ensure watermark uses current accent color
+    Library:UpdateWatermarkAccent()
+    
     return Watermark_Frame
 end
 
@@ -2339,6 +2335,20 @@ function Library:ToggleWatermark(enabled)
     WatermarkEnabled = enabled
     if Watermark_Frame then
         Watermark_Frame.Visible = enabled
+    end
+end
+
+function Library:UpdateWatermarkAccent()
+    if Watermark_Frame then
+        local watermarkIcon = Watermark_Frame:FindFirstChild("Watermark_Icon")
+        local watermarkInline = Watermark_Frame:FindFirstChild("Inline")
+        
+        if watermarkIcon then
+            watermarkIcon.ImageColor3 = Library.Accent
+        end
+        if watermarkInline then
+            watermarkInline.BackgroundColor3 = Library.Accent
+        end
     end
 end
 
@@ -2695,8 +2705,6 @@ function Library:Reload()
     WatermarkScreenGui = nil
     WatermarkEnabled = true
     WatermarkDragging = false
-    Watermark_Icon = nil
-    Watermark_Inline = nil
     NotificationContainer = nil
     ActiveNotifications = {}
     
@@ -2902,6 +2910,9 @@ MainFrame.Visible = true
 
     -- Recreate watermark with cheat name
     Library:CreateWatermark(Libary_Name and Libary_Name.Text)
+    
+    -- Ensure watermark uses current accent color
+    Library:UpdateWatermarkAccent()
 
     makeDraggable(MainFrame)
 
