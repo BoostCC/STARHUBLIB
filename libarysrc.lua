@@ -924,51 +924,58 @@ function Library:CreateTextInput(config, section)
     local container = section.frame:FindFirstChild(section.position .. "_Container")
     
     local textInput = {
-        text = config.TextInputText or "Text Input",
+        text = config.TextInputText or "Example",
         callback = config.Callback or function() end,
         value = ""
     }
     
     -- Create text input component
-    local inputFrame = Instance.new("Frame")
-    inputFrame.Name = "TextInput_Component"
-    inputFrame.Size = UDim2.new(0, 318, 0, 40)
-    inputFrame.BackgroundTransparency = 1
-    inputFrame.Parent = container
+    local TextInput_Component = Instance.new("Frame")
+    TextInput_Component.Name = "TextInput_Component"
+    TextInput_Component.BackgroundTransparency = 1
+    TextInput_Component.Position = UDim2.new(0, 0, 0.09732360392808914, 0)
+    TextInput_Component.BorderColor3 = Color3.fromRGB(0, 0, 0)
+    TextInput_Component.Size = UDim2.new(0, 318, 0, 40)
+    TextInput_Component.BorderSizePixel = 0
+    TextInput_Component.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    TextInput_Component.Parent = container
     
-    local textInputBox = Instance.new("TextLabel")
-    textInputBox.FontFace = Font.new("rbxassetid://12187365364", Enum.FontWeight.SemiBold, Enum.FontStyle.Normal)
-    textInputBox.TextColor3 = Color3.fromRGB(109, 109, 109)
-    textInputBox.Text = textInput.text
-    textInputBox.Size = UDim2.new(0, 279, 0, 40)
-    textInputBox.Position = UDim2.new(0.04492206871509552, 0, 0.5, 0)
-    textInputBox.AnchorPoint = Vector2.new(0, 0.5)
-    textInputBox.TextXAlignment = Enum.TextXAlignment.Left
-    textInputBox.TextSize = 14
-    textInputBox.BackgroundColor3 = Color3.fromRGB(24, 24, 24)
-    textInputBox.Parent = inputFrame
+    local Text_Input = Instance.new("TextLabel")
+    Text_Input.FontFace = Font.new("rbxassetid://12187365364", Enum.FontWeight.SemiBold, Enum.FontStyle.Normal)
+    Text_Input.TextColor3 = Color3.fromRGB(109, 109, 109)
+    Text_Input.BorderColor3 = Color3.fromRGB(0, 0, 0)
+    Text_Input.Text = textInput.text
+    Text_Input.AnchorPoint = Vector2.new(0, 0.5)
+    Text_Input.Size = UDim2.new(0, 279, 0, 40)
+    Text_Input.Name = "Text_Input"
+    Text_Input.TextXAlignment = Enum.TextXAlignment.Left
+    Text_Input.Position = UDim2.new(0.04492206871509552, 0, 0.5, 0)
+    Text_Input.BorderSizePixel = 0
+    Text_Input.TextSize = 14
+    Text_Input.BackgroundColor3 = Color3.fromRGB(24, 24, 24)
+    Text_Input.Parent = TextInput_Component
     
-    local inputCorner = Instance.new("UICorner")
-    inputCorner.CornerRadius = UDim.new(0, 6)
-    inputCorner.Parent = textInputBox
+    local UICorner = Instance.new("UICorner")
+    UICorner.CornerRadius = UDim.new(0, 6)
+    UICorner.Parent = Text_Input
     
-    local inputPadding = Instance.new("UIPadding")
-    inputPadding.PaddingLeft = UDim.new(0, 12)
-    inputPadding.Parent = textInputBox
+    local UIPadding = Instance.new("UIPadding")
+    UIPadding.PaddingLeft = UDim.new(0, 12)
+    UIPadding.Parent = Text_Input
     
     -- Click to edit functionality
     local clickButton = Instance.new("TextButton")
     clickButton.BackgroundTransparency = 1
     clickButton.Size = UDim2.new(1, 0, 1, 0)
     clickButton.Text = ""
-    clickButton.Parent = inputFrame
+    clickButton.Parent = TextInput_Component
     
     clickButton.MouseButton1Click:Connect(function()
-        local newText = game:GetService("TextService"):GetStringAsync(textInput.text, textInputBox.TextBounds.X, textInputBox.Font, textInputBox.TextSize)
+        local newText = game:GetService("TextService"):GetStringAsync(textInput.text, Text_Input.TextBounds.X, Text_Input.Font, Text_Input.TextSize)
         -- In a real implementation, you'd use a proper text input dialog
         -- For now, we'll simulate it
         textInput.value = newText
-        textInputBox.Text = newText
+        Text_Input.Text = newText
         textInput.callback(newText)
     end)
     
