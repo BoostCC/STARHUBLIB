@@ -1302,68 +1302,7 @@ function Library:CreateColorpicker(config, section)
     HueDragger.Parent = Hue
     HueDragger.ZIndex = 1202
     
-    --[[
-    -- Alpha slider (vertical) with checkers - COMMENTED OUT FOR NOW
-    local Alpha = Instance.new("TextButton")
-    Alpha.FontFace = Font.new("rbxasset://fonts/families/SourceSansPro.json", Enum.FontWeight.Regular, Enum.FontStyle.Normal)
-    Alpha.TextColor3 = Color3.fromRGB(0, 0, 0)
-    Alpha.BorderColor3 = Color3.fromRGB(0, 0, 0)
-    Alpha.Text = ""
-    Alpha.AutoButtonColor = false
-    Alpha.AnchorPoint = Vector2.new(1, 0.5)
-    Alpha.Size = UDim2.new(0.9940828680992126, 0, 0.11366861313581467, -1)
-    Alpha.Name = "Alpha"
-    Alpha.Position = UDim2.new(1.6952662467956543, 0, 0.49112436175346375, 0)
-    Alpha.Rotation = -90
-    Alpha.BorderSizePixel = 0
-    Alpha.BackgroundColor3 = Color3.fromRGB(255, 0, 4)
-    Alpha.Parent = SVFrame
-    Alpha.ZIndex = 1201
-
-    local Checkers = Instance.new("ImageLabel")
-    Checkers.ScaleType = Enum.ScaleType.Tile
-    Checkers.BorderColor3 = Color3.fromRGB(0, 0, 0)
-    Checkers.Name = "Checkers"
-    Checkers.Size = UDim2.new(0.9940828680992126, 0, 1, 0)
-    Checkers.AnchorPoint = Vector2.new(0.5, 0.5)
-    Checkers.Image = "http://www.roblox.com/asset/?id=18274452449"
-    Checkers.TileSize = UDim2.new(0, 18, 0, 18)
-    Checkers.Position = UDim2.new(0.5, 0, 0.5, 0)
-    Checkers.Rotation = -180
-    Checkers.BorderSizePixel = 0
-    Checkers.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-    Checkers.Parent = Alpha
-    Checkers.ZIndex = 1201
-
-    local UIGradientA = Instance.new("UIGradient")
-    UIGradientA.Transparency = NumberSequence.new{
-        NumberSequenceKeypoint.new(0, 1),
-        NumberSequenceKeypoint.new(1, 0)
-    }
-    UIGradientA.Parent = Checkers
-
-    local AlphaDragger = Instance.new("ImageLabel")
-    AlphaDragger.BorderColor3 = Color3.fromRGB(0, 0, 0)
-    AlphaDragger.Name = "Dragger"
-    AlphaDragger.Size = UDim2.new(0, 25, 0, 8)
-    AlphaDragger.AnchorPoint = Vector2.new(0.5, 0.5)
-    AlphaDragger.Image = "rbxassetid://107912043359755"
-    AlphaDragger.BackgroundTransparency = 1
-    AlphaDragger.Position = UDim2.new(0.5, 0, 0.5, 0)
-    AlphaDragger.Rotation = -90
-    AlphaDragger.BorderSizePixel = 0
-    AlphaDragger.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-    AlphaDragger.Parent = Checkers
-    AlphaDragger.ZIndex = 1202
-
-    local AlphaDraggerLine = Instance.new("Frame")
-    AlphaDraggerLine.Name = "Dragger"
-    AlphaDraggerLine.BorderColor3 = Color3.fromRGB(0, 0, 0)
-    AlphaDraggerLine.Size = UDim2.new(0, 1, 1, 0)
-    AlphaDraggerLine.BorderSizePixel = 0
-    AlphaDraggerLine.BackgroundColor3 = Color3.fromRGB(255, 0, 4)
-    AlphaDraggerLine.Parent = Alpha
-    --]]
+    -- Alpha bar removed - no longer needed
     
     -- State
     local currentHue = 0
@@ -1451,7 +1390,7 @@ function Library:CreateColorpicker(config, section)
     -- Drag handling
     local draggingSV = false
     local draggingHue = false
-    local draggingAlpha = false
+    -- local draggingAlpha = false -- Alpha removed
     
     SVFrame.InputBegan:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 then
@@ -1509,10 +1448,9 @@ function Library:CreateColorpicker(config, section)
     
     UserInputService.InputEnded:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 then
-            if draggingSV or draggingHue or draggingAlpha then
+            if draggingSV or draggingHue then
                 draggingSV = false
                 draggingHue = false
-                draggingAlpha = false
                 BlockDragging = false
             end
         end
@@ -1521,10 +1459,9 @@ function Library:CreateColorpicker(config, section)
     -- Fallback to reset BlockDragging after a short delay
     local function resetBlockDragging()
         task.wait(0.1)
-        if draggingSV or draggingHue or draggingAlpha then
+        if draggingSV or draggingHue then
             draggingSV = false
             draggingHue = false
-            draggingAlpha = false
             BlockDragging = false
         end
     end
