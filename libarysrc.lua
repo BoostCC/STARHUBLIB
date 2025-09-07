@@ -442,7 +442,9 @@ function Library:SwitchTab(tab)
     -- Update new tab appearance to active
     if tab.tabFrame then
         tab.tabFrame.BackgroundTransparency = 0 -- Show background
-        tab.tabFrame.BackgroundColor3 = Color3.fromRGB(16, 16, 16) -- Dark background
+        tab.tabFrame.BackgroundColor3 = Color3.fromRGB(16, 16, 16) -- Dark gray background
+        tab.tabFrame.BorderSizePixel = 0
+        tab.tabFrame.BorderColor3 = Color3.fromRGB(0, 0, 0)
         local icon = tab.tabFrame:FindFirstChild("Tab_Icon")
         local text = icon and icon:FindFirstChild("Tab_Name")
         if icon and text then
