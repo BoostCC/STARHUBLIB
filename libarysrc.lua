@@ -985,6 +985,7 @@ function Library:CreateTab(config)
     local tabButton = Instance.new("TextButton")
     tabButton.BackgroundTransparency = 1
     tabButton.Size = UDim2.new(1, 0, 1, 0)
+    tabButton.Text = "" -- Remove default 'Button' text
     tabButton.Parent = tabFrame
     
     tabButton.MouseButton1Click:Connect(function()
@@ -995,16 +996,16 @@ function Library:CreateTab(config)
     -- Store tab frame reference
     tab.tabFrame = tabFrame
     
-    -- Create inline indicator for this tab
+    -- Create inline indicator for this tab (positioned underneath the tab)
     local inlineIndicator = Instance.new("Frame")
     inlineIndicator.Name = "InlineIndicator"
     inlineIndicator.Size = UDim2.new(0, 65, 0, 4)
-    inlineIndicator.Position = UDim2.new(0.5, 0, 1, 0)
-    inlineIndicator.AnchorPoint = Vector2.new(0.5, 1)
+    inlineIndicator.Position = UDim2.new(0.5, 0, 1, 4) -- Position underneath the tab
+    inlineIndicator.AnchorPoint = Vector2.new(0.5, 0)
     inlineIndicator.BackgroundColor3 = Color3.fromRGB(115, 58, 173)
     inlineIndicator.BorderSizePixel = 0
     inlineIndicator.Visible = false
-    inlineIndicator.Parent = tabFrame
+    inlineIndicator.Parent = Header -- Parent to Header so it appears underneath tabs
     
     local inlineCorner = Instance.new("UICorner")
     inlineCorner.CornerRadius = UDim.new(0, 30)
@@ -1098,6 +1099,10 @@ function Library:SwitchTab(tab)
     
     -- Show new tab's inline indicator
     if tab.inlineIndicator then
+        -- Position the inline indicator underneath the active tab
+        local tabPosition = tab.tabFrame.Position
+        local tabSize = tab.tabFrame.Size
+        tab.inlineIndicator.Position = UDim2.new(tabPosition.X.Scale, tabPosition.X.Offset, 1, 4)
         tab.inlineIndicator.Visible = true
         -- Animate the inline indicator
         local inlineTween = createTween(tab.inlineIndicator, {Size = UDim2.new(0, 65, 0, 4)}, 0.3)
