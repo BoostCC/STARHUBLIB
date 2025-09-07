@@ -1660,6 +1660,27 @@ UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
                 Rotation = 180
             }, 0.3, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
             arrowTween:Play()
+            -- Allow clicking overlay to close dropdown
+            if dropdown._overlayConn then dropdown._overlayConn:Disconnect() dropdown._overlayConn = nil end
+            dropdown._overlayConn = ModalOverlay.MouseButton1Click:Connect(function()
+                if not dropdown.isOpen then return end
+                dropdown.isOpen = false
+                local closeTween = createTween(Dropdown_Container, { Size = UDim2.new(0, 279, 0, 0) }, 0.25, Enum.EasingStyle.Back, Enum.EasingDirection.In)
+                closeTween:Play()
+                local fadeOut2 = createTween(Dropdown_Container, { BackgroundTransparency = 1 }, 0.2)
+                fadeOut2:Play()
+                closeTween.Completed:Connect(function()
+                    Dropdown_Container.Visible = false
+                    PopupOpenCount = math.max(0, PopupOpenCount - 1)
+                    if PopupOpenCount == 0 then
+                        ModalOverlay.Visible = false
+                        BlockDragging = false
+                    end
+                end)
+                local arrowBack = createTween(ImageLabel, { Rotation = 0 }, 0.3, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
+                arrowBack:Play()
+                if dropdown._overlayConn then dropdown._overlayConn:Disconnect() dropdown._overlayConn = nil end
+            end)
         else
             -- Close dropdown with ultra-smooth animation
             local closeTween = createTween(Dropdown_Container, {
@@ -1687,6 +1708,7 @@ UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
                 Rotation = 0
             }, 0.3, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
             arrowTween:Play()
+            if dropdown._overlayConn then dropdown._overlayConn:Disconnect() dropdown._overlayConn = nil end
         end
     end)
     
