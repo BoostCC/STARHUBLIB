@@ -308,7 +308,10 @@ function Library:CreateTab(config)
     local tabFrame = Instance.new("Frame")
     tabFrame.Name = "Tab_" .. config.TabText
     tabFrame.Size = UDim2.new(0, 95, 0, 42)
-    tabFrame.BackgroundTransparency = 1 -- Start with no background
+    tabFrame.BackgroundTransparency = 1 -- Start inactive (no background)
+    tabFrame.BorderColor3 = Color3.fromRGB(0, 0, 0)
+    tabFrame.BorderSizePixel = 0
+    tabFrame.BackgroundColor3 = Color3.fromRGB(16, 16, 16)
     tabFrame.Parent = Header
     
     local tabCorner = Instance.new("UICorner")
@@ -316,18 +319,22 @@ function Library:CreateTab(config)
     tabCorner.Parent = tabFrame
     
     local tabIcon = Instance.new("ImageLabel")
-    tabIcon.ImageColor3 = Color3.fromRGB(58, 58, 58)
+    tabIcon.ImageColor3 = Color3.fromRGB(58, 58, 58) -- Start inactive (gray)
     tabIcon.ScaleType = Enum.ScaleType.Fit
     tabIcon.Image = config.icon or "rbxassetid://133833791023200"
     tabIcon.BackgroundTransparency = 1
     tabIcon.Size = UDim2.new(0, 20, 0, 20)
     tabIcon.Position = UDim2.new(0.25789472460746765, 0, 0.5, 0)
     tabIcon.AnchorPoint = Vector2.new(0.5, 0.5)
+    tabIcon.BorderColor3 = Color3.fromRGB(0, 0, 0)
+    tabIcon.Name = "Tab_Icon"
+    tabIcon.BorderSizePixel = 0
+    tabIcon.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
     tabIcon.Parent = tabFrame
     
     local tabName = Instance.new("TextLabel")
     tabName.FontFace = Font.new("rbxassetid://12187365364", Enum.FontWeight.Medium, Enum.FontStyle.Normal)
-    tabName.TextColor3 = Color3.fromRGB(58, 58, 58)
+    tabName.TextColor3 = Color3.fromRGB(58, 58, 58) -- Start inactive (gray)
     tabName.Text = config.TabText or "Tab"
     tabName.BackgroundTransparency = 1
     tabName.Size = UDim2.new(0, 1, 0, 1)
@@ -335,6 +342,10 @@ function Library:CreateTab(config)
     tabName.AnchorPoint = Vector2.new(0.5, 0.5)
     tabName.AutomaticSize = Enum.AutomaticSize.XY
     tabName.TextSize = 18
+    tabName.BorderColor3 = Color3.fromRGB(0, 0, 0)
+    tabName.Name = "Tab_Name"
+    tabName.BorderSizePixel = 0
+    tabName.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
     tabName.Parent = tabIcon
     
     -- Tab click functionality
@@ -400,8 +411,8 @@ function Library:SwitchTab(tab)
         -- Update current tab appearance to inactive
         if CurrentTab.tabFrame then
             CurrentTab.tabFrame.BackgroundTransparency = 1 -- No background
-            local icon = CurrentTab.tabFrame:FindFirstChild("ImageLabel")
-            local text = icon and icon:FindFirstChild("TextLabel")
+            local icon = CurrentTab.tabFrame:FindFirstChild("Tab_Icon")
+            local text = icon and icon:FindFirstChild("Tab_Name")
             if icon and text then
                 icon.ImageColor3 = Color3.fromRGB(58, 58, 58) -- Gray icon
                 text.TextColor3 = Color3.fromRGB(58, 58, 58) -- Gray text
@@ -431,9 +442,9 @@ function Library:SwitchTab(tab)
     -- Update new tab appearance to active
     if tab.tabFrame then
         tab.tabFrame.BackgroundTransparency = 0 -- Show background
-        tab.tabFrame.BackgroundColor3 = Color3.fromRGB(115, 58, 173) -- Purple background
-        local icon = tab.tabFrame:FindFirstChild("ImageLabel")
-        local text = icon and icon:FindFirstChild("TextLabel")
+        tab.tabFrame.BackgroundColor3 = Color3.fromRGB(16, 16, 16) -- Dark background
+        local icon = tab.tabFrame:FindFirstChild("Tab_Icon")
+        local text = icon and icon:FindFirstChild("Tab_Name")
         if icon and text then
             icon.ImageColor3 = Color3.fromRGB(115, 58, 173) -- Purple icon
             text.TextColor3 = Color3.fromRGB(115, 58, 173) -- Purple text
