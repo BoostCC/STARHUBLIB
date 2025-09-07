@@ -1586,11 +1586,9 @@ function Library:CreateKeybind(config)
             -- Listen for key input
             local connection
             connection = UserInputService.InputBegan:Connect(function(input, gameProcessed)
-                if gameProcessed then return end
-                
                 local keyName = nil
                 
-                -- Handle keyboard input
+                -- Handle keyboard input (including shift keys)
                 if input.UserInputType == Enum.UserInputType.Keyboard then
                     local keyCode = input.KeyCode
                     
@@ -1612,23 +1610,72 @@ function Library:CreateKeybind(config)
                     keyName = "MouseButton3"
                 end
                 
-                -- Handle other input types
+                -- Handle gamepad input (controller buttons)
                 if input.UserInputType == Enum.UserInputType.Gamepad1 then
-                    keyName = "Gamepad1"
+                    local gamepad = input.KeyCode
+                    -- Skip movement stick inputs
+                    if gamepad == Enum.KeyCode.Thumbstick1 or gamepad == Enum.KeyCode.Thumbstick2 or
+                       gamepad == Enum.KeyCode.DPadLeft or gamepad == Enum.KeyCode.DPadRight or
+                       gamepad == Enum.KeyCode.DPadUp or gamepad == Enum.KeyCode.DPadDown then
+                        return
+                    end
+                    keyName = "Gamepad1_" .. gamepad.Name
                 elseif input.UserInputType == Enum.UserInputType.Gamepad2 then
-                    keyName = "Gamepad2"
+                    local gamepad = input.KeyCode
+                    if gamepad == Enum.KeyCode.Thumbstick1 or gamepad == Enum.KeyCode.Thumbstick2 or
+                       gamepad == Enum.KeyCode.DPadLeft or gamepad == Enum.KeyCode.DPadRight or
+                       gamepad == Enum.KeyCode.DPadUp or gamepad == Enum.KeyCode.DPadDown then
+                        return
+                    end
+                    keyName = "Gamepad2_" .. gamepad.Name
                 elseif input.UserInputType == Enum.UserInputType.Gamepad3 then
-                    keyName = "Gamepad3"
+                    local gamepad = input.KeyCode
+                    if gamepad == Enum.KeyCode.Thumbstick1 or gamepad == Enum.KeyCode.Thumbstick2 or
+                       gamepad == Enum.KeyCode.DPadLeft or gamepad == Enum.KeyCode.DPadRight or
+                       gamepad == Enum.KeyCode.DPadUp or gamepad == Enum.KeyCode.DPadDown then
+                        return
+                    end
+                    keyName = "Gamepad3_" .. gamepad.Name
                 elseif input.UserInputType == Enum.UserInputType.Gamepad4 then
-                    keyName = "Gamepad4"
+                    local gamepad = input.KeyCode
+                    if gamepad == Enum.KeyCode.Thumbstick1 or gamepad == Enum.KeyCode.Thumbstick2 or
+                       gamepad == Enum.KeyCode.DPadLeft or gamepad == Enum.KeyCode.DPadRight or
+                       gamepad == Enum.KeyCode.DPadUp or gamepad == Enum.KeyCode.DPadDown then
+                        return
+                    end
+                    keyName = "Gamepad4_" .. gamepad.Name
                 elseif input.UserInputType == Enum.UserInputType.Gamepad5 then
-                    keyName = "Gamepad5"
+                    local gamepad = input.KeyCode
+                    if gamepad == Enum.KeyCode.Thumbstick1 or gamepad == Enum.KeyCode.Thumbstick2 or
+                       gamepad == Enum.KeyCode.DPadLeft or gamepad == Enum.KeyCode.DPadRight or
+                       gamepad == Enum.KeyCode.DPadUp or gamepad == Enum.KeyCode.DPadDown then
+                        return
+                    end
+                    keyName = "Gamepad5_" .. gamepad.Name
                 elseif input.UserInputType == Enum.UserInputType.Gamepad6 then
-                    keyName = "Gamepad6"
+                    local gamepad = input.KeyCode
+                    if gamepad == Enum.KeyCode.Thumbstick1 or gamepad == Enum.KeyCode.Thumbstick2 or
+                       gamepad == Enum.KeyCode.DPadLeft or gamepad == Enum.KeyCode.DPadRight or
+                       gamepad == Enum.KeyCode.DPadUp or gamepad == Enum.KeyCode.DPadDown then
+                        return
+                    end
+                    keyName = "Gamepad6_" .. gamepad.Name
                 elseif input.UserInputType == Enum.UserInputType.Gamepad7 then
-                    keyName = "Gamepad7"
+                    local gamepad = input.KeyCode
+                    if gamepad == Enum.KeyCode.Thumbstick1 or gamepad == Enum.KeyCode.Thumbstick2 or
+                       gamepad == Enum.KeyCode.DPadLeft or gamepad == Enum.KeyCode.DPadRight or
+                       gamepad == Enum.KeyCode.DPadUp or gamepad == Enum.KeyCode.DPadDown then
+                        return
+                    end
+                    keyName = "Gamepad7_" .. gamepad.Name
                 elseif input.UserInputType == Enum.UserInputType.Gamepad8 then
-                    keyName = "Gamepad8"
+                    local gamepad = input.KeyCode
+                    if gamepad == Enum.KeyCode.Thumbstick1 or gamepad == Enum.KeyCode.Thumbstick2 or
+                       gamepad == Enum.KeyCode.DPadLeft or gamepad == Enum.KeyCode.DPadRight or
+                       gamepad == Enum.KeyCode.DPadUp or gamepad == Enum.KeyCode.DPadDown then
+                        return
+                    end
+                    keyName = "Gamepad8_" .. gamepad.Name
                 end
                 
                 -- If we got a valid key, set it
