@@ -2189,6 +2189,7 @@ end
 
 -- Notification System
 local NotificationContainer = nil
+local NotificationScreenGui = nil
 local ActiveNotifications = {}
 
 function Library:CreateNotification(config)
@@ -2208,7 +2209,7 @@ function Library:CreateNotification(config)
     -- Create notification container if it doesn't exist (separate from main UI)
     if not NotificationContainer then
         -- Create a separate ScreenGui just for notifications
-        local NotificationScreenGui = Instance.new("ScreenGui")
+        NotificationScreenGui = Instance.new("ScreenGui")
         NotificationScreenGui.Name = "NotificationScreenGui"
         NotificationScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Global
         NotificationScreenGui.ResetOnSpawn = false
@@ -2544,7 +2545,7 @@ function Library:Reload()
     ScreenGui.Parent = game:GetService("CoreGui")
     
     -- Recreate notification ScreenGui (separate from main UI)
-    local NotificationScreenGui = Instance.new("ScreenGui")
+    NotificationScreenGui = Instance.new("ScreenGui")
     NotificationScreenGui.Name = "NotificationScreenGui"
     NotificationScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Global
     NotificationScreenGui.ResetOnSpawn = false
