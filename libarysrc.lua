@@ -1030,6 +1030,12 @@ function Library:CreateDropdown(config, section)
         else
             dropdown.selectedValues = {}
         end
+        -- Set initial display text for multi-select
+        if #dropdown.selectedValues > 0 then
+            dropdown.value = table.concat(dropdown.selectedValues, ", ")
+        else
+            dropdown.value = "Select Options"
+        end
     end
     
     -- Create dropdown component
@@ -1061,7 +1067,7 @@ function Library:CreateDropdown(config, section)
     Dropdown_Value.FontFace = Font.new("rbxassetid://12187365364", Enum.FontWeight.SemiBold, Enum.FontStyle.Normal)
     Dropdown_Value.TextColor3 = Color3.fromRGB(109, 109, 109)
     Dropdown_Value.BorderColor3 = Color3.fromRGB(0, 0, 0)
-    Dropdown_Value.Text = dropdown.multiSelect and (table.concat(dropdown.selectedValues, ", ") or "Select Options") or dropdown.value
+    Dropdown_Value.Text = dropdown.value
     Dropdown_Value.Name = "Dropdown_Value"
     Dropdown_Value.Size = UDim2.new(0, 1, 0, 1)
     Dropdown_Value.BackgroundTransparency = 1
@@ -1176,9 +1182,11 @@ function Library:CreateDropdown(config, section)
                 
                 -- Update display text
                 if #dropdown.selectedValues > 0 then
-                    Dropdown_Value.Text = table.concat(dropdown.selectedValues, ", ")
+                    dropdown.value = table.concat(dropdown.selectedValues, ", ")
+                    Dropdown_Value.Text = dropdown.value
                 else
-                    Dropdown_Value.Text = "Select Options"
+                    dropdown.value = "Select Options"
+                    Dropdown_Value.Text = dropdown.value
                 end
                 
                 -- Update check icon for this option
