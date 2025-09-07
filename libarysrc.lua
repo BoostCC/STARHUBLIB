@@ -903,6 +903,31 @@ function Library:CreateWindow(config)
         end)
     end
     
+    -- Add methods to window object
+    function window:CreateTab(config)
+        return Library:CreateTab(config)
+    end
+    
+    function window:CreateSection(config)
+        return Library:CreateSection(config)
+    end
+    
+    function window:CreateToggle(config)
+        return Library:CreateToggle(config)
+    end
+    
+    function window:CreateSlider(config)
+        return Library:CreateSlider(config)
+    end
+    
+    function window:CreateTextInput(config)
+        return Library:CreateTextInput(config)
+    end
+    
+    function window:CreateKeybind(config)
+        return Library:CreateKeybind(config)
+    end
+    
     table.insert(Windows, window)
     CurrentWindow = window
     
@@ -969,6 +994,27 @@ function Library:CreateTab(config)
     -- Set as current tab if it's the first one
     if #CurrentWindow.tabs == 0 then
         Library:SwitchTab(tab)
+    end
+    
+    -- Add methods to tab object
+    function tab:CreateSection(config)
+        return Library:CreateSection(config)
+    end
+    
+    function tab:CreateToggle(config)
+        return Library:CreateToggle(config)
+    end
+    
+    function tab:CreateSlider(config)
+        return Library:CreateSlider(config)
+    end
+    
+    function tab:CreateTextInput(config)
+        return Library:CreateTextInput(config)
+    end
+    
+    function tab:CreateKeybind(config)
+        return Library:CreateKeybind(config)
     end
     
     table.insert(CurrentWindow.tabs, tab)
@@ -1119,6 +1165,23 @@ function Library:CreateSection(config)
     local padding = Instance.new("UIPadding")
     padding.PaddingTop = UDim.new(0, 10)
     padding.Parent = container
+    
+    -- Add methods to section object
+    function section:CreateToggle(config)
+        return Library:CreateToggle(config)
+    end
+    
+    function section:CreateSlider(config)
+        return Library:CreateSlider(config)
+    end
+    
+    function section:CreateTextInput(config)
+        return Library:CreateTextInput(config)
+    end
+    
+    function section:CreateKeybind(config)
+        return Library:CreateKeybind(config)
+    end
     
     section.frame = sectionFrame
     table.insert(CurrentTab.sections[position], section)
