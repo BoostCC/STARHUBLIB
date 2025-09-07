@@ -13,6 +13,7 @@ local ActiveKeybinds = {}
 local Dragging = false
 local DragStart = nil
 local DragStartPosition = nil
+local GlobalTabInlineIndicator = nil
 
 -- Create the main ScreenGui
 local ScreenGui = Instance.new("ScreenGui")
@@ -701,6 +702,21 @@ UIPadding.PaddingTop = UDim.new(0, 10)
 UIPadding.PaddingRight = UDim.new(0, 20)
 UIPadding.Parent = Header
 
+-- Create global tab inline indicator
+GlobalTabInlineIndicator = Instance.new("Frame")
+GlobalTabInlineIndicator.Name = "TabInlineIndicator"
+GlobalTabInlineIndicator.Size = UDim2.new(0, 65, 0, 4)
+GlobalTabInlineIndicator.Position = UDim2.new(0, 0, 1, 4)
+GlobalTabInlineIndicator.AnchorPoint = Vector2.new(0, 0)
+GlobalTabInlineIndicator.BackgroundColor3 = Color3.fromRGB(115, 58, 173)
+GlobalTabInlineIndicator.BorderSizePixel = 0
+GlobalTabInlineIndicator.Visible = false
+GlobalTabInlineIndicator.Parent = Header
+
+local inlineCorner = Instance.new("UICorner")
+inlineCorner.CornerRadius = UDim.new(0, 30)
+inlineCorner.Parent = GlobalTabInlineIndicator
+
 local Tab = Instance.new("Frame")
 Tab.Name = "Tab"
 Tab.Position = UDim2.new(1.0347222089767456, 0, 0.3054545521736145, 0)
@@ -996,22 +1012,6 @@ function Library:CreateTab(config)
     -- Store tab frame reference
     tab.tabFrame = tabFrame
     
-    -- Create inline indicator for this tab (positioned underneath the tab)
-    local inlineIndicator = Instance.new("Frame")
-    inlineIndicator.Name = "InlineIndicator"
-    inlineIndicator.Size = UDim2.new(0, 65, 0, 4)
-    inlineIndicator.Position = UDim2.new(0.5, 0, 1, 4) -- Position underneath the tab
-    inlineIndicator.AnchorPoint = Vector2.new(0.5, 0)
-    inlineIndicator.BackgroundColor3 = Color3.fromRGB(115, 58, 173)
-    inlineIndicator.BorderSizePixel = 0
-    inlineIndicator.Visible = false
-    inlineIndicator.Parent = Header -- Parent to Header so it appears underneath tabs
-    
-    local inlineCorner = Instance.new("UICorner")
-    inlineCorner.CornerRadius = UDim.new(0, 30)
-    inlineCorner.Parent = inlineIndicator
-    
-    tab.inlineIndicator = inlineIndicator
     
     -- Set as current tab if it's the first one
     if #CurrentWindow.tabs == 0 then
@@ -1067,9 +1067,9 @@ function Library:SwitchTab(tab)
             end
         end
         
-        -- Hide current tab's inline indicator
-        if CurrentTab.inlineIndicator then
-            CurrentTab.inlineIndicator.Visible = false
+        -- Hide global inline indicator
+        if GlobalTabInlineIndicator then
+            GlobalTabInlineIndicator.Visible = false
         end
     end
     
@@ -1097,15 +1097,23 @@ function Library:SwitchTab(tab)
         end
     end
     
-    -- Show new tab's inline indicator
-    if tab.inlineIndicator then
-        -- Position the inline indicator underneath the active tab
+    -- Show and animate global inline indicator
+    if GlobalTabInlineIndicator and tab.tabFrame then
+        -- Calculate position to center under the tab
         local tabPosition = tab.tabFrame.Position
         local tabSize = tab.tabFrame.Size
-        tab.inlineIndicator.Position = UDim2.new(tabPosition.X.Scale, tabPosition.X.Offset, 1, 4)
-        tab.inlineIndicator.Visible = true
+        local inlineWidth = 65
+        local centerX = tabPosition.X.Offset + (tabSize.X.Offset / 2)
+        
+        GlobalTabInlineIndicator.Position = UDim2.new(0, centerX - (inlineWidth / 2), 1, 4)
+        GlobalTabInlineIndicator.Size = UDim2.new(0, inlineWidth, 0, 4)
+        GlobalTabInlineIndicator.Visible = true
+        
         -- Animate the inline indicator
-        local inlineTween = createTween(tab.inlineIndicator, {Size = UDim2.new(0, 65, 0, 4)}, 0.3)
+        local inlineTween = createTween(GlobalTabInlineIndicator, {
+            Position = UDim2.new(0, centerX - (inlineWidth / 2), 1, 4),
+            Size = UDim2.new(0, inlineWidth, 0, 4)
+        }, 0.3)
         inlineTween:Play()
     end
     
