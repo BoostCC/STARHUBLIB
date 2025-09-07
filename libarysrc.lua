@@ -2212,7 +2212,7 @@ function Library:CreateNotification(config)
         NotificationContainer.Size = UDim2.new(0, 1, 0, 1)
         NotificationContainer.BorderSizePixel = 0
         NotificationContainer.BackgroundTransparency = 1
-        NotificationContainer.Position = UDim2.new(0.7, 0, 0.02, 0) -- Moved more to the left to prevent off-screen
+        NotificationContainer.Position = UDim2.new(0.8169070482254028, 0, 0.014925372786819935, 0)
         NotificationContainer.AutomaticSize = Enum.AutomaticSize.XY
         NotificationContainer.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
         NotificationContainer.Parent = ScreenGui
@@ -2248,30 +2248,34 @@ function Library:CreateNotification(config)
         progressColor = Color3.fromRGB(1, 255, 141)
     end
     
-    -- Create notification frame with auto-sizing width
+    -- Create notification frame with fixed sizing
     local notificationFrame = Instance.new("Frame")
     notificationFrame.Name = "Notification_Frame"
     notificationFrame.Position = UDim2.new(0, 0, 0.8371886014938354, 0)
     notificationFrame.BorderColor3 = Color3.fromRGB(0, 0, 0)
-    notificationFrame.Size = UDim2.new(0, 1, 0, 60) -- Auto-size width, fixed height
+    notificationFrame.Size = UDim2.new(0, 300, 0, 60) -- Fixed size
     notificationFrame.BorderSizePixel = 0
     notificationFrame.BackgroundColor3 = backgroundColor
-    -- Removed AutomaticSize to prevent random scaling
     notificationFrame.Parent = NotificationContainer
     
     local UICorner = Instance.new("UICorner")
     UICorner.CornerRadius = UDim.new(0, 4)
     UICorner.Parent = notificationFrame
     
-    -- Removed UIStroke as requested
+    -- Add subtle glow effect
+    local glowEffect = Instance.new("UIStroke")
+    glowEffect.Color = progressColor
+    glowEffect.Transparency = 0.7
+    glowEffect.Thickness = 1
+    glowEffect.Parent = notificationFrame
     
-    -- Progress background with proper positioning and padding
+    -- Progress background with proper positioning
     local progressBG = Instance.new("Frame")
     progressBG.Name = "Progress_BG"
     progressBG.AnchorPoint = Vector2.new(0, 1) -- Anchor to bottom
-    progressBG.Position = UDim2.new(0, 16, 1, -8) -- 16px from left, 8px from bottom
+    progressBG.Position = UDim2.new(0, 12, 1, -8) -- 12px from left, 8px from bottom
     progressBG.BorderColor3 = Color3.fromRGB(0, 0, 0)
-    progressBG.Size = UDim2.new(1, -32, 0, 4) -- Full width minus 16px left and 16px right padding, 4px height
+    progressBG.Size = UDim2.new(1, -24, 0, 4) -- Full width minus padding, 4px height
     progressBG.BorderSizePixel = 0
     progressBG.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
     progressBG.Parent = notificationFrame
@@ -2353,14 +2357,14 @@ function Library:CreateNotification(config)
     end
     
     textLabel.Text = typePrefix .. notification.text
-    textLabel.Size = UDim2.new(1, -32, 0, 40) -- Fixed width to prevent random scaling
+    textLabel.Size = UDim2.new(1, -24, 0, 40) -- Fixed height, full width minus padding
     textLabel.AnchorPoint = Vector2.new(0, 0)
     textLabel.BorderSizePixel = 0
     textLabel.BackgroundTransparency = 1
-    textLabel.Position = UDim2.new(0, 16, 0, 10) -- 16px padding from left, 10px from top
+    textLabel.Position = UDim2.new(0, 12, 0, 10) -- 12px padding from left, 10px from top
     textLabel.FontFace = Font.new("rbxassetid://12187365364", Enum.FontWeight.Regular, Enum.FontStyle.Normal)
-    textLabel.TextSize = 18 -- Bigger text
-    textLabel.TextWrapped = true -- Wrap text to prevent overflow
+    textLabel.TextSize = 14
+    textLabel.TextWrapped = true -- Allow text wrapping
     textLabel.TextXAlignment = Enum.TextXAlignment.Left
     textLabel.TextYAlignment = Enum.TextYAlignment.Top
     textLabel.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
@@ -2374,45 +2378,34 @@ function Library:CreateNotification(config)
     -- Add to active notifications
     table.insert(ActiveNotifications, notification)
     
-    -- Ultra smooth and unique appear animation
-    notificationFrame.Size = UDim2.new(0, 300, 0, 60) -- Fixed width to prevent random scaling
+    -- Simple appear animation
+    notificationFrame.Size = UDim2.new(0, 0, 0, 60)
     notificationFrame.BackgroundTransparency = 1
-    notificationFrame.Position = UDim2.new(1.2, 0, 0, 0) -- Start further off-screen
-    notificationFrame.Rotation = 5 -- Slight rotation for unique effect
     textLabel.TextTransparency = 1
-    textLabel.TextStrokeTransparency = 0
-    textLabel.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
     progressBar.Size = UDim2.new(0, 0, 1, 0) -- Start at 0 width
     progressBar.BackgroundTransparency = 0
     
-    -- Smooth slide in with rotation and scale
+    -- Simple slide in animation
     local slideIn = createTween(notificationFrame, {
-        Position = UDim2.new(0, 0, 0, 0),
-        Size = UDim2.new(0, 300, 0, 60), -- Fixed width
-        BackgroundTransparency = 0,
-        Rotation = 0
-    }, 0.5, Enum.EasingStyle.Elastic, Enum.EasingDirection.Out)
+        Size = UDim2.new(0, 300, 0, 60),
+        BackgroundTransparency = 0
+    }, 0.3, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
     slideIn:Play()
     
-    -- Text fade in with stroke effect
-    task.wait(0.15)
     local textFadeIn = createTween(textLabel, {
-        TextTransparency = 0,
-        TextStrokeTransparency = 1
+        TextTransparency = 0
     }, 0.3, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
     textFadeIn:Play()
     
-    -- Removed glow effect animation since UIStroke was removed
-    
     -- Progress bar animation - moves from left to right
-    task.wait(0.2)
     local progressTween = createTween(progressBar, {
         Size = UDim2.new(1, 0, 1, 0) -- Full width of progressBG
     }, notification.duration, Enum.EasingStyle.Linear, Enum.EasingDirection.Out)
     progressTween:Play()
     
-    -- Auto-close when progress bar completes
-    progressTween.Completed:Connect(function()
+    -- Auto-close after duration
+    task.spawn(function()
+        task.wait(notification.duration)
         if not notification.isClosing then
             Library:CloseNotification(notification)
         end
@@ -2442,32 +2435,19 @@ function Library:CloseNotification(notification)
     -- Call onClose callback
     notification.onClose(notification)
     
-    -- Ultra smooth and unique disappear animation
+    -- Simple disappear animation
+    local fadeOut = createTween(notification.frame, {
+        Size = UDim2.new(0, 0, 0, 60),
+        BackgroundTransparency = 1
+    }, 0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.In)
+    fadeOut:Play()
+    
     local textFadeOut = createTween(notification.textLabel, {
-        TextTransparency = 1,
-        TextStrokeTransparency = 0
+        TextTransparency = 1
     }, 0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.In)
     textFadeOut:Play()
     
-    -- Progress bar shrinks with elastic effect
-    local progressShrink = createTween(notification.progressBar, {
-        Size = UDim2.new(0, 0, 1, 0)
-    }, 0.25, Enum.EasingStyle.Elastic, Enum.EasingDirection.In)
-    progressShrink:Play()
-    
-    -- Removed glow fade out since UIStroke was removed
-    
-    -- Main frame slides out with rotation and scale
-    task.wait(0.15)
-    local slideOut = createTween(notification.frame, {
-        Position = UDim2.new(1.2, 0, 0, 0), -- Slide further off-screen
-        Size = UDim2.new(0, 0, 0, 60),
-        BackgroundTransparency = 1,
-        Rotation = -5 -- Counter-rotation for unique effect
-    }, 0.4, Enum.EasingStyle.Elastic, Enum.EasingDirection.In)
-    slideOut:Play()
-    
-    slideOut.Completed:Connect(function()
+    fadeOut.Completed:Connect(function()
         notification.frame:Destroy()
         -- Remove from active notifications
         for i, notif in ipairs(ActiveNotifications) do
