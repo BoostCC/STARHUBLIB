@@ -494,25 +494,26 @@ function Library:SwitchTab(tab)
     
     CurrentTab = tab
     
-    -- Show new tab sections with elegant fade in
+    -- Show new tab sections with fast, clean slide-fade in
     for _, section in pairs(tab.sections.left) do
         if section.frame then
             section.frame.Visible = true
             section.frame.BackgroundTransparency = 1
-            local sectionTween = createTween(section.frame, {
-                BackgroundTransparency = 0
-            }, 0.3, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
-            sectionTween:Play()
+            -- start slightly lower and faded
+            section.frame.Position = section.targetPosition + UDim2.new(0, 0, 0, 10)
+            local move = createTween(section.frame, {Position = section.targetPosition}, 0.18, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+            local fade = createTween(section.frame, {BackgroundTransparency = 0}, 0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+            move:Play(); fade:Play()
         end
     end
     for _, section in pairs(tab.sections.right) do
         if section.frame then
             section.frame.Visible = true
             section.frame.BackgroundTransparency = 1
-            local sectionTween = createTween(section.frame, {
-                BackgroundTransparency = 0
-            }, 0.3, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
-            sectionTween:Play()
+            section.frame.Position = section.targetPosition + UDim2.new(0, 0, 0, 10)
+            local move = createTween(section.frame, {Position = section.targetPosition}, 0.18, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+            local fade = createTween(section.frame, {BackgroundTransparency = 0}, 0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+            move:Play(); fade:Play()
         end
     end
     
@@ -616,6 +617,8 @@ function Library:CreateSection(config)
     else
         sectionFrame.Position = UDim2.new(0.5120617151260376, 0, 0.17085854709148407, 0)
     end
+    -- store target position for animations
+    local targetPosition = sectionFrame.Position
     
     local sectionCorner = Instance.new("UICorner")
     sectionCorner.CornerRadius = UDim.new(0, 4)
@@ -700,6 +703,7 @@ function Library:CreateSection(config)
     end
     
     section.frame = sectionFrame
+    section.targetPosition = targetPosition
     table.insert(CurrentTab.sections[position], section)
     
     return section
@@ -2167,14 +2171,14 @@ Current_Tab_Value.Parent = MainFrame
     local UIScale = Instance.new("UIScale")
     UIScale.Parent = MainFrame
     
-   
+
 ScreenGui.Enabled = true
 
 
     makeDraggable(MainFrame)
-    
 
-end
+    
+    end
 
 
 return Library
