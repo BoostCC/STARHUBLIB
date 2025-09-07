@@ -572,9 +572,30 @@ function Library:SwitchTab(tab)
             end
         end
         
-        -- Hide config container if current tab is config tab
-        if CurrentTab.isConfigTab and CurrentTab.configContainer then
-            CurrentTab.configContainer.Visible = false
+        -- Hide config sections if current tab is config tab
+        if CurrentTab.isConfigTab then
+            for _, section in pairs(CurrentTab.sections.left) do
+                if section.frame then
+                    local fadeOut = createTween(section.frame, {
+                        BackgroundTransparency = 1
+                    }, 0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.In)
+                    fadeOut:Play()
+                    fadeOut.Completed:Connect(function()
+                        section.frame.Visible = false
+                    end)
+                end
+            end
+            for _, section in pairs(CurrentTab.sections.right) do
+                if section.frame then
+                    local fadeOut = createTween(section.frame, {
+                        BackgroundTransparency = 1
+                    }, 0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.In)
+                    fadeOut:Play()
+                    fadeOut.Completed:Connect(function()
+                        section.frame.Visible = false
+                    end)
+                end
+            end
         end
         
         -- Animate current tab to inactive with clean transition
@@ -606,12 +627,26 @@ function Library:SwitchTab(tab)
     
     -- Handle config tab differently
     if tab.isConfigTab then
-        -- Show config container
-        if tab.configContainer then
-            tab.configContainer.Visible = true
-            -- Load configs if not already loaded
-            if tab.configHolder and #tab.configHolder:GetChildren() <= 1 then -- Only UIListLayout
-                Library:LoadConfigsFromFiles()
+        -- Show config sections like normal tab
+        for _, section in pairs(tab.sections.left) do
+            if section.frame then
+                section.frame.Visible = true
+                section.frame.BackgroundTransparency = 1
+                -- start slightly lower and faded
+                section.frame.Position = section.targetPosition + UDim2.new(0, 0, 0, 10)
+                local move = createTween(section.frame, {Position = section.targetPosition}, 0.18, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+                local fade = createTween(section.frame, {BackgroundTransparency = 0}, 0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+                move:Play(); fade:Play()
+            end
+        end
+        for _, section in pairs(tab.sections.right) do
+            if section.frame then
+                section.frame.Visible = true
+                section.frame.BackgroundTransparency = 1
+                section.frame.Position = section.targetPosition + UDim2.new(0, 0, 0, 10)
+                local move = createTween(section.frame, {Position = section.targetPosition}, 0.18, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+                local fade = createTween(section.frame, {BackgroundTransparency = 0}, 0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+                move:Play(); fade:Play()
             end
         end
     else
@@ -2775,7 +2810,20 @@ function Library:LoadConfigsFromFiles()
 end
 
 function Library:CreateConfigSection(config)
-    if not CurrentTab or not CurrentTab.isConfigTab or not CurrentTab.configHolder then
+    if not CurrentTab or not CurrentTab.isConfigTab then
+        return
+    end
+    
+    -- Find the config section in the current tab
+    local configSection = nil
+    for _, section in ipairs(CurrentTab.sections.left) do
+        if section.configHolder then
+            configSection = section
+            break
+        end
+    end
+    
+    if not configSection then
         return
     end
     
@@ -2784,7 +2832,7 @@ function Library:CreateConfigSection(config)
     section.Size = UDim2.new(1, 0, 0, 70)
     section.BorderSizePixel = 0
     section.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
-    section.Parent = CurrentTab.configHolder
+    section.Parent = configSection.configHolder
     
     local UICorner = Instance.new("UICorner")
     UICorner.CornerRadius = UDim.new(0, 4)
@@ -3000,91 +3048,11 @@ function Library:CreateConfigTabForWindow(config)
         tabFrame = nil,
         tabContainer = nil,
         isConfigTab = true,
-        configContainer = nil
+        sections = {
+            left = {},
+            right = {}
+        }
     }
-    
-    -- Create config container (like the example you provided)
-    local configContainer = Instance.new("Frame")
-    configContainer.BorderColor3 = Color3.fromRGB(0, 0, 0)
-    configContainer.AnchorPoint = Vector2.new(0.5, 1)
-    configContainer.Name = "Config_Container"
-    configContainer.Position = UDim2.new(0.5, 0, 1, 0)
-    configContainer.Size = UDim2.new(0, 652, 0, 418)
-    configContainer.ZIndex = 2
-    configContainer.BorderSizePixel = 0
-    configContainer.BackgroundColor3 = Color3.fromRGB(16, 16, 16)
-    configContainer.Visible = false
-    configContainer.Parent = MainFrame.Container
-    
-    local UICorner = Instance.new("UICorner")
-    UICorner.Parent = configContainer
-    
-    -- Create config holder
-    local Config_Holder = Instance.new("ScrollingFrame")
-    Config_Holder.ScrollBarImageColor3 = Library.Accent
-    Config_Holder.Active = true
-    Config_Holder.BorderColor3 = Color3.fromRGB(0, 0, 0)
-    Config_Holder.ScrollBarThickness = 1
-    Config_Holder.BackgroundTransparency = 1
-    Config_Holder.Position = UDim2.new(0.029141103848814964, 0, 0.10000000149011612, 0)
-    Config_Holder.Name = "Config_Holder"
-    Config_Holder.Size = UDim2.new(0, 609, 0, 360)
-    Config_Holder.BorderSizePixel = 0
-    Config_Holder.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-    Config_Holder.Parent = configContainer
-    
-    local UIListLayout = Instance.new("UIListLayout")
-    UIListLayout.Padding = UDim.new(0, 4)
-    UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
-    UIListLayout.Parent = Config_Holder
-    
-    -- Create header with create button
-    local Header = Instance.new("Frame")
-    Header.Name = "Header"
-    Header.Size = UDim2.new(1, 0, 0, 50)
-    Header.BorderSizePixel = 0
-    Header.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
-    Header.Parent = configContainer
-    
-    local HeaderCorner = Instance.new("UICorner")
-    HeaderCorner.CornerRadius = UDim.new(0, 4)
-    HeaderCorner.Parent = Header
-    
-    local Title = Instance.new("TextLabel")
-    Title.FontFace = Font.new("rbxassetid://12187365364", Enum.FontWeight.SemiBold, Enum.FontStyle.Normal)
-    Title.TextColor3 = Color3.fromRGB(255, 255, 255)
-    Title.Text = "Config Manager"
-    Title.Size = UDim2.new(0, 1, 0, 1)
-    Title.Position = UDim2.new(0, 20, 0.5, 0)
-    Title.AnchorPoint = Vector2.new(0, 0.5)
-    Title.BackgroundTransparency = 1
-    Title.AutomaticSize = Enum.AutomaticSize.XY
-    Title.TextSize = 18
-    Title.Parent = Header
-    
-    local CreateButton = Instance.new("TextButton")
-    CreateButton.FontFace = Font.new("rbxassetid://12187365364", Enum.FontWeight.Regular, Enum.FontStyle.Normal)
-    CreateButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-    CreateButton.Text = "Create Config"
-    CreateButton.AnchorPoint = Vector2.new(1, 0.5)
-    CreateButton.Position = UDim2.new(1, -20, 0.5, 0)
-    CreateButton.Size = UDim2.new(0, 120, 0, 35)
-    CreateButton.BorderSizePixel = 0
-    CreateButton.TextSize = 14
-    CreateButton.BackgroundColor3 = Library.Accent
-    CreateButton.Parent = Header
-    
-    local CreateCorner = Instance.new("UICorner")
-    CreateCorner.Parent = CreateButton
-    
-    -- Button connection
-    CreateButton.MouseButton1Click:Connect(function()
-        Library:CreateNewConfig()
-    end)
-    
-    -- Store references
-    tab.configContainer = configContainer
-    tab.configHolder = Config_Holder
     
     -- Create tab frame (same as normal tabs)
     local tabFrame = Instance.new("Frame")
@@ -3152,10 +3120,116 @@ function Library:CreateConfigTabForWindow(config)
         Library:SwitchTab(tab)
     end)
     
+    -- Add methods to config tab object
+    function tab:CreateConfigSection(config)
+        return Library:CreateConfigSectionForTab(tab, config)
+    end
+    
     -- Add to window tabs
     table.insert(CurrentWindow.tabs, tab)
     
     return tab
+end
+
+function Library:CreateConfigSectionForTab(tab, config)
+    if not tab or not tab.isConfigTab then
+        return
+    end
+    
+    -- Create section like normal sections
+    local section = {
+        config = config or {},
+        text = config.SectionText or "Config Manager",
+        position = "left", -- Config section goes on the left
+        frame = nil,
+        targetPosition = nil,
+        components = {}
+    }
+    
+    -- Create section frame
+    local sectionFrame = Instance.new("Frame")
+    sectionFrame.Name = "Section_Frame"
+    sectionFrame.Size = UDim2.new(0, 652, 0, 418)
+    sectionFrame.BorderSizePixel = 0
+    sectionFrame.BackgroundColor3 = Color3.fromRGB(16, 16, 16)
+    sectionFrame.Visible = false
+    sectionFrame.Parent = MainFrame.Container
+    
+    local UICorner = Instance.new("UICorner")
+    UICorner.Parent = sectionFrame
+    
+    -- Create config holder
+    local Config_Holder = Instance.new("ScrollingFrame")
+    Config_Holder.ScrollBarImageColor3 = Library.Accent
+    Config_Holder.Active = true
+    Config_Holder.BorderColor3 = Color3.fromRGB(0, 0, 0)
+    Config_Holder.ScrollBarThickness = 1
+    Config_Holder.BackgroundTransparency = 1
+    Config_Holder.Position = UDim2.new(0.029141103848814964, 0, 0.10000000149011612, 0)
+    Config_Holder.Name = "Config_Holder"
+    Config_Holder.Size = UDim2.new(0, 609, 0, 360)
+    Config_Holder.BorderSizePixel = 0
+    Config_Holder.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    Config_Holder.Parent = sectionFrame
+    
+    local UIListLayout = Instance.new("UIListLayout")
+    UIListLayout.Padding = UDim.new(0, 4)
+    UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+    UIListLayout.Parent = Config_Holder
+    
+    -- Create header with create button
+    local Header = Instance.new("Frame")
+    Header.Name = "Header"
+    Header.Size = UDim2.new(1, 0, 0, 50)
+    Header.BorderSizePixel = 0
+    Header.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+    Header.Parent = sectionFrame
+    
+    local HeaderCorner = Instance.new("UICorner")
+    HeaderCorner.CornerRadius = UDim.new(0, 4)
+    HeaderCorner.Parent = Header
+    
+    local Title = Instance.new("TextLabel")
+    Title.FontFace = Font.new("rbxassetid://12187365364", Enum.FontWeight.SemiBold, Enum.FontStyle.Normal)
+    Title.TextColor3 = Color3.fromRGB(255, 255, 255)
+    Title.Text = "Config Manager"
+    Title.Size = UDim2.new(0, 1, 0, 1)
+    Title.Position = UDim2.new(0, 20, 0.5, 0)
+    Title.AnchorPoint = Vector2.new(0, 0.5)
+    Title.BackgroundTransparency = 1
+    Title.AutomaticSize = Enum.AutomaticSize.XY
+    Title.TextSize = 18
+    Title.Parent = Header
+    
+    local CreateButton = Instance.new("TextButton")
+    CreateButton.FontFace = Font.new("rbxassetid://12187365364", Enum.FontWeight.Regular, Enum.FontStyle.Normal)
+    CreateButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+    CreateButton.Text = "Create Config"
+    CreateButton.AnchorPoint = Vector2.new(1, 0.5)
+    CreateButton.Position = UDim2.new(1, -20, 0.5, 0)
+    CreateButton.Size = UDim2.new(0, 120, 0, 35)
+    CreateButton.BorderSizePixel = 0
+    CreateButton.TextSize = 14
+    CreateButton.BackgroundColor3 = Library.Accent
+    CreateButton.Parent = Header
+    
+    local CreateCorner = Instance.new("UICorner")
+    CreateCorner.Parent = CreateButton
+    
+    -- Button connection
+    CreateButton.MouseButton1Click:Connect(function()
+        Library:CreateNewConfig()
+    end)
+    
+    -- Store references
+    section.frame = sectionFrame
+    section.configHolder = Config_Holder
+    section.targetPosition = UDim2.new(0.5, 0, 1, 0) -- Position like your example
+    
+    -- Add to tab sections
+    table.insert(tab.sections[section.position], section)
+    
+    return section
 end
 
 
