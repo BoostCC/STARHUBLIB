@@ -95,7 +95,7 @@ Libary_Name.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
 Libary_Name.Parent = Top_Bar
 
 local Libary_Icon = Instance.new("ImageLabel")
-Libary_Icon.ImageColor3 = Color3.fromRGB(170, 85, 255)
+Libary_Icon.ImageColor3 = Library.Accent
 Libary_Icon.BorderColor3 = Color3.fromRGB(0, 0, 0)
 Libary_Icon.Name = "Libary_Icon"
 Libary_Icon.Image = "rbxassetid://132964100967987"
@@ -2271,7 +2271,7 @@ function Library:CreateWatermark(cheatName)
     
     -- Create inline accent
     local Inline = Instance.new("Frame")
-    Inline.BorderColor3 = Color3.fromRGB(0, 0, 0)
+    Inline.BorderColor3 = Library.Accent
     Inline.AnchorPoint = Vector2.new(0, 1)
     Inline.Name = "Inline"
     Inline.Position = UDim2.new(0, 0, 1, 0)
