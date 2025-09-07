@@ -371,6 +371,15 @@ function Library:SetAccentColor(color, alpha)
                 if inst.Parent and inst.Parent.Name == "Shadow" then
                     inst.TextColor3 = Library.Accent
                 end
+            elseif inst:IsA("TextBox") then
+                if inst:GetAttribute("ActiveInput") then
+                    inst.TextColor3 = Library.Accent
+                    local stroke = inst:FindFirstChildOfClass("UIStroke")
+                    if stroke then
+                        stroke.Color = Library.Accent
+                        stroke.Transparency = 0
+                    end
+                end
             end
         end
         -- For dropdown active text, ensure selected options are refreshed
