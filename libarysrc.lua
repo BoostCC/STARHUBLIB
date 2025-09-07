@@ -995,6 +995,23 @@ function Library:CreateTab(config)
     -- Store tab frame reference
     tab.tabFrame = tabFrame
     
+    -- Create inline indicator for this tab
+    local inlineIndicator = Instance.new("Frame")
+    inlineIndicator.Name = "InlineIndicator"
+    inlineIndicator.Size = UDim2.new(0, 65, 0, 4)
+    inlineIndicator.Position = UDim2.new(0.5, 0, 1, 0)
+    inlineIndicator.AnchorPoint = Vector2.new(0.5, 1)
+    inlineIndicator.BackgroundColor3 = Color3.fromRGB(115, 58, 173)
+    inlineIndicator.BorderSizePixel = 0
+    inlineIndicator.Visible = false
+    inlineIndicator.Parent = tabFrame
+    
+    local inlineCorner = Instance.new("UICorner")
+    inlineCorner.CornerRadius = UDim.new(0, 30)
+    inlineCorner.Parent = inlineIndicator
+    
+    tab.inlineIndicator = inlineIndicator
+    
     -- Set as current tab if it's the first one
     if #CurrentWindow.tabs == 0 then
         Library:SwitchTab(tab)
@@ -1048,6 +1065,11 @@ function Library:SwitchTab(tab)
                 text.TextColor3 = Color3.fromRGB(58, 58, 58)
             end
         end
+        
+        -- Hide current tab's inline indicator
+        if CurrentTab.inlineIndicator then
+            CurrentTab.inlineIndicator.Visible = false
+        end
     end
     
     CurrentTab = tab
@@ -1074,9 +1096,13 @@ function Library:SwitchTab(tab)
         end
     end
     
-    -- Animate inline indicator
-    local inlineTween = createTween(Inline, {Position = UDim2.new(0.7507575750350952, 0, 1, 0)}, 0.3)
-    inlineTween:Play()
+    -- Show new tab's inline indicator
+    if tab.inlineIndicator then
+        tab.inlineIndicator.Visible = true
+        -- Animate the inline indicator
+        local inlineTween = createTween(tab.inlineIndicator, {Size = UDim2.new(0, 65, 0, 4)}, 0.3)
+        inlineTween:Play()
+    end
     
     -- Update current tab display
     Current_Tab_Value.Text = tab.text
