@@ -704,6 +704,19 @@ function Library:CreateSection(config)
     
     section.frame = sectionFrame
     section.targetPosition = targetPosition
+    
+    -- If this section is created on the active tab, play the entry animation immediately
+    if CurrentTab and table.find(CurrentTab.sections[position], section) == nil then
+        -- ensure visibility and start state
+        sectionFrame.Visible = true
+        sectionFrame.BackgroundTransparency = 1
+        sectionFrame.Position = targetPosition + UDim2.new(0, 0, 0, 10)
+        task.defer(function()
+            local move = createTween(sectionFrame, {Position = targetPosition}, 0.18, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+            local fade = createTween(sectionFrame, {BackgroundTransparency = 0}, 0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+            move:Play(); fade:Play()
+        end)
+    end
     table.insert(CurrentTab.sections[position], section)
     
     return section
