@@ -1116,6 +1116,13 @@ Text_Input.TextSize = 14
 Text_Input.BackgroundColor3 = Color3.fromRGB(24, 24, 24)
 Text_Input.Parent = TextInput_Component
 
+    -- Accent border for active typing state
+    local InputStroke = Instance.new("UIStroke")
+    InputStroke.Color = Library.Accent
+    InputStroke.Transparency = 1
+    InputStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+    InputStroke.Parent = Text_Input
+
 local UICorner = Instance.new("UICorner")
 UICorner.CornerRadius = UDim.new(0, 6)
 UICorner.Parent = Text_Input
@@ -1128,22 +1135,17 @@ UIPadding.Parent = Text_Input
     Text_Input.FocusLost:Connect(function(enterPressed)
         textInput.value = Text_Input.Text
         textInput.callback(Text_Input.Text)
+        -- remove accent when not focused
+        createTween(Text_Input, {TextColor3 = Color3.fromRGB(109, 109, 109)}, 0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.Out):Play()
+        createTween(InputStroke, {Transparency = 1}, 0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.Out):Play()
+        Text_Input:SetAttribute("ActiveInput", false)
     end)
     
-    -- Focus gained animation
+    -- Focus gained animation (apply accent)
     Text_Input.Focused:Connect(function()
-        local focusTween = createTween(Text_Input, {
-            TextColor3 = Color3.fromRGB(115, 58, 173)
-        }, 0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
-        focusTween:Play()
-    end)
-    
-    -- Focus lost animation
-    Text_Input.FocusLost:Connect(function()
-        local unfocusTween = createTween(Text_Input, {
-            TextColor3 = Color3.fromRGB(109, 109, 109)
-        }, 0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
-        unfocusTween:Play()
+        createTween(Text_Input, {TextColor3 = Library.Accent}, 0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.Out):Play()
+        createTween(InputStroke, {Transparency = 0}, 0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.Out):Play()
+        Text_Input:SetAttribute("ActiveInput", true)
     end)
     
     table.insert(section.components, textInput)
