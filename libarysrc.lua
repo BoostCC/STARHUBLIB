@@ -179,7 +179,16 @@ Current_Tab_Value.TextSize = 14
 Current_Tab_Value.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
 Current_Tab_Value.Parent = MainFrame
 
+-- Initial opening animation
 ScreenGui.Enabled = true
+MainFrame.Size = UDim2.new(0, 0, 0, 0)
+MainFrame.Position = UDim2.new(0.5, 0, 0.5, 0)
+
+local initialOpenTween = createTween(MainFrame, {
+    Size = UDim2.new(0, 720, 0, 550),
+    Position = UDim2.new(0.5, 0, 0.5, 0)
+}, 0.5, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
+initialOpenTween:Play()
 
 -- Animation Functions
 local function createTween(object, properties, duration, easingStyle, easingDirection)
@@ -241,13 +250,37 @@ function Library:CreateWindow(config)
         Libary_Icon.Image = config.library_config.Cheat_Icon
     end
     
-    -- Set up UI toggle keybind
+    -- Set up UI toggle keybind with smooth animations
     if config.library_config and config.library_config.interface_keybind then
         local keybind = config.library_config.interface_keybind
         UserInputService.InputBegan:Connect(function(input, gameProcessed)
             if gameProcessed then return end
             if input.KeyCode == Enum.KeyCode[keybind] then
-                ScreenGui.Enabled = not ScreenGui.Enabled
+                if ScreenGui.Enabled then
+                    -- Close UI with smooth animation
+                    local closeTween = createTween(MainFrame, {
+                        Size = UDim2.new(0, 0, 0, 0),
+                        Position = UDim2.new(0.5, 0, 0.5, 0)
+                    }, 0.3, Enum.EasingStyle.Back, Enum.EasingDirection.In)
+                    closeTween:Play()
+                    
+                    closeTween.Completed:Connect(function()
+                        ScreenGui.Enabled = false
+                        -- Reset size for next open
+                        MainFrame.Size = UDim2.new(0, 720, 0, 550)
+                    end)
+                else
+                    -- Open UI with smooth animation
+                    ScreenGui.Enabled = true
+                    MainFrame.Size = UDim2.new(0, 0, 0, 0)
+                    MainFrame.Position = UDim2.new(0.5, 0, 0.5, 0)
+                    
+                    local openTween = createTween(MainFrame, {
+                        Size = UDim2.new(0, 720, 0, 550),
+                        Position = UDim2.new(0.5, 0, 0.5, 0)
+                    }, 0.4, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
+                    openTween:Play()
+                end
             end
         end)
     else
@@ -255,7 +288,31 @@ function Library:CreateWindow(config)
         UserInputService.InputBegan:Connect(function(input, gameProcessed)
             if gameProcessed then return end
             if input.KeyCode == Enum.KeyCode.Insert then
-                ScreenGui.Enabled = not ScreenGui.Enabled
+                if ScreenGui.Enabled then
+                    -- Close UI with smooth animation
+                    local closeTween = createTween(MainFrame, {
+                        Size = UDim2.new(0, 0, 0, 0),
+                        Position = UDim2.new(0.5, 0, 0.5, 0)
+                    }, 0.3, Enum.EasingStyle.Back, Enum.EasingDirection.In)
+                    closeTween:Play()
+                    
+                    closeTween.Completed:Connect(function()
+                        ScreenGui.Enabled = false
+                        -- Reset size for next open
+                        MainFrame.Size = UDim2.new(0, 720, 0, 550)
+                    end)
+                else
+                    -- Open UI with smooth animation
+                    ScreenGui.Enabled = true
+                    MainFrame.Size = UDim2.new(0, 0, 0, 0)
+                    MainFrame.Position = UDim2.new(0.5, 0, 0.5, 0)
+                    
+                    local openTween = createTween(MainFrame, {
+                        Size = UDim2.new(0, 720, 0, 550),
+                        Position = UDim2.new(0.5, 0, 0.5, 0)
+                    }, 0.4, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
+                    openTween:Play()
+                end
             end
         end)
     end
@@ -446,16 +503,19 @@ function Library:SwitchTab(tab)
         end
         
         -- Hide inline indicator with unique slide effect
-        if GlobalTabInlineIndicator then
-            local slideOut = createTween(GlobalTabInlineIndicator, {
-                Position = UDim2.new(0.5, 0, 1, -10), -- Slide down and fade
-                Size = UDim2.new(0, 0, 0, 2)
-            }, 0.15, Enum.EasingStyle.Quart, Enum.EasingDirection.In)
-            slideOut:Play()
-            
-            slideOut.Completed:Connect(function()
-                GlobalTabInlineIndicator.Visible = false
-            end)
+        if CurrentTab.tabFrame then
+            local currentInline = CurrentTab.tabFrame:FindFirstChild("Inline")
+            if currentInline then
+                local slideOut = createTween(currentInline, {
+                    Position = UDim2.new(0.5, 0, 1, -10), -- Slide down and fade
+                    Size = UDim2.new(0, 0, 0, 2)
+                }, 0.15, Enum.EasingStyle.Quart, Enum.EasingDirection.In)
+                slideOut:Play()
+                
+                slideOut.Completed:Connect(function()
+                    currentInline.Visible = false
+                end)
+            end
         end
     end
     
@@ -1412,8 +1472,16 @@ function Library:Reload()
     local UIScale = Instance.new("UIScale")
     UIScale.Parent = MainFrame
     
-    -- Re-enable the UI
+    -- Re-enable the UI with opening animation
     ScreenGui.Enabled = true
+    MainFrame.Size = UDim2.new(0, 0, 0, 0)
+    MainFrame.Position = UDim2.new(0.5, 0, 0.5, 0)
+    
+    local reloadOpenTween = createTween(MainFrame, {
+        Size = UDim2.new(0, 720, 0, 550),
+        Position = UDim2.new(0.5, 0, 0.5, 0)
+    }, 0.5, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
+    reloadOpenTween:Play()
     
     -- Re-make draggable
     makeDraggable(MainFrame)
