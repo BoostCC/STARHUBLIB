@@ -1140,5 +1140,185 @@ function Library:CreateKeybind(config)
     return keybind
 end
 
+-- Reload function to unload old UI and load new one
+function Library:Reload()
+    -- Destroy existing UI
+    if ScreenGui then
+        ScreenGui:Destroy()
+    end
+    
+    -- Reset global variables
+    Windows = {}
+    CurrentWindow = nil
+    CurrentTab = nil
+    Sections = {left = {}, right = {}}
+    SectionCount = {left = 0, right = 0}
+    ActiveKeybinds = {}
+    Dragging = false
+    DragStart = nil
+    DragStartPosition = nil
+    GlobalTabInlineIndicator = nil
+    
+    -- Recreate the main ScreenGui
+    ScreenGui = Instance.new("ScreenGui")
+    ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+    ScreenGui.ResetOnSpawn = false
+    ScreenGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
+    
+    -- Recreate MainFrame
+    MainFrame = Instance.new("Frame")
+    MainFrame.AnchorPoint = Vector2.new(0.5, 0.5)
+    MainFrame.Name = "MainFrame"
+    MainFrame.Position = UDim2.new(0.5, 0, 0.5, 0)
+    MainFrame.BorderColor3 = Color3.fromRGB(0, 0, 0)
+    MainFrame.Size = UDim2.new(0, 720, 0, 550)
+    MainFrame.BorderSizePixel = 0
+    MainFrame.BackgroundColor3 = Color3.fromRGB(12, 12, 12)
+    MainFrame.Parent = ScreenGui
+    
+    local UICorner = Instance.new("UICorner")
+    UICorner.CornerRadius = UDim.new(0, 4)
+    UICorner.Parent = MainFrame
+    
+    -- Recreate Container
+    Container = Instance.new("Frame")
+    Container.Name = "Container"
+    Container.Position = UDim2.new(0.02857903391122818, 0, 0.056512895971536636, 0)
+    Container.BorderColor3 = Color3.fromRGB(0, 0, 0)
+    Container.Size = UDim2.new(0, 678, 0, 505)
+    Container.BorderSizePixel = 0
+    Container.BackgroundColor3 = Color3.fromRGB(11, 11, 11)
+    Container.Parent = MainFrame
+    
+    local UICorner = Instance.new("UICorner")
+    UICorner.CornerRadius = UDim.new(0, 4)
+    UICorner.Parent = Container
+    
+    -- Recreate Top_Bar
+    Top_Bar = Instance.new("Frame")
+    Top_Bar.Name = "Top_Bar"
+    Top_Bar.Position = UDim2.new(0.04027777910232544, 0, 0.07454545795917511, 0)
+    Top_Bar.BorderColor3 = Color3.fromRGB(0, 0, 0)
+    Top_Bar.Size = UDim2.new(0, 660, 0, 65)
+    Top_Bar.BorderSizePixel = 0
+    Top_Bar.BackgroundColor3 = Color3.fromRGB(12, 12, 12)
+    Top_Bar.Parent = MainFrame
+    
+    local UICorner = Instance.new("UICorner")
+    UICorner.CornerRadius = UDim.new(0, 4)
+    UICorner.Parent = Top_Bar
+    
+    -- Recreate library name and icon
+    Libary_Name = Instance.new("TextLabel")
+    Libary_Name.FontFace = Font.new("rbxassetid://12187365364", Enum.FontWeight.SemiBold, Enum.FontStyle.Normal)
+    Libary_Name.TextColor3 = Color3.fromRGB(255, 255, 255)
+    Libary_Name.BorderColor3 = Color3.fromRGB(0, 0, 0)
+    Libary_Name.Text = "STARHUB"
+    Libary_Name.Name = "Libary_Name"
+    Libary_Name.AnchorPoint = Vector2.new(0, 0.5)
+    Libary_Name.Size = UDim2.new(0, 1, 0, 1)
+    Libary_Name.BackgroundTransparency = 1
+    Libary_Name.Position = UDim2.new(0.03999999910593033, 11, 0.3919999897480011, 0)
+    Libary_Name.BorderSizePixel = 0
+    Libary_Name.AutomaticSize = Enum.AutomaticSize.XY
+    Libary_Name.TextSize = 21
+    Libary_Name.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    Libary_Name.Parent = Top_Bar
+    
+    Libary_Icon = Instance.new("ImageLabel")
+    Libary_Icon.ImageColor3 = Color3.fromRGB(170, 85, 255)
+    Libary_Icon.BorderColor3 = Color3.fromRGB(0, 0, 0)
+    Libary_Icon.Name = "Libary_Icon"
+    Libary_Icon.Image = "rbxassetid://132964100967987"
+    Libary_Icon.BackgroundTransparency = 1
+    Libary_Icon.Position = UDim2.new(-0.2936060428619385, 0, 0, 0)
+    Libary_Icon.Size = UDim2.new(0, 20, 0, 20)
+    Libary_Icon.BorderSizePixel = 0
+    Libary_Icon.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    Libary_Icon.Parent = Libary_Name
+    
+    -- Recreate build date
+    Build_Date = Instance.new("TextLabel")
+    Build_Date.FontFace = Font.new("rbxassetid://12187365364", Enum.FontWeight.SemiBold, Enum.FontStyle.Normal)
+    Build_Date.TextColor3 = Color3.fromRGB(64, 64, 63)
+    Build_Date.BorderColor3 = Color3.fromRGB(0, 0, 0)
+    Build_Date.Text = "Build date: 4 Febuary"
+    Build_Date.Name = "Build_Date"
+    Build_Date.AnchorPoint = Vector2.new(0, 0.5)
+    Build_Date.Size = UDim2.new(0, 1, 0, 1)
+    Build_Date.BackgroundTransparency = 1
+    Build_Date.Position = UDim2.new(0.0020000000949949026, 11, 0.6650000214576721, 0)
+    Build_Date.BorderSizePixel = 0
+    Build_Date.AutomaticSize = Enum.AutomaticSize.XY
+    Build_Date.TextSize = 14
+    Build_Date.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    Build_Date.Parent = Top_Bar
+    
+    -- Recreate Header
+    Header = Instance.new("Frame")
+    Header.BorderColor3 = Color3.fromRGB(0, 0, 0)
+    Header.AnchorPoint = Vector2.new(1, 0.5)
+    Header.BackgroundTransparency = 1
+    Header.Position = UDim2.new(1, 0, 0.5, 0)
+    Header.Name = "Header"
+    Header.Size = UDim2.new(0, 508, 0, 65)
+    Header.BorderSizePixel = 0
+    Header.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    Header.Parent = Top_Bar
+    
+    local UIListLayout = Instance.new("UIListLayout")
+    UIListLayout.FillDirection = Enum.FillDirection.Horizontal
+    UIListLayout.HorizontalAlignment = Enum.HorizontalAlignment.Right
+    UIListLayout.Padding = UDim.new(0, 2)
+    UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+    UIListLayout.Parent = Header
+    
+    local UIPadding = Instance.new("UIPadding")
+    UIPadding.PaddingTop = UDim.new(0, 10)
+    UIPadding.PaddingRight = UDim.new(0, 20)
+    UIPadding.Parent = Header
+    
+    -- Recreate current tab display
+    Current_Tab_Icon = Instance.new("ImageLabel")
+    Current_Tab_Icon.ImageColor3 = Color3.fromRGB(58, 58, 58)
+    Current_Tab_Icon.BorderColor3 = Color3.fromRGB(0, 0, 0)
+    Current_Tab_Icon.Name = "Current_Tab_Icon"
+    Current_Tab_Icon.Image = "rbxassetid://74403797129667"
+    Current_Tab_Icon.BackgroundTransparency = 1
+    Current_Tab_Icon.Position = UDim2.new(0.031999967992305756, 0, 0.01890907995402813, 0)
+    Current_Tab_Icon.Size = UDim2.new(0, 25, 0, 20)
+    Current_Tab_Icon.BorderSizePixel = 0
+    Current_Tab_Icon.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    Current_Tab_Icon.Parent = MainFrame
+    
+    Current_Tab_Value = Instance.new("TextLabel")
+    Current_Tab_Value.FontFace = Font.new("rbxassetid://12187365364", Enum.FontWeight.Medium, Enum.FontStyle.Normal)
+    Current_Tab_Value.TextColor3 = Color3.fromRGB(58, 58, 58)
+    Current_Tab_Value.BorderColor3 = Color3.fromRGB(0, 0, 0)
+    Current_Tab_Value.Text = "main"
+    Current_Tab_Value.Name = "Current_Tab_Value"
+    Current_Tab_Value.AnchorPoint = Vector2.new(0, 0.5)
+    Current_Tab_Value.Size = UDim2.new(0, 1, 0, 1)
+    Current_Tab_Value.BackgroundTransparency = 1
+    Current_Tab_Value.Position = UDim2.new(0.0555555559694767, 11, 0.03590909019112587, 0)
+    Current_Tab_Value.BorderSizePixel = 0
+    Current_Tab_Value.AutomaticSize = Enum.AutomaticSize.XY
+    Current_Tab_Value.TextSize = 14
+    Current_Tab_Value.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    Current_Tab_Value.Parent = MainFrame
+    
+    -- Recreate UIScale
+    local UIScale = Instance.new("UIScale")
+    UIScale.Parent = MainFrame
+    
+    -- Re-enable the UI
+    ScreenGui.Enabled = true
+    
+    -- Re-make draggable
+    makeDraggable(MainFrame)
+    
+    print("UI Reloaded successfully!")
+end
+
 -- Return the library
 return Library
