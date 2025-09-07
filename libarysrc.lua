@@ -1588,6 +1588,13 @@ UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
                 }, 0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
                 arrowTween:Play()
                 
+                -- Ensure overlay state resets so UI is usable again
+                PopupOpenCount = math.max(0, PopupOpenCount - 1)
+                if PopupOpenCount == 0 then
+                    ModalOverlay.Visible = false
+                    BlockDragging = false
+                end
+                
                 dropdown.callback(option)
             end
         end)
