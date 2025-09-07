@@ -665,19 +665,6 @@ Build_Date.TextSize = 14
 Build_Date.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
 Build_Date.Parent = Top_Bar
 
-local Inline = Instance.new("Frame")
-Inline.AnchorPoint = Vector2.new(0.5, 1)
-Inline.Name = "Inline"
-Inline.Position = UDim2.new(0.7507575750350952, 0, 1, 0)
-Inline.BorderColor3 = Color3.fromRGB(0, 0, 0)
-Inline.Size = UDim2.new(0, 65, 0, 4)
-Inline.BorderSizePixel = 0
-Inline.BackgroundColor3 = Color3.fromRGB(115, 58, 173)
-Inline.Parent = Top_Bar
-
-local UICorner = Instance.new("UICorner")
-UICorner.CornerRadius = UDim.new(0, 30)
-UICorner.Parent = Inline
 
 local Header = Instance.new("Frame")
 Header.BorderColor3 = Color3.fromRGB(0, 0, 0)
@@ -1015,15 +1002,19 @@ function Library:SwitchTab(tab)
         local tabPosition = tab.tabFrame.Position
         local tabSize = tab.tabFrame.Size
         local inlineWidth = 65
-        local centerX = tabPosition.X.Offset + (tabSize.X.Offset / 2)
         
-        GlobalTabInlineIndicator.Position = UDim2.new(0, centerX - (inlineWidth / 2), 1, 4)
+        -- Calculate the center position of the tab relative to the Header
+        local tabCenterX = tabPosition.X.Offset + (tabSize.X.Offset / 2)
+        local headerWidth = Header.AbsoluteSize.X
+        local relativeX = tabCenterX / headerWidth
+        
+        GlobalTabInlineIndicator.Position = UDim2.new(relativeX, -32.5, 1, 4) -- -32.5 to center the 65px wide indicator
         GlobalTabInlineIndicator.Size = UDim2.new(0, inlineWidth, 0, 4)
         GlobalTabInlineIndicator.Visible = true
         
         -- Animate the inline indicator
         local inlineTween = createTween(GlobalTabInlineIndicator, {
-            Position = UDim2.new(0, centerX - (inlineWidth / 2), 1, 4),
+            Position = UDim2.new(relativeX, -32.5, 1, 4),
             Size = UDim2.new(0, inlineWidth, 0, 4)
         }, 0.3)
         inlineTween:Play()
