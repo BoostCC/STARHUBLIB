@@ -944,7 +944,8 @@ function Library:CreateTab(config)
         icon = config.icon or "rbxassetid://133833791023200",
         text = config.TabText or "Tab",
         sections = {left = {}, right = {}},
-        components = {}
+        components = {},
+        tabFrame = nil
     }
     
     -- Create tab button
@@ -991,6 +992,9 @@ function Library:CreateTab(config)
         Library:SwitchTab(tab)
     end)
     
+    -- Store tab frame reference
+    tab.tabFrame = tabFrame
+    
     -- Set as current tab if it's the first one
     if #CurrentWindow.tabs == 0 then
         Library:SwitchTab(tab)
@@ -1025,21 +1029,23 @@ function Library:SwitchTab(tab)
     if CurrentTab then
         -- Hide current tab sections
         for _, section in pairs(CurrentTab.sections.left) do
-            section.frame.Visible = false
+            if section.frame then
+                section.frame.Visible = false
+            end
         end
         for _, section in pairs(CurrentTab.sections.right) do
-            section.frame.Visible = false
+            if section.frame then
+                section.frame.Visible = false
+            end
         end
         
-        -- Update tab appearance
-        for _, tabFrame in pairs(Header:GetChildren()) do
-            if tabFrame.Name:find("Tab_") then
-                local icon = tabFrame:FindFirstChild("ImageLabel")
-                local text = icon and icon:FindFirstChild("TextLabel")
-                if icon and text then
-                    icon.ImageColor3 = Color3.fromRGB(58, 58, 58)
-                    text.TextColor3 = Color3.fromRGB(58, 58, 58)
-                end
+        -- Update current tab appearance to inactive
+        if CurrentTab.tabFrame then
+            local icon = CurrentTab.tabFrame:FindFirstChild("ImageLabel")
+            local text = icon and icon:FindFirstChild("TextLabel")
+            if icon and text then
+                icon.ImageColor3 = Color3.fromRGB(58, 58, 58)
+                text.TextColor3 = Color3.fromRGB(58, 58, 58)
             end
         end
     end
@@ -1048,21 +1054,23 @@ function Library:SwitchTab(tab)
     
     -- Show new tab sections
     for _, section in pairs(tab.sections.left) do
-        section.frame.Visible = true
+        if section.frame then
+            section.frame.Visible = true
+        end
     end
     for _, section in pairs(tab.sections.right) do
-        section.frame.Visible = true
+        if section.frame then
+            section.frame.Visible = true
+        end
     end
     
-    -- Update tab appearance
-    for _, tabFrame in pairs(Header:GetChildren()) do
-        if tabFrame.Name == "Tab_" .. tab.text then
-            local icon = tabFrame:FindFirstChild("ImageLabel")
-            local text = icon and icon:FindFirstChild("TextLabel")
-            if icon and text then
-                icon.ImageColor3 = Color3.fromRGB(115, 58, 173)
-                text.TextColor3 = Color3.fromRGB(115, 58, 173)
-            end
+    -- Update new tab appearance to active
+    if tab.tabFrame then
+        local icon = tab.tabFrame:FindFirstChild("ImageLabel")
+        local text = icon and icon:FindFirstChild("TextLabel")
+        if icon and text then
+            icon.ImageColor3 = Color3.fromRGB(115, 58, 173)
+            text.TextColor3 = Color3.fromRGB(115, 58, 173)
         end
     end
     
