@@ -262,6 +262,14 @@ function Library:CreateWindow(config)
     -- Create watermark
     Library:CreateWatermark()
     
+    -- Update watermark text with cheat name
+    if config.library_config and config.library_config.Cheat_Name and Watermark_Frame then
+        local watermarkText = Watermark_Frame:FindFirstChild("Libary_Name")
+        if watermarkText then
+            watermarkText.Text = config.library_config.Cheat_Name
+        end
+    end
+    
     -- Set up UI toggle keybind (only affects main UI, not notifications)
     if config.library_config and config.library_config.interface_keybind then
         local keybind = config.library_config.interface_keybind
@@ -312,10 +320,6 @@ function Library:CreateWindow(config)
     
     function window:CreateColorpicker(config)
         return Library:CreateColorpicker(config)
-    end
-    
-    function window:CreateWatermarkToggle(config)
-        return Library:CreateWatermarkToggle(config)
     end
     
     table.insert(Windows, window)
@@ -799,6 +803,10 @@ function Library:CreateSection(config)
     
     function section:CreateColorpicker(config)
         return Library:CreateColorpicker(config, self)
+    end
+    
+    function section:CreateWatermarkToggle(config)
+        return Library:CreateWatermarkToggle(config, self)
     end
     
     section.frame = sectionFrame
@@ -2231,7 +2239,7 @@ function Library:CreateWatermark()
     Libary_Name.FontFace = Font.new("rbxassetid://12187365364", Enum.FontWeight.SemiBold, Enum.FontStyle.Normal)
     Libary_Name.TextColor3 = Color3.fromRGB(255, 255, 255)
     Libary_Name.BorderColor3 = Color3.fromRGB(0, 0, 0)
-    Libary_Name.Text = "STARHUB"
+    Libary_Name.Text = "STARHUB" -- Default text, will be updated by CreateWindow
     Libary_Name.Name = "Libary_Name"
     Libary_Name.AnchorPoint = Vector2.new(0.5, 0.5)
     Libary_Name.Size = UDim2.new(0, 1, 0, 1)
@@ -2333,14 +2341,13 @@ function Library:ToggleWatermark(enabled)
     end
 end
 
-function Library:CreateWatermarkToggle(config)
-    if not CurrentWindow then
-        error("No window created. Call CreateWindow first.")
-    end
-    
-    local section = CurrentWindow.sections.left[1] or CurrentWindow.sections.right[1]
+function Library:CreateWatermarkToggle(config, section)
     if not section then
-        error("No section available. Create a section first.")
+        if not CurrentTab or not CurrentTab.sections.left[1] and not CurrentTab.sections.right[1] then
+            error("No section created. Call CreateSection first.")
+            return
+        end
+        section = CurrentTab.sections.left[1] or CurrentTab.sections.right[1]
     end
     
     local toggle = {
@@ -2996,6 +3003,14 @@ MainFrame.Visible = true
 
     -- Recreate watermark
     Library:CreateWatermark()
+    
+    -- Update watermark text with cheat name if available
+    if Libary_Name and Libary_Name.Text and Watermark_Frame then
+        local watermarkText = Watermark_Frame:FindFirstChild("Libary_Name")
+        if watermarkText then
+            watermarkText.Text = Libary_Name.Text
+        end
+    end
 
     makeDraggable(MainFrame)
 
