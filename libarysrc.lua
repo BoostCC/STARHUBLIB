@@ -552,26 +552,28 @@ function Library:SwitchTab(tab)
     if GlobalTabInlineIndicator and tab.tabContainer then
         GlobalTabInlineIndicator.Parent = tab.tabContainer
         GlobalTabInlineIndicator.Visible = true
-        -- start collapsed and slightly above for a slide-down + grow effect
+        -- reset start state every switch
         GlobalTabInlineIndicator.BackgroundTransparency = 1
         GlobalTabInlineIndicator.Position = UDim2.new(0.5, 0, 1, -6)
         GlobalTabInlineIndicator.Size = UDim2.new(0, 0, 0, 3)
 
-        -- parallel tweens: fade in, slide down, and width grow with a tiny overshoot
-        local fadeIn = createTween(GlobalTabInlineIndicator, {
-            BackgroundTransparency = 0
-        }, 0.15, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
-        fadeIn:Play()
+        -- Defer one frame so Roblox registers initial state before tweens
+        task.defer(function()
+            local fadeIn = createTween(GlobalTabInlineIndicator, {
+                BackgroundTransparency = 0
+            }, 0.18, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+            fadeIn:Play()
 
-        local slideDown = createTween(GlobalTabInlineIndicator, {
-            Position = UDim2.new(0.5, 0, 1, 0)
-        }, 0.25, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
-        slideDown:Play()
+            local slideDown = createTween(GlobalTabInlineIndicator, {
+                Position = UDim2.new(0.5, 0, 1, 0)
+            }, 0.28, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
+            slideDown:Play()
 
-        local grow = createTween(GlobalTabInlineIndicator, {
-            Size = UDim2.new(1, 1, 0, 3)
-        }, 0.3, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
-        grow:Play()
+            local grow = createTween(GlobalTabInlineIndicator, {
+                Size = UDim2.new(1, 1, 0, 3)
+            }, 0.32, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
+            grow:Play()
+        end)
     end
     
     -- Update current tab display
@@ -2161,18 +2163,18 @@ Current_Tab_Value.TextSize = 14
 Current_Tab_Value.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
 Current_Tab_Value.Parent = MainFrame
 
-    -- Recreate UIScale
+
     local UIScale = Instance.new("UIScale")
     UIScale.Parent = MainFrame
     
-    -- Re-enable the UI
+   
 ScreenGui.Enabled = true
 
-    -- Re-make draggable
+
     makeDraggable(MainFrame)
     
-    print("UI Reloaded successfully!")
+
 end
 
--- Return the library
+
 return Library
