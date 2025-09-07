@@ -875,7 +875,8 @@ function Library:CreateSlider(config, section)
     sliderBG.Size = UDim2.new(0, 278, 0, 3)
     sliderBG.Position = UDim2.new(0.4887655973434448, 0, 0.6625000238418579, 0)
     sliderBG.AnchorPoint = Vector2.new(0.5, 0.5)
-    sliderBG.BackgroundColor3 = Color3.fromRGB(53, 27, 81)
+    sliderBG.BackgroundColor3 = Color3.fromRGB(115, 58, 173)
+    sliderBG.BackgroundTransparency = 0.25
     sliderBG.Parent = sliderFrame
     
     local bgCorner = Instance.new("UICorner")
@@ -1206,9 +1207,69 @@ function Library:CreateColorpicker(config, section)
     HueDragger.Parent = Hue
     HueDragger.ZIndex = 1202
     
+    -- Alpha slider (vertical) with checkers
+    local Alpha = Instance.new("TextButton")
+    Alpha.FontFace = Font.new("rbxasset://fonts/families/SourceSansPro.json", Enum.FontWeight.Regular, Enum.FontStyle.Normal)
+    Alpha.TextColor3 = Color3.fromRGB(0, 0, 0)
+    Alpha.BorderColor3 = Color3.fromRGB(0, 0, 0)
+    Alpha.Text = ""
+    Alpha.AutoButtonColor = false
+    Alpha.AnchorPoint = Vector2.new(0, 0.5)
+    Alpha.Size = UDim2.new(0, 18, 0, 169)
+    Alpha.Name = "Alpha"
+    Alpha.Position = UDim2.new(1.19, 0, 0.5, 0)
+    Alpha.BorderSizePixel = 0
+    Alpha.BackgroundColor3 = Color3.fromRGB(255, 0, 4)
+    Alpha.Parent = SVFrame
+    Alpha.ZIndex = 1201
+
+    local Checkers = Instance.new("ImageLabel")
+    Checkers.ScaleType = Enum.ScaleType.Tile
+    Checkers.BorderColor3 = Color3.fromRGB(0, 0, 0)
+    Checkers.Name = "Checkers"
+    Checkers.Size = UDim2.new(1, 0, 1, 0)
+    Checkers.AnchorPoint = Vector2.new(0.5, 0.5)
+    Checkers.Image = "http://www.roblox.com/asset/?id=18274452449"
+    Checkers.TileSize = UDim2.new(0, 18, 0, 18)
+    Checkers.Position = UDim2.new(0.5, 0, 0.5, 0)
+    Checkers.Rotation = -180
+    Checkers.BorderSizePixel = 0
+    Checkers.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    Checkers.Parent = Alpha
+    Checkers.ZIndex = 1201
+
+    local UIGradientA = Instance.new("UIGradient")
+    UIGradientA.Transparency = NumberSequence.new{
+        NumberSequenceKeypoint.new(0, 1),
+        NumberSequenceKeypoint.new(1, 0)
+    }
+    UIGradientA.Parent = Checkers
+
+    local AlphaDragger = Instance.new("ImageLabel")
+    AlphaDragger.BorderColor3 = Color3.fromRGB(0, 0, 0)
+    AlphaDragger.Name = "Dragger"
+    AlphaDragger.Size = UDim2.new(0, 25, 0, 8)
+    AlphaDragger.AnchorPoint = Vector2.new(0.5, 0.5)
+    AlphaDragger.Image = "rbxassetid://107912043359755"
+    AlphaDragger.BackgroundTransparency = 1
+    AlphaDragger.Position = UDim2.new(0.5, 0, 0.5, 0)
+    AlphaDragger.BorderSizePixel = 0
+    AlphaDragger.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    AlphaDragger.Parent = Alpha
+    AlphaDragger.ZIndex = 1202
+
+    local AlphaDraggerLine = Instance.new("Frame")
+    AlphaDraggerLine.Name = "Dragger"
+    AlphaDraggerLine.BorderColor3 = Color3.fromRGB(0, 0, 0)
+    AlphaDraggerLine.Size = UDim2.new(0, 1, 1, 0)
+    AlphaDraggerLine.BorderSizePixel = 0
+    AlphaDraggerLine.BackgroundColor3 = Color3.fromRGB(255, 0, 4)
+    AlphaDraggerLine.Parent = Alpha
+    
     -- State
     local currentHue = 0
     local currentS, currentV = 1, 1
+    local currentA = 1
     
     local function updateSVFrame()
         SVFrame.BackgroundColor3 = Color3.fromHSV(currentHue, 1, 1)
@@ -1218,7 +1279,7 @@ function Library:CreateColorpicker(config, section)
         local c = Color3.fromHSV(currentHue, currentS, currentV)
         colorpicker.value = c
         Color_Frame.BackgroundColor3 = c
-        colorpicker.callback(c)
+        colorpicker.callback(c, currentA)
     end
     
     -- Open/close picker
@@ -1291,6 +1352,7 @@ function Library:CreateColorpicker(config, section)
     -- Drag handling
     local draggingSV = false
     local draggingHue = false
+    local draggingAlpha = false
     
     SVFrame.InputBegan:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 then
@@ -1320,10 +1382,22 @@ function Library:CreateColorpicker(config, section)
         updateColor()
     end)
     
+    Alpha.MouseButton1Down:Connect(function(input)
+        draggingAlpha = true
+        BlockDragging = true
+        local absPos = Alpha.AbsolutePosition
+        local absSize = Alpha.AbsoluteSize
+        local ry = math.clamp((input.Position.Y - absPos.Y) / absSize.Y, 0, 1)
+        currentA = 1 - ry
+        AlphaDragger.Position = UDim2.new(0.5, 0, ry, 0)
+        updateColor()
+    end)
+    
     UserInputService.InputEnded:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 then
             draggingSV = false
             draggingHue = false
+            draggingAlpha = false
             BlockDragging = false
         end
     end)
@@ -1349,6 +1423,14 @@ function Library:CreateColorpicker(config, section)
             updateSVFrame()
             updateColor()
         end
+        if draggingAlpha then
+            local absPos = Alpha.AbsolutePosition
+            local absSize = Alpha.AbsoluteSize
+            local ry = math.clamp((input.Position.Y - absPos.Y) / absSize.Y, 0, 1)
+            currentA = 1 - ry
+            AlphaDragger.Position = UDim2.new(0.5, 0, ry, 0)
+            updateColor()
+        end
     end)
     
     -- Initialize
@@ -1358,6 +1440,7 @@ function Library:CreateColorpicker(config, section)
         updateSVFrame()
         SVPicker.Position = UDim2.new(currentS, 0, 1 - currentV, 0)
         HueDragger.Position = UDim2.new(0.5, 0, currentHue, 0)
+        AlphaDragger.Position = UDim2.new(0.5, 0, 1 - currentA, 0)
         updateColor()
     end
     
