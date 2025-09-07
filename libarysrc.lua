@@ -197,6 +197,7 @@ Current_Tab_Value.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
 Current_Tab_Value.Parent = MainFrame
 
 ScreenGui.Enabled = true
+MainFrame.Visible = true
 
 -- Animation Functions
 local function createTween(object, properties, duration, easingStyle, easingDirection)
@@ -258,13 +259,13 @@ function Library:CreateWindow(config)
         Libary_Icon.Image = config.library_config.Cheat_Icon
     end
     
-    -- Set up UI toggle keybind
+    -- Set up UI toggle keybind (only affects main UI, not notifications)
     if config.library_config and config.library_config.interface_keybind then
         local keybind = config.library_config.interface_keybind
         UserInputService.InputBegan:Connect(function(input, gameProcessed)
             if gameProcessed then return end
             if input.KeyCode == Enum.KeyCode[keybind] then
-                ScreenGui.Enabled = not ScreenGui.Enabled
+                MainFrame.Visible = not MainFrame.Visible
             end
         end)
     else
@@ -272,7 +273,7 @@ function Library:CreateWindow(config)
         UserInputService.InputBegan:Connect(function(input, gameProcessed)
             if gameProcessed then return end
             if input.KeyCode == Enum.KeyCode.Insert then
-                ScreenGui.Enabled = not ScreenGui.Enabled
+                MainFrame.Visible = not MainFrame.Visible
             end
         end)
     end
@@ -2215,6 +2216,7 @@ function Library:CreateNotification(config)
         NotificationContainer.Position = UDim2.new(0.8169070482254028, 0, 0.014925372786819935, 0)
         NotificationContainer.AutomaticSize = Enum.AutomaticSize.XY
         NotificationContainer.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+        NotificationContainer.Visible = true -- Always visible, independent of main UI
         NotificationContainer.Parent = ScreenGui
         
         local UIListLayout = Instance.new("UIListLayout")
@@ -2694,6 +2696,7 @@ Current_Tab_Value.Parent = MainFrame
     
 
 ScreenGui.Enabled = true
+MainFrame.Visible = true
 
 
     makeDraggable(MainFrame)
