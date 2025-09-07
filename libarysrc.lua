@@ -1224,28 +1224,20 @@ function Library:CreateColorpicker(config, section)
     end)
 
     -- Close when clicking outside the popup
-    ScreenGui.InputBegan:Connect(function(input)
+    -- Close when clicking on the overlay (outside the popup)
+    ModalOverlay.MouseButton1Click:Connect(function()
         if not colorpicker.isOpen then return end
-        if input.UserInputType ~= Enum.UserInputType.MouseButton1 then return end
-        local pos = input.Position
-        local p = PickerContainer.AbsolutePosition
-        local s = PickerContainer.AbsoluteSize
-        local inside = pos.X >= p.X and pos.X <= p.X + s.X and pos.Y >= p.Y and pos.Y <= p.Y + s.Y
-        local fpos = Color_Frame.AbsolutePosition
-        local fsize = Color_Frame.AbsoluteSize
-        local onPreview = pos.X >= fpos.X and pos.X <= fpos.X + fsize.X and pos.Y >= fpos.Y and pos.Y <= fpos.Y + fsize.Y
-        if not inside and not onPreview then
-            colorpicker.isOpen = false
-            local fadeOut = createTween(PickerContainer, {BackgroundTransparency = 1}, 0.15)
-            fadeOut:Play()
-            local shrink = createTween(PickerContainer, {Size = UDim2.new(0, 225, 0, 0)}, 0.15)
-            shrink:Play()
-            shrink.Completed:Connect(function()
-                PickerContainer.Visible = false
-            end)
-            ModalOverlay.Visible = false
-            BlockDragging = false
-        end
+        if draggingSV or draggingHue then return end
+        colorpicker.isOpen = false
+        local fadeOut = createTween(PickerContainer, {BackgroundTransparency = 1}, 0.15)
+        fadeOut:Play()
+        local shrink = createTween(PickerContainer, {Size = UDim2.new(0, 225, 0, 0)}, 0.15)
+        shrink:Play()
+        shrink.Completed:Connect(function()
+            PickerContainer.Visible = false
+        end)
+        ModalOverlay.Visible = false
+        BlockDragging = false
     end)
     
     -- Drag handling
