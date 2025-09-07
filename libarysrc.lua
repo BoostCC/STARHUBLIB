@@ -1,4 +1,4 @@
--- STARHUB UI Library
+\-- STARHUB UI Library
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
@@ -2248,12 +2248,12 @@ function Library:CreateNotification(config)
         progressColor = Color3.fromRGB(1, 255, 141)
     end
     
-    -- Create notification frame with auto-sizing width
+    -- Create notification frame with proper auto-sizing
     local notificationFrame = Instance.new("Frame")
     notificationFrame.Name = "Notification_Frame"
     notificationFrame.Position = UDim2.new(0, 0, 0.8371886014938354, 0)
     notificationFrame.BorderColor3 = Color3.fromRGB(0, 0, 0)
-    notificationFrame.Size = UDim2.new(0, 1, 0, 60) -- Auto-size width, fixed height
+    notificationFrame.Size = UDim2.new(0, 1, 0, 60) -- Start with minimal width, fixed height
     notificationFrame.BorderSizePixel = 0
     notificationFrame.BackgroundColor3 = backgroundColor
     notificationFrame.AutomaticSize = Enum.AutomaticSize.X -- Auto-size width based on content
@@ -2269,6 +2269,46 @@ function Library:CreateNotification(config)
     glowEffect.Transparency = 0.7
     glowEffect.Thickness = 1
     glowEffect.Parent = notificationFrame
+    
+    -- Text label with proper sizing (create first so frame can auto-size)
+    local textLabel = Instance.new("TextLabel")
+    textLabel.RichText = true
+    textLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+    textLabel.BorderColor3 = Color3.fromRGB(0, 0, 0)
+    
+    -- Format text with type prefix
+    local typePrefix = ""
+    if notification.type == "success" then
+        typePrefix = '<font color="#01ff8d">SUCCESS</font> '
+    elseif notification.type == "warning" then
+        typePrefix = '<font color="#ffc107">WARNING</font> '
+    elseif notification.type == "error" then
+        typePrefix = '<font color="#dc3545">ERROR</font> '
+    elseif notification.type == "custom" and notification.color then
+        local hexColor = string.format("#%02x%02x%02x", 
+            math.floor(notification.color.R * 255),
+            math.floor(notification.color.G * 255),
+            math.floor(notification.color.B * 255)
+        )
+        typePrefix = '<font color="' .. hexColor .. '">CUSTOM</font> '
+    else
+        typePrefix = '<font color="#01ff8d">SUCCESS</font> '
+    end
+    
+    textLabel.Text = typePrefix .. notification.text
+    textLabel.Size = UDim2.new(0, 1, 0, 40) -- Auto-size width, fixed height
+    textLabel.AnchorPoint = Vector2.new(0, 0)
+    textLabel.BorderSizePixel = 0
+    textLabel.BackgroundTransparency = 1
+    textLabel.Position = UDim2.new(0, 16, 0, 10) -- 16px padding from left, 10px from top
+    textLabel.FontFace = Font.new("rbxassetid://12187365364", Enum.FontWeight.Regular, Enum.FontStyle.Normal)
+    textLabel.TextSize = 18 -- Bigger text
+    textLabel.AutomaticSize = Enum.AutomaticSize.X -- Auto-size width based on text
+    textLabel.TextWrapped = false -- No text wrapping
+    textLabel.TextXAlignment = Enum.TextXAlignment.Left
+    textLabel.TextYAlignment = Enum.TextYAlignment.Top
+    textLabel.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    textLabel.Parent = notificationFrame
     
     -- Progress background with proper positioning and padding
     local progressBG = Instance.new("Frame")
@@ -2332,46 +2372,6 @@ function Library:CreateNotification(config)
     end
     progressGradient.Parent = progressBar
     
-    -- Text label with fixed sizing
-    local textLabel = Instance.new("TextLabel")
-    textLabel.RichText = true
-    textLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-    textLabel.BorderColor3 = Color3.fromRGB(0, 0, 0)
-    
-    -- Format text with type prefix
-    local typePrefix = ""
-    if notification.type == "success" then
-        typePrefix = '<font color="#01ff8d">SUCCESS</font> '
-    elseif notification.type == "warning" then
-        typePrefix = '<font color="#ffc107">WARNING</font> '
-    elseif notification.type == "error" then
-        typePrefix = '<font color="#dc3545">ERROR</font> '
-    elseif notification.type == "custom" and notification.color then
-        local hexColor = string.format("#%02x%02x%02x", 
-            math.floor(notification.color.R * 255),
-            math.floor(notification.color.G * 255),
-            math.floor(notification.color.B * 255)
-        )
-        typePrefix = '<font color="' .. hexColor .. '">CUSTOM</font> '
-    else
-        typePrefix = '<font color="#01ff8d">SUCCESS</font> '
-    end
-    
-    textLabel.Text = typePrefix .. notification.text
-    textLabel.Size = UDim2.new(0, 1, 0, 40) -- Auto-size width, fixed height
-    textLabel.AnchorPoint = Vector2.new(0, 0)
-    textLabel.BorderSizePixel = 0
-    textLabel.BackgroundTransparency = 1
-    textLabel.Position = UDim2.new(0, 16, 0, 10) -- 16px padding from left, 10px from top
-    textLabel.FontFace = Font.new("rbxassetid://12187365364", Enum.FontWeight.Regular, Enum.FontStyle.Normal)
-    textLabel.TextSize = 18 -- Bigger text
-    textLabel.AutomaticSize = Enum.AutomaticSize.X -- Auto-size width based on text
-    textLabel.TextWrapped = false -- No text wrapping
-    textLabel.TextXAlignment = Enum.TextXAlignment.Left
-    textLabel.TextYAlignment = Enum.TextYAlignment.Top
-    textLabel.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-    textLabel.Parent = notificationFrame
-    
     -- Store references
     notification.frame = notificationFrame
     notification.progressBar = progressBar
@@ -2386,6 +2386,9 @@ function Library:CreateNotification(config)
     textLabel.TextTransparency = 1
     progressBar.Size = UDim2.new(0, 0, 1, 0) -- Start at 0 width
     progressBar.BackgroundTransparency = 0
+    
+    -- Wait a frame for text to properly size
+    task.wait()
     
     -- Simple slide in animation with proper easing
     local slideIn = createTween(notificationFrame, {
