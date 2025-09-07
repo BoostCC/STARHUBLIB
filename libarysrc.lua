@@ -2186,6 +2186,315 @@ function Library:CreateKeybind(config, section)
     return keybind
 end
 
+-- Notification System
+local NotificationContainer = nil
+local ActiveNotifications = {}
+
+function Library:CreateNotification(config)
+    local notification = {
+        text = config.Text or "Notification",
+        type = config.Type or "success", -- success, warning, error, custom
+        duration = config.Duration or 5,
+        color = config.Color or nil, -- Custom color for custom type
+        callback = config.Callback or function() end,
+        onClose = config.OnClose or function() end,
+        frame = nil,
+        progressBar = nil,
+        textLabel = nil,
+        isClosing = false
+    }
+    
+    -- Create notification container if it doesn't exist
+    if not NotificationContainer then
+        NotificationContainer = Instance.new("Frame")
+        NotificationContainer.Name = "NotificationContainer"
+        NotificationContainer.BorderColor3 = Color3.fromRGB(0, 0, 0)
+        NotificationContainer.Size = UDim2.new(0, 1, 0, 1)
+        NotificationContainer.BorderSizePixel = 0
+        NotificationContainer.BackgroundTransparency = 1
+        NotificationContainer.Position = UDim2.new(0.8169070482254028, 0, 0.014925372786819935, 0)
+        NotificationContainer.AutomaticSize = Enum.AutomaticSize.XY
+        NotificationContainer.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+        NotificationContainer.Parent = ScreenGui
+        
+        local UIListLayout = Instance.new("UIListLayout")
+        UIListLayout.Padding = UDim.new(0, 4)
+        UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+        UIListLayout.Parent = NotificationContainer
+    end
+    
+    -- Determine colors based on type
+    local backgroundColor, textColor, progressColor
+    if notification.type == "success" then
+        backgroundColor = Color3.fromRGB(11, 11, 11)
+        textColor = Color3.fromRGB(1, 255, 141)
+        progressColor = Color3.fromRGB(1, 255, 141)
+    elseif notification.type == "warning" then
+        backgroundColor = Color3.fromRGB(11, 11, 11)
+        textColor = Color3.fromRGB(255, 193, 7)
+        progressColor = Color3.fromRGB(255, 193, 7)
+    elseif notification.type == "error" then
+        backgroundColor = Color3.fromRGB(11, 11, 11)
+        textColor = Color3.fromRGB(220, 53, 69)
+        progressColor = Color3.fromRGB(220, 53, 69)
+    elseif notification.type == "custom" and notification.color then
+        backgroundColor = Color3.fromRGB(11, 11, 11)
+        textColor = notification.color
+        progressColor = notification.color
+    else
+        -- Default to success if custom type without color
+        backgroundColor = Color3.fromRGB(11, 11, 11)
+        textColor = Color3.fromRGB(1, 255, 141)
+        progressColor = Color3.fromRGB(1, 255, 141)
+    end
+    
+    -- Create notification frame
+    local notificationFrame = Instance.new("Frame")
+    notificationFrame.Name = "Notification_Frame"
+    notificationFrame.Position = UDim2.new(0, 0, 0.8371886014938354, 0)
+    notificationFrame.BorderColor3 = Color3.fromRGB(0, 0, 0)
+    notificationFrame.Size = UDim2.new(0, 208, 0, 55)
+    notificationFrame.BorderSizePixel = 0
+    notificationFrame.BackgroundColor3 = backgroundColor
+    notificationFrame.Parent = NotificationContainer
+    
+    local UICorner = Instance.new("UICorner")
+    UICorner.CornerRadius = UDim.new(0, 4)
+    UICorner.Parent = notificationFrame
+    
+    -- Progress background
+    local progressBG = Instance.new("Frame")
+    progressBG.Name = "Progress_BG"
+    progressBG.Position = UDim2.new(0.06022409349679947, 0, 0.7092226147651672, 0)
+    progressBG.BorderColor3 = Color3.fromRGB(0, 0, 0)
+    progressBG.Size = UDim2.new(0, 184, 0, 5)
+    progressBG.BorderSizePixel = 0
+    progressBG.BackgroundColor3 = Color3.fromRGB(23, 23, 23)
+    progressBG.Parent = notificationFrame
+    
+    local progressBGCorner = Instance.new("UICorner")
+    progressBGCorner.CornerRadius = UDim.new(0, 50)
+    progressBGCorner.Parent = progressBG
+    
+    -- Progress bar
+    local progressBar = Instance.new("Frame")
+    progressBar.AnchorPoint = Vector2.new(0.5, 0.5)
+    progressBar.Name = "Progress_Bar"
+    progressBar.Position = UDim2.new(0.2974359095096588, 0, 0.5, 0)
+    progressBar.BorderColor3 = Color3.fromRGB(0, 0, 0)
+    progressBar.Size = UDim2.new(0, 116, 0, 5)
+    progressBar.BorderSizePixel = 0
+    progressBar.BackgroundColor3 = progressColor
+    progressBar.Parent = progressBG
+    
+    local progressBarCorner = Instance.new("UICorner")
+    progressBarCorner.CornerRadius = UDim.new(0, 50)
+    progressBarCorner.Parent = progressBar
+    
+    -- Add gradient for better visual appeal
+    local progressGradient = Instance.new("UIGradient")
+    if notification.type == "success" then
+        progressGradient.Color = ColorSequence.new{
+            ColorSequenceKeypoint.new(0, Color3.fromRGB(1, 255, 141)),
+            ColorSequenceKeypoint.new(1, Color3.fromRGB(0, 98, 54))
+        }
+    elseif notification.type == "warning" then
+        progressGradient.Color = ColorSequence.new{
+            ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 193, 7)),
+            ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 152, 0))
+        }
+    elseif notification.type == "error" then
+        progressGradient.Color = ColorSequence.new{
+            ColorSequenceKeypoint.new(0, Color3.fromRGB(220, 53, 69)),
+            ColorSequenceKeypoint.new(1, Color3.fromRGB(183, 28, 28))
+        }
+    elseif notification.type == "custom" and notification.color then
+        local h, s, v = notification.color:ToHSV()
+        local darkerColor = Color3.fromHSV(h, s, math.max(0, v - 0.3))
+        progressGradient.Color = ColorSequence.new{
+            ColorSequenceKeypoint.new(0, notification.color),
+            ColorSequenceKeypoint.new(1, darkerColor)
+        }
+    else
+        progressGradient.Color = ColorSequence.new{
+            ColorSequenceKeypoint.new(0, Color3.fromRGB(1, 255, 141)),
+            ColorSequenceKeypoint.new(1, Color3.fromRGB(0, 98, 54))
+        }
+    end
+    progressGradient.Parent = progressBar
+    
+    -- Text label
+    local textLabel = Instance.new("TextLabel")
+    textLabel.RichText = true
+    textLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+    textLabel.BorderColor3 = Color3.fromRGB(0, 0, 0)
+    
+    -- Format text with type prefix
+    local typePrefix = ""
+    if notification.type == "success" then
+        typePrefix = '<font color="#01ff8d">SUCCESS</font> '
+    elseif notification.type == "warning" then
+        typePrefix = '<font color="#ffc107">WARNING</font> '
+    elseif notification.type == "error" then
+        typePrefix = '<font color="#dc3545">ERROR</font> '
+    elseif notification.type == "custom" and notification.color then
+        local hexColor = string.format("#%02x%02x%02x", 
+            math.floor(notification.color.R * 255),
+            math.floor(notification.color.G * 255),
+            math.floor(notification.color.B * 255)
+        )
+        typePrefix = '<font color="' .. hexColor .. '">CUSTOM</font> '
+    else
+        typePrefix = '<font color="#01ff8d">SUCCESS</font> '
+    end
+    
+    textLabel.Text = typePrefix .. notification.text
+    textLabel.Size = UDim2.new(0, 1, 0, 1)
+    textLabel.AnchorPoint = Vector2.new(0.5, 0.5)
+    textLabel.BorderSizePixel = 0
+    textLabel.BackgroundTransparency = 1
+    textLabel.Position = UDim2.new(0.45412856340408325, 0, 0.393939346075058, 0)
+    textLabel.FontFace = Font.new("rbxassetid://12187365364", Enum.FontWeight.Regular, Enum.FontStyle.Normal)
+    textLabel.AutomaticSize = Enum.AutomaticSize.XY
+    textLabel.TextSize = 16
+    textLabel.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    textLabel.Parent = notificationFrame
+    
+    -- Store references
+    notification.frame = notificationFrame
+    notification.progressBar = progressBar
+    notification.textLabel = textLabel
+    
+    -- Add to active notifications
+    table.insert(ActiveNotifications, notification)
+    
+    -- Animate in
+    notificationFrame.Size = UDim2.new(0, 0, 0, 55)
+    notificationFrame.BackgroundTransparency = 1
+    textLabel.TextTransparency = 1
+    progressBar.Size = UDim2.new(0, 0, 0, 5)
+    
+    local slideIn = createTween(notificationFrame, {
+        Size = UDim2.new(0, 208, 0, 55),
+        BackgroundTransparency = 0
+    }, 0.3, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
+    slideIn:Play()
+    
+    local fadeIn = createTween(textLabel, {
+        TextTransparency = 0
+    }, 0.3, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+    fadeIn:Play()
+    
+    -- Start progress bar animation
+    local progressTween = createTween(progressBar, {
+        Size = UDim2.new(0, 184, 0, 5)
+    }, notification.duration, Enum.EasingStyle.Linear, Enum.EasingDirection.Out)
+    progressTween:Play()
+    
+    -- Auto-close after duration
+    task.spawn(function()
+        task.wait(notification.duration)
+        if not notification.isClosing then
+            Library:CloseNotification(notification)
+        end
+    end)
+    
+    -- Click to close functionality
+    local clickButton = Instance.new("TextButton")
+    clickButton.BackgroundTransparency = 1
+    clickButton.Size = UDim2.new(1, 0, 1, 0)
+    clickButton.Text = ""
+    clickButton.Parent = notificationFrame
+    
+    clickButton.MouseButton1Click:Connect(function()
+        if not notification.isClosing then
+            notification.callback(notification)
+            Library:CloseNotification(notification)
+        end
+    end)
+    
+    return notification
+end
+
+function Library:CloseNotification(notification)
+    if notification.isClosing then return end
+    notification.isClosing = true
+    
+    -- Call onClose callback
+    notification.onClose(notification)
+    
+    -- Animate out
+    local slideOut = createTween(notification.frame, {
+        Size = UDim2.new(0, 0, 0, 55),
+        BackgroundTransparency = 1
+    }, 0.2, Enum.EasingStyle.Back, Enum.EasingDirection.In)
+    slideOut:Play()
+    
+    local fadeOut = createTween(notification.textLabel, {
+        TextTransparency = 1
+    }, 0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.In)
+    fadeOut:Play()
+    
+    slideOut.Completed:Connect(function()
+        notification.frame:Destroy()
+        -- Remove from active notifications
+        for i, notif in ipairs(ActiveNotifications) do
+            if notif == notification then
+                table.remove(ActiveNotifications, i)
+                break
+            end
+        end
+    end)
+end
+
+function Library:CloseAllNotifications()
+    for _, notification in ipairs(ActiveNotifications) do
+        Library:CloseNotification(notification)
+    end
+end
+
+-- Convenience methods for different notification types
+function Library:NotifySuccess(text, duration, callback, onClose)
+    return Library:CreateNotification({
+        Text = text,
+        Type = "success",
+        Duration = duration or 5,
+        Callback = callback or function() end,
+        OnClose = onClose or function() end
+    })
+end
+
+function Library:NotifyWarning(text, duration, callback, onClose)
+    return Library:CreateNotification({
+        Text = text,
+        Type = "warning",
+        Duration = duration or 5,
+        Callback = callback or function() end,
+        OnClose = onClose or function() end
+    })
+end
+
+function Library:NotifyError(text, duration, callback, onClose)
+    return Library:CreateNotification({
+        Text = text,
+        Type = "error",
+        Duration = duration or 5,
+        Callback = callback or function() end,
+        OnClose = onClose or function() end
+    })
+end
+
+function Library:NotifyCustom(text, color, duration, callback, onClose)
+    return Library:CreateNotification({
+        Text = text,
+        Type = "custom",
+        Color = color,
+        Duration = duration or 5,
+        Callback = callback or function() end,
+        OnClose = onClose or function() end
+    })
+end
+
 -- Reload function to unload old UI and load new one
 function Library:Reload()
     -- Destroy existing UI
@@ -2204,6 +2513,8 @@ function Library:Reload()
     DragStart = nil
     DragStartPosition = nil
     GlobalTabInlineIndicator = nil
+    NotificationContainer = nil
+    ActiveNotifications = {}
     
     -- Recreate the main ScreenGui
     ScreenGui = Instance.new("ScreenGui")
