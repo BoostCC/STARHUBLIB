@@ -1271,8 +1271,8 @@ function Library:CreateColorpicker(config, section)
     local Hue = Instance.new("ImageButton")
     Hue.Name = "Hue"
     Hue.AnchorPoint = Vector2.new(0, 0.5)
-    Hue.Position = UDim2.new(1.01, 0, 0.5, 0)
-    Hue.Size = UDim2.new(0, 18, 0, 169)
+    Hue.Position = UDim2.new(1.0094738006591797, 0, 0.49673840403556824, 0)
+    Hue.Size = UDim2.new(0.1120000034570694, -1, 1.0479999780654907, -8)
     Hue.BorderSizePixel = 0
     Hue.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
     Hue.Image = "http://www.roblox.com/asset/?id=14684557999"
@@ -1290,7 +1290,7 @@ function Library:CreateColorpicker(config, section)
     HueDragger.BackgroundTransparency = 1
     HueDragger.Image = "rbxassetid://107912043359755"
     HueDragger.Size = UDim2.new(0, 25, 0, 8)
-    HueDragger.Position = UDim2.new(0.5, 0, -0.02, 0)
+    HueDragger.Position = UDim2.new(0.49999937415122986, 0, -0.02365296334028244, 0)
     HueDragger.Parent = Hue
     HueDragger.ZIndex = 1202
     
@@ -1304,7 +1304,7 @@ function Library:CreateColorpicker(config, section)
     Alpha.AnchorPoint = Vector2.new(1, 0.5)
     Alpha.Size = UDim2.new(0.9940828680992126, 0, 0.11366861313581467, -1)
     Alpha.Name = "Alpha"
-    Alpha.Position = UDim2.new(1.06, 0, 0.5, 0)
+    Alpha.Position = UDim2.new(1.6952662467956543, 0, 0.49112436175346375, 0)
     Alpha.Rotation = -90
     Alpha.BorderSizePixel = 0
     Alpha.BackgroundColor3 = Color3.fromRGB(255, 0, 4)
