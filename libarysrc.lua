@@ -1254,9 +1254,17 @@ function Library:CreateColorpicker(config, section)
         end
     end)
     
+    -- Overlay button to capture clicks/drags over the color area (Frame can't receive MouseButton events)
+    local ColorframeButton = Instance.new("TextButton")
+    ColorframeButton.BackgroundTransparency = 1
+    ColorframeButton.Text = ""
+    ColorframeButton.Size = UDim2.new(1, 0, 1, 0)
+    ColorframeButton.BorderSizePixel = 0
+    ColorframeButton.Parent = Colorframe
+
     -- Color picker functionality
     local pickerConnection
-    Colorframe.MouseButton1Down:Connect(function()
+    ColorframeButton.MouseButton1Down:Connect(function()
         pickerConnection = UserInputService.InputChanged:Connect(function(input)
             if input.UserInputType == Enum.UserInputType.MouseMovement then
                 local mousePos = UserInputService:GetMouseLocation()
