@@ -14,6 +14,7 @@ local Dragging = false
 local DragStart = nil
 local DragStartPosition = nil
 local GlobalTabInlineIndicator = nil
+local BlockDragging = false
 
 -- Create the main ScreenGui
 local ScreenGui = Instance.new("ScreenGui")
@@ -201,7 +202,7 @@ local function makeDraggable(frame)
     end
     
     frame.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        if input.UserInputType == Enum.UserInputType.MouseButton1 and not BlockDragging then
             dragToggle = true
             dragStart = input.Position
             startPos = frame.Position
@@ -1203,6 +1204,29 @@ function Library:CreateColorpicker(config, section)
             end)
         end
     end)
+
+    -- Close when clicking outside the popup
+    ScreenGui.InputBegan:Connect(function(input)
+        if not colorpicker.isOpen then return end
+        if input.UserInputType ~= Enum.UserInputType.MouseButton1 then return end
+        local pos = input.Position
+        local p = PickerContainer.AbsolutePosition
+        local s = PickerContainer.AbsoluteSize
+        local inside = pos.X >= p.X and pos.X <= p.X + s.X and pos.Y >= p.Y and pos.Y <= p.Y + s.Y
+        local fpos = Color_Frame.AbsolutePosition
+        local fsize = Color_Frame.AbsoluteSize
+        local onPreview = pos.X >= fpos.X and pos.X <= fpos.X + fsize.X and pos.Y >= fpos.Y and pos.Y <= fpos.Y + fsize.Y
+        if not inside and not onPreview then
+            colorpicker.isOpen = false
+            local fadeOut = createTween(PickerContainer, {BackgroundTransparency = 1}, 0.15)
+            fadeOut:Play()
+            local shrink = createTween(PickerContainer, {Size = UDim2.new(0, 225, 0, 0)}, 0.15)
+            shrink:Play()
+            shrink.Completed:Connect(function()
+                PickerContainer.Visible = false
+            end)
+        end
+    end)
     
     -- Drag handling
     local draggingSV = false
@@ -1211,12 +1235,13 @@ function Library:CreateColorpicker(config, section)
     SVFrame.InputBegan:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 then
             draggingSV = true
+            BlockDragging = true
             -- set initial pick on click
             local absPos = SVFrame.AbsolutePosition
             local absSize = SVFrame.AbsoluteSize
             local rx = math.clamp((input.Position.X - absPos.X) / absSize.X, 0, 1)
             local ry = math.clamp((input.Position.Y - absPos.Y) / absSize.Y, 0, 1)
-            currentS = rx
+            currentS = 1 - rx
             currentV = 1 - ry
             SVPicker.Position = UDim2.new(rx, 0, ry, 0)
             updateColor()
@@ -1224,6 +1249,7 @@ function Library:CreateColorpicker(config, section)
     end)
     Hue.MouseButton1Down:Connect(function(input)
         draggingHue = true
+        BlockDragging = true
         -- set initial hue on click
         local absPos = Hue.AbsolutePosition
         local absSize = Hue.AbsoluteSize
@@ -1238,6 +1264,7 @@ function Library:CreateColorpicker(config, section)
         if input.UserInputType == Enum.UserInputType.MouseButton1 then
             draggingSV = false
             draggingHue = false
+            BlockDragging = false
         end
     end)
     
@@ -1248,7 +1275,7 @@ function Library:CreateColorpicker(config, section)
             local absSize = SVFrame.AbsoluteSize
             local rx = math.clamp((input.Position.X - absPos.X) / absSize.X, 0, 1)
             local ry = math.clamp((input.Position.Y - absPos.Y) / absSize.Y, 0, 1)
-            currentS = rx
+            currentS = 1 - rx
             currentV = 1 - ry
             SVPicker.Position = UDim2.new(rx, 0, ry, 0)
             updateColor()
