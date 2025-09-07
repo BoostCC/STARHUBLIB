@@ -17,7 +17,7 @@ local GlobalTabInlineIndicator = nil
 
 -- Create the main ScreenGui
 local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Global
 ScreenGui.ResetOnSpawn = false
 ScreenGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
 
@@ -589,12 +589,12 @@ function Library:CreateSection(config)
     local shadowGradient = Instance.new("UIGradient")
     shadowGradient.Rotation = 7
     shadowGradient.Transparency = NumberSequence.new{
-        NumberSequenceKeypoint.new(0, 0),
-        NumberSequenceKeypoint.new(0.69, 1),
-        NumberSequenceKeypoint.new(0.697, 0.981249988079071),
-        NumberSequenceKeypoint.new(0.706, 0.949999988079071),
-        NumberSequenceKeypoint.new(1, 0.987500011920929)
-    }
+	NumberSequenceKeypoint.new(0, 0),
+	NumberSequenceKeypoint.new(0.69, 1),
+	NumberSequenceKeypoint.new(0.697, 0.981249988079071),
+	NumberSequenceKeypoint.new(0.706, 0.949999988079071),
+	NumberSequenceKeypoint.new(1, 0.987500011920929)
+}
     shadowGradient.Parent = shadow
     
     -- Section name
@@ -942,40 +942,40 @@ function Library:CreateTextInput(config, section)
     }
     
     -- Create text input component
-    local TextInput_Component = Instance.new("Frame")
-    TextInput_Component.Name = "TextInput_Component"
-    TextInput_Component.BackgroundTransparency = 1
-    TextInput_Component.Position = UDim2.new(0, 0, 0.09732360392808914, 0)
-    TextInput_Component.BorderColor3 = Color3.fromRGB(0, 0, 0)
-    TextInput_Component.Size = UDim2.new(0, 318, 0, 40)
-    TextInput_Component.BorderSizePixel = 0
-    TextInput_Component.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+local TextInput_Component = Instance.new("Frame")
+TextInput_Component.Name = "TextInput_Component"
+TextInput_Component.BackgroundTransparency = 1
+TextInput_Component.Position = UDim2.new(0, 0, 0.09732360392808914, 0)
+TextInput_Component.BorderColor3 = Color3.fromRGB(0, 0, 0)
+TextInput_Component.Size = UDim2.new(0, 318, 0, 40)
+TextInput_Component.BorderSizePixel = 0
+TextInput_Component.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
     TextInput_Component.Parent = container
-    
+
     local Text_Input = Instance.new("TextBox")
-    Text_Input.FontFace = Font.new("rbxassetid://12187365364", Enum.FontWeight.SemiBold, Enum.FontStyle.Normal)
-    Text_Input.TextColor3 = Color3.fromRGB(109, 109, 109)
-    Text_Input.BorderColor3 = Color3.fromRGB(0, 0, 0)
+Text_Input.FontFace = Font.new("rbxassetid://12187365364", Enum.FontWeight.SemiBold, Enum.FontStyle.Normal)
+Text_Input.TextColor3 = Color3.fromRGB(109, 109, 109)
+Text_Input.BorderColor3 = Color3.fromRGB(0, 0, 0)
     Text_Input.PlaceholderText = textInput.text
     Text_Input.Text = ""
-    Text_Input.AnchorPoint = Vector2.new(0, 0.5)
-    Text_Input.Size = UDim2.new(0, 279, 0, 40)
-    Text_Input.Name = "Text_Input"
-    Text_Input.TextXAlignment = Enum.TextXAlignment.Left
-    Text_Input.Position = UDim2.new(0.04492206871509552, 0, 0.5, 0)
-    Text_Input.BorderSizePixel = 0
-    Text_Input.TextSize = 14
-    Text_Input.BackgroundColor3 = Color3.fromRGB(24, 24, 24)
-    Text_Input.Parent = TextInput_Component
-    
-    local UICorner = Instance.new("UICorner")
-    UICorner.CornerRadius = UDim.new(0, 6)
-    UICorner.Parent = Text_Input
-    
-    local UIPadding = Instance.new("UIPadding")
-    UIPadding.PaddingLeft = UDim.new(0, 12)
-    UIPadding.Parent = Text_Input
-    
+Text_Input.AnchorPoint = Vector2.new(0, 0.5)
+Text_Input.Size = UDim2.new(0, 279, 0, 40)
+Text_Input.Name = "Text_Input"
+Text_Input.TextXAlignment = Enum.TextXAlignment.Left
+Text_Input.Position = UDim2.new(0.04492206871509552, 0, 0.5, 0)
+Text_Input.BorderSizePixel = 0
+Text_Input.TextSize = 14
+Text_Input.BackgroundColor3 = Color3.fromRGB(24, 24, 24)
+Text_Input.Parent = TextInput_Component
+
+local UICorner = Instance.new("UICorner")
+UICorner.CornerRadius = UDim.new(0, 6)
+UICorner.Parent = Text_Input
+
+local UIPadding = Instance.new("UIPadding")
+UIPadding.PaddingLeft = UDim.new(0, 12)
+UIPadding.Parent = Text_Input
+
     -- Text input functionality
     Text_Input.FocusLost:Connect(function(enterPressed)
         textInput.value = Text_Input.Text
@@ -1039,55 +1039,55 @@ function Library:CreateDropdown(config, section)
     end
     
     -- Create dropdown component
-    local Dropdown_Component = Instance.new("Frame")
-    Dropdown_Component.Name = "Dropdown_Component"
-    Dropdown_Component.BackgroundTransparency = 1
-    Dropdown_Component.Position = UDim2.new(0, 0, 0.09732360392808914, 0)
-    Dropdown_Component.BorderColor3 = Color3.fromRGB(0, 0, 0)
-    Dropdown_Component.Size = UDim2.new(0, 318, 0, 40)
-    Dropdown_Component.BorderSizePixel = 0
-    Dropdown_Component.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+local Dropdown_Component = Instance.new("Frame")
+Dropdown_Component.Name = "Dropdown_Component"
+Dropdown_Component.BackgroundTransparency = 1
+Dropdown_Component.Position = UDim2.new(0, 0, 0.09732360392808914, 0)
+Dropdown_Component.BorderColor3 = Color3.fromRGB(0, 0, 0)
+Dropdown_Component.Size = UDim2.new(0, 318, 0, 40)
+Dropdown_Component.BorderSizePixel = 0
+Dropdown_Component.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
     Dropdown_Component.Parent = container
-    
-    local Dropdown = Instance.new("Frame")
-    Dropdown.AnchorPoint = Vector2.new(0.5, 0.5)
-    Dropdown.Name = "Dropdown"
-    Dropdown.Position = UDim2.new(0.4874213933944702, 0, 0.5, 0)
-    Dropdown.BorderColor3 = Color3.fromRGB(0, 0, 0)
-    Dropdown.Size = UDim2.new(0, 279, 0, 40)
-    Dropdown.BorderSizePixel = 0
-    Dropdown.BackgroundColor3 = Color3.fromRGB(23, 23, 23)
-    Dropdown.Parent = Dropdown_Component
-    
-    local UICorner = Instance.new("UICorner")
-    UICorner.CornerRadius = UDim.new(0, 4)
-    UICorner.Parent = Dropdown
-    
-    local Dropdown_Value = Instance.new("TextLabel")
-    Dropdown_Value.FontFace = Font.new("rbxassetid://12187365364", Enum.FontWeight.SemiBold, Enum.FontStyle.Normal)
-    Dropdown_Value.TextColor3 = Color3.fromRGB(109, 109, 109)
-    Dropdown_Value.BorderColor3 = Color3.fromRGB(0, 0, 0)
+
+local Dropdown = Instance.new("Frame")
+Dropdown.AnchorPoint = Vector2.new(0.5, 0.5)
+Dropdown.Name = "Dropdown"
+Dropdown.Position = UDim2.new(0.4874213933944702, 0, 0.5, 0)
+Dropdown.BorderColor3 = Color3.fromRGB(0, 0, 0)
+Dropdown.Size = UDim2.new(0, 279, 0, 40)
+Dropdown.BorderSizePixel = 0
+Dropdown.BackgroundColor3 = Color3.fromRGB(23, 23, 23)
+Dropdown.Parent = Dropdown_Component
+
+local UICorner = Instance.new("UICorner")
+UICorner.CornerRadius = UDim.new(0, 4)
+UICorner.Parent = Dropdown
+
+local Dropdown_Value = Instance.new("TextLabel")
+Dropdown_Value.FontFace = Font.new("rbxassetid://12187365364", Enum.FontWeight.SemiBold, Enum.FontStyle.Normal)
+Dropdown_Value.TextColor3 = Color3.fromRGB(109, 109, 109)
+Dropdown_Value.BorderColor3 = Color3.fromRGB(0, 0, 0)
     Dropdown_Value.Text = dropdown.value
-    Dropdown_Value.Name = "Dropdown_Value"
-    Dropdown_Value.Size = UDim2.new(0, 1, 0, 1)
-    Dropdown_Value.BackgroundTransparency = 1
-    Dropdown_Value.Position = UDim2.new(0.03831060975790024, 0, 0.32499998807907104, 0)
-    Dropdown_Value.BorderSizePixel = 0
-    Dropdown_Value.AutomaticSize = Enum.AutomaticSize.XY
-    Dropdown_Value.TextSize = 14
-    Dropdown_Value.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-    Dropdown_Value.Parent = Dropdown
-    
-    local ImageLabel = Instance.new("ImageLabel")
-    ImageLabel.ImageColor3 = Color3.fromRGB(109, 109, 109)
-    ImageLabel.BorderColor3 = Color3.fromRGB(0, 0, 0)
-    ImageLabel.Image = "rbxassetid://95652893039727"
-    ImageLabel.BackgroundTransparency = 1
-    ImageLabel.Position = UDim2.new(0.8745519518852234, 0, 0.25, 0)
-    ImageLabel.Size = UDim2.new(0, 20, 0, 20)
-    ImageLabel.BorderSizePixel = 0
-    ImageLabel.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-    ImageLabel.Parent = Dropdown
+Dropdown_Value.Name = "Dropdown_Value"
+Dropdown_Value.Size = UDim2.new(0, 1, 0, 1)
+Dropdown_Value.BackgroundTransparency = 1
+Dropdown_Value.Position = UDim2.new(0.03831060975790024, 0, 0.32499998807907104, 0)
+Dropdown_Value.BorderSizePixel = 0
+Dropdown_Value.AutomaticSize = Enum.AutomaticSize.XY
+Dropdown_Value.TextSize = 14
+Dropdown_Value.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+Dropdown_Value.Parent = Dropdown
+
+local ImageLabel = Instance.new("ImageLabel")
+ImageLabel.ImageColor3 = Color3.fromRGB(109, 109, 109)
+ImageLabel.BorderColor3 = Color3.fromRGB(0, 0, 0)
+ImageLabel.Image = "rbxassetid://95652893039727"
+ImageLabel.BackgroundTransparency = 1
+ImageLabel.Position = UDim2.new(0.8745519518852234, 0, 0.25, 0)
+ImageLabel.Size = UDim2.new(0, 20, 0, 20)
+ImageLabel.BorderSizePixel = 0
+ImageLabel.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+ImageLabel.Parent = Dropdown
     
     -- Create dropdown container (initially hidden)
     local Dropdown_Container = Instance.new("Frame")
@@ -1101,15 +1101,15 @@ function Library:CreateDropdown(config, section)
     Dropdown_Container.BackgroundColor3 = Color3.fromRGB(23, 23, 23)
     Dropdown_Container.Visible = false
     Dropdown_Container.BackgroundTransparency = 1
-    Dropdown_Container.ZIndex = 100
+    Dropdown_Container.ZIndex = 1000
     Dropdown_Container.Parent = Dropdown_Component
     
     local containerCorner = Instance.new("UICorner")
     containerCorner.CornerRadius = UDim.new(0, 4)
     containerCorner.Parent = Dropdown_Container
-    
-    local UIListLayout = Instance.new("UIListLayout")
-    UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+
+local UIListLayout = Instance.new("UIListLayout")
+UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
     UIListLayout.Parent = Dropdown_Container
     
     local containerPadding = Instance.new("UIPadding")
@@ -1127,7 +1127,7 @@ function Library:CreateDropdown(config, section)
         Frame.Size = UDim2.new(0, 276, 0, 20)
         Frame.BorderSizePixel = 0
         Frame.BackgroundColor3 = Color3.fromRGB(23, 23, 23)
-        Frame.ZIndex = 101
+        Frame.ZIndex = 1001
         Frame.Parent = Dropdown_Container
         
         local TextLabel = Instance.new("TextLabel")
@@ -1143,7 +1143,7 @@ function Library:CreateDropdown(config, section)
         TextLabel.AutomaticSize = Enum.AutomaticSize.XY
         TextLabel.TextSize = 16
         TextLabel.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-        TextLabel.ZIndex = 102
+        TextLabel.ZIndex = 1002
         TextLabel.Parent = Frame
         
         local Check_Icon = Instance.new("ImageLabel")
@@ -1157,7 +1157,7 @@ function Library:CreateDropdown(config, section)
         Check_Icon.Size = UDim2.new(0, 15, 0, 16)
         Check_Icon.BorderSizePixel = 0
         Check_Icon.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-        Check_Icon.ZIndex = 102
+        Check_Icon.ZIndex = 1002
         Check_Icon.Parent = Frame
         
         -- Initially hide check icon and position it to the right
@@ -1169,7 +1169,7 @@ function Library:CreateDropdown(config, section)
         optionButton.BackgroundTransparency = 1
         optionButton.Size = UDim2.new(1, 0, 1, 0)
         optionButton.Text = ""
-        optionButton.ZIndex = 103
+        optionButton.ZIndex = 1003
         optionButton.Parent = Frame
         
         optionButton.MouseButton1Click:Connect(function()
@@ -1620,7 +1620,7 @@ function Library:Reload()
     
     -- Recreate the main ScreenGui
     ScreenGui = Instance.new("ScreenGui")
-    ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+    ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Global
     ScreenGui.ResetOnSpawn = false
     ScreenGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
     
@@ -1634,9 +1634,9 @@ function Library:Reload()
     MainFrame.BorderSizePixel = 0
     MainFrame.BackgroundColor3 = Color3.fromRGB(12, 12, 12)
     MainFrame.Parent = ScreenGui
-    
-    local UICorner = Instance.new("UICorner")
-    UICorner.CornerRadius = UDim.new(0, 4)
+
+local UICorner = Instance.new("UICorner")
+UICorner.CornerRadius = UDim.new(0, 4)
     UICorner.Parent = MainFrame
     
     -- Recreate Container
@@ -1655,124 +1655,124 @@ function Library:Reload()
     
     -- Recreate Top_Bar
     Top_Bar = Instance.new("Frame")
-    Top_Bar.Name = "Top_Bar"
-    Top_Bar.Position = UDim2.new(0.04027777910232544, 0, 0.07454545795917511, 0)
-    Top_Bar.BorderColor3 = Color3.fromRGB(0, 0, 0)
-    Top_Bar.Size = UDim2.new(0, 660, 0, 65)
-    Top_Bar.BorderSizePixel = 0
-    Top_Bar.BackgroundColor3 = Color3.fromRGB(12, 12, 12)
-    Top_Bar.Parent = MainFrame
-    
-    local UICorner = Instance.new("UICorner")
-    UICorner.CornerRadius = UDim.new(0, 4)
-    UICorner.Parent = Top_Bar
-    
+Top_Bar.Name = "Top_Bar"
+Top_Bar.Position = UDim2.new(0.04027777910232544, 0, 0.07454545795917511, 0)
+Top_Bar.BorderColor3 = Color3.fromRGB(0, 0, 0)
+Top_Bar.Size = UDim2.new(0, 660, 0, 65)
+Top_Bar.BorderSizePixel = 0
+Top_Bar.BackgroundColor3 = Color3.fromRGB(12, 12, 12)
+Top_Bar.Parent = MainFrame
+
+local UICorner = Instance.new("UICorner")
+UICorner.CornerRadius = UDim.new(0, 4)
+UICorner.Parent = Top_Bar
+
     -- Recreate library name and icon
     Libary_Name = Instance.new("TextLabel")
-    Libary_Name.FontFace = Font.new("rbxassetid://12187365364", Enum.FontWeight.SemiBold, Enum.FontStyle.Normal)
-    Libary_Name.TextColor3 = Color3.fromRGB(255, 255, 255)
-    Libary_Name.BorderColor3 = Color3.fromRGB(0, 0, 0)
-    Libary_Name.Text = "STARHUB"
-    Libary_Name.Name = "Libary_Name"
-    Libary_Name.AnchorPoint = Vector2.new(0, 0.5)
-    Libary_Name.Size = UDim2.new(0, 1, 0, 1)
-    Libary_Name.BackgroundTransparency = 1
-    Libary_Name.Position = UDim2.new(0.03999999910593033, 11, 0.3919999897480011, 0)
-    Libary_Name.BorderSizePixel = 0
-    Libary_Name.AutomaticSize = Enum.AutomaticSize.XY
-    Libary_Name.TextSize = 21
-    Libary_Name.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-    Libary_Name.Parent = Top_Bar
-    
+Libary_Name.FontFace = Font.new("rbxassetid://12187365364", Enum.FontWeight.SemiBold, Enum.FontStyle.Normal)
+Libary_Name.TextColor3 = Color3.fromRGB(255, 255, 255)
+Libary_Name.BorderColor3 = Color3.fromRGB(0, 0, 0)
+Libary_Name.Text = "STARHUB"
+Libary_Name.Name = "Libary_Name"
+Libary_Name.AnchorPoint = Vector2.new(0, 0.5)
+Libary_Name.Size = UDim2.new(0, 1, 0, 1)
+Libary_Name.BackgroundTransparency = 1
+Libary_Name.Position = UDim2.new(0.03999999910593033, 11, 0.3919999897480011, 0)
+Libary_Name.BorderSizePixel = 0
+Libary_Name.AutomaticSize = Enum.AutomaticSize.XY
+Libary_Name.TextSize = 21
+Libary_Name.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+Libary_Name.Parent = Top_Bar
+
     Libary_Icon = Instance.new("ImageLabel")
-    Libary_Icon.ImageColor3 = Color3.fromRGB(170, 85, 255)
-    Libary_Icon.BorderColor3 = Color3.fromRGB(0, 0, 0)
-    Libary_Icon.Name = "Libary_Icon"
-    Libary_Icon.Image = "rbxassetid://132964100967987"
-    Libary_Icon.BackgroundTransparency = 1
-    Libary_Icon.Position = UDim2.new(-0.2936060428619385, 0, 0, 0)
-    Libary_Icon.Size = UDim2.new(0, 20, 0, 20)
-    Libary_Icon.BorderSizePixel = 0
-    Libary_Icon.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-    Libary_Icon.Parent = Libary_Name
-    
+Libary_Icon.ImageColor3 = Color3.fromRGB(170, 85, 255)
+Libary_Icon.BorderColor3 = Color3.fromRGB(0, 0, 0)
+Libary_Icon.Name = "Libary_Icon"
+Libary_Icon.Image = "rbxassetid://132964100967987"
+Libary_Icon.BackgroundTransparency = 1
+Libary_Icon.Position = UDim2.new(-0.2936060428619385, 0, 0, 0)
+Libary_Icon.Size = UDim2.new(0, 20, 0, 20)
+Libary_Icon.BorderSizePixel = 0
+Libary_Icon.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+Libary_Icon.Parent = Libary_Name
+
     -- Recreate build date
     Build_Date = Instance.new("TextLabel")
-    Build_Date.FontFace = Font.new("rbxassetid://12187365364", Enum.FontWeight.SemiBold, Enum.FontStyle.Normal)
-    Build_Date.TextColor3 = Color3.fromRGB(64, 64, 63)
-    Build_Date.BorderColor3 = Color3.fromRGB(0, 0, 0)
-    Build_Date.Text = "Build date: 4 Febuary"
-    Build_Date.Name = "Build_Date"
-    Build_Date.AnchorPoint = Vector2.new(0, 0.5)
-    Build_Date.Size = UDim2.new(0, 1, 0, 1)
-    Build_Date.BackgroundTransparency = 1
-    Build_Date.Position = UDim2.new(0.0020000000949949026, 11, 0.6650000214576721, 0)
-    Build_Date.BorderSizePixel = 0
-    Build_Date.AutomaticSize = Enum.AutomaticSize.XY
-    Build_Date.TextSize = 14
-    Build_Date.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-    Build_Date.Parent = Top_Bar
-    
+Build_Date.FontFace = Font.new("rbxassetid://12187365364", Enum.FontWeight.SemiBold, Enum.FontStyle.Normal)
+Build_Date.TextColor3 = Color3.fromRGB(64, 64, 63)
+Build_Date.BorderColor3 = Color3.fromRGB(0, 0, 0)
+Build_Date.Text = "Build date: 4 Febuary"
+Build_Date.Name = "Build_Date"
+Build_Date.AnchorPoint = Vector2.new(0, 0.5)
+Build_Date.Size = UDim2.new(0, 1, 0, 1)
+Build_Date.BackgroundTransparency = 1
+Build_Date.Position = UDim2.new(0.0020000000949949026, 11, 0.6650000214576721, 0)
+Build_Date.BorderSizePixel = 0
+Build_Date.AutomaticSize = Enum.AutomaticSize.XY
+Build_Date.TextSize = 14
+Build_Date.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+Build_Date.Parent = Top_Bar
+
     -- Recreate Header
     Header = Instance.new("Frame")
-    Header.BorderColor3 = Color3.fromRGB(0, 0, 0)
-    Header.AnchorPoint = Vector2.new(1, 0.5)
-    Header.BackgroundTransparency = 1
-    Header.Position = UDim2.new(1, 0, 0.5, 0)
-    Header.Name = "Header"
-    Header.Size = UDim2.new(0, 508, 0, 65)
-    Header.BorderSizePixel = 0
-    Header.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-    Header.Parent = Top_Bar
-    
-    local UIListLayout = Instance.new("UIListLayout")
-    UIListLayout.FillDirection = Enum.FillDirection.Horizontal
-    UIListLayout.HorizontalAlignment = Enum.HorizontalAlignment.Right
-    UIListLayout.Padding = UDim.new(0, 2)
-    UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
-    UIListLayout.Parent = Header
-    
-    local UIPadding = Instance.new("UIPadding")
-    UIPadding.PaddingTop = UDim.new(0, 10)
-    UIPadding.PaddingRight = UDim.new(0, 20)
-    UIPadding.Parent = Header
-    
+Header.BorderColor3 = Color3.fromRGB(0, 0, 0)
+Header.AnchorPoint = Vector2.new(1, 0.5)
+Header.BackgroundTransparency = 1
+Header.Position = UDim2.new(1, 0, 0.5, 0)
+Header.Name = "Header"
+Header.Size = UDim2.new(0, 508, 0, 65)
+Header.BorderSizePixel = 0
+Header.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+Header.Parent = Top_Bar
+
+local UIListLayout = Instance.new("UIListLayout")
+UIListLayout.FillDirection = Enum.FillDirection.Horizontal
+UIListLayout.HorizontalAlignment = Enum.HorizontalAlignment.Right
+UIListLayout.Padding = UDim.new(0, 2)
+UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+UIListLayout.Parent = Header
+
+local UIPadding = Instance.new("UIPadding")
+UIPadding.PaddingTop = UDim.new(0, 10)
+UIPadding.PaddingRight = UDim.new(0, 20)
+UIPadding.Parent = Header
+
     -- Recreate current tab display
     Current_Tab_Icon = Instance.new("ImageLabel")
-    Current_Tab_Icon.ImageColor3 = Color3.fromRGB(58, 58, 58)
-    Current_Tab_Icon.BorderColor3 = Color3.fromRGB(0, 0, 0)
-    Current_Tab_Icon.Name = "Current_Tab_Icon"
-    Current_Tab_Icon.Image = "rbxassetid://74403797129667"
-    Current_Tab_Icon.BackgroundTransparency = 1
-    Current_Tab_Icon.Position = UDim2.new(0.031999967992305756, 0, 0.01890907995402813, 0)
-    Current_Tab_Icon.Size = UDim2.new(0, 25, 0, 20)
-    Current_Tab_Icon.BorderSizePixel = 0
-    Current_Tab_Icon.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-    Current_Tab_Icon.Parent = MainFrame
-    
+Current_Tab_Icon.ImageColor3 = Color3.fromRGB(58, 58, 58)
+Current_Tab_Icon.BorderColor3 = Color3.fromRGB(0, 0, 0)
+Current_Tab_Icon.Name = "Current_Tab_Icon"
+Current_Tab_Icon.Image = "rbxassetid://74403797129667"
+Current_Tab_Icon.BackgroundTransparency = 1
+Current_Tab_Icon.Position = UDim2.new(0.031999967992305756, 0, 0.01890907995402813, 0)
+Current_Tab_Icon.Size = UDim2.new(0, 25, 0, 20)
+Current_Tab_Icon.BorderSizePixel = 0
+Current_Tab_Icon.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+Current_Tab_Icon.Parent = MainFrame
+
     Current_Tab_Value = Instance.new("TextLabel")
-    Current_Tab_Value.FontFace = Font.new("rbxassetid://12187365364", Enum.FontWeight.Medium, Enum.FontStyle.Normal)
-    Current_Tab_Value.TextColor3 = Color3.fromRGB(58, 58, 58)
-    Current_Tab_Value.BorderColor3 = Color3.fromRGB(0, 0, 0)
-    Current_Tab_Value.Text = "main"
-    Current_Tab_Value.Name = "Current_Tab_Value"
-    Current_Tab_Value.AnchorPoint = Vector2.new(0, 0.5)
-    Current_Tab_Value.Size = UDim2.new(0, 1, 0, 1)
-    Current_Tab_Value.BackgroundTransparency = 1
-    Current_Tab_Value.Position = UDim2.new(0.0555555559694767, 11, 0.03590909019112587, 0)
-    Current_Tab_Value.BorderSizePixel = 0
-    Current_Tab_Value.AutomaticSize = Enum.AutomaticSize.XY
-    Current_Tab_Value.TextSize = 14
-    Current_Tab_Value.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-    Current_Tab_Value.Parent = MainFrame
-    
+Current_Tab_Value.FontFace = Font.new("rbxassetid://12187365364", Enum.FontWeight.Medium, Enum.FontStyle.Normal)
+Current_Tab_Value.TextColor3 = Color3.fromRGB(58, 58, 58)
+Current_Tab_Value.BorderColor3 = Color3.fromRGB(0, 0, 0)
+Current_Tab_Value.Text = "main"
+Current_Tab_Value.Name = "Current_Tab_Value"
+Current_Tab_Value.AnchorPoint = Vector2.new(0, 0.5)
+Current_Tab_Value.Size = UDim2.new(0, 1, 0, 1)
+Current_Tab_Value.BackgroundTransparency = 1
+Current_Tab_Value.Position = UDim2.new(0.0555555559694767, 11, 0.03590909019112587, 0)
+Current_Tab_Value.BorderSizePixel = 0
+Current_Tab_Value.AutomaticSize = Enum.AutomaticSize.XY
+Current_Tab_Value.TextSize = 14
+Current_Tab_Value.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+Current_Tab_Value.Parent = MainFrame
+
     -- Recreate UIScale
     local UIScale = Instance.new("UIScale")
     UIScale.Parent = MainFrame
     
     -- Re-enable the UI
-    ScreenGui.Enabled = true
-    
+ScreenGui.Enabled = true
+
     -- Re-make draggable
     makeDraggable(MainFrame)
     
