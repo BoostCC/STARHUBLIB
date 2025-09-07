@@ -155,7 +155,7 @@ GlobalTabInlineIndicator.Position = UDim2.new(0.5, 0, 1, 0)
 GlobalTabInlineIndicator.BorderColor3 = Color3.fromRGB(0, 0, 0)
 GlobalTabInlineIndicator.Size = UDim2.new(0, 52, 0, 2)
 GlobalTabInlineIndicator.BorderSizePixel = 0
-GlobalTabInlineIndicator.BackgroundColor3 = Color3.fromRGB(115, 58, 173)
+GlobalTabInlineIndicator.BackgroundColor3 = Library.Accent
 GlobalTabInlineIndicator.Visible = false
 GlobalTabInlineIndicator.Parent = Header
 
