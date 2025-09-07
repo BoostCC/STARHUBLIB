@@ -2262,6 +2262,13 @@ function Library:CreateNotification(config)
     UICorner.CornerRadius = UDim.new(0, 4)
     UICorner.Parent = notificationFrame
     
+    -- Add subtle glow effect
+    local glowEffect = Instance.new("UIStroke")
+    glowEffect.Color = progressColor
+    glowEffect.Transparency = 0.7
+    glowEffect.Thickness = 1
+    glowEffect.Parent = notificationFrame
+    
     -- Progress background
     local progressBG = Instance.new("Frame")
     progressBG.Name = "Progress_BG"
@@ -2368,28 +2375,83 @@ function Library:CreateNotification(config)
     -- Add to active notifications
     table.insert(ActiveNotifications, notification)
     
-    -- Animate in
-    notificationFrame.Size = UDim2.new(0, 0, 0, 55)
+    -- Enhanced smooth and unique animations
+    -- Start with notification off-screen to the right and scaled down
+    notificationFrame.Size = UDim2.new(0, 0, 0, 0)
+    notificationFrame.Position = UDim2.new(1, 20, 0, 0) -- Start off-screen to the right
     notificationFrame.BackgroundTransparency = 1
+    notificationFrame.Rotation = 5 -- Slight rotation for unique effect
     textLabel.TextTransparency = 1
+    textLabel.TextStrokeTransparency = 0
+    textLabel.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
     progressBar.Size = UDim2.new(0, 0, 0, 5)
+    progressBar.BackgroundTransparency = 1
     
+    -- Initialize glow effect
+    local glowEffect = notificationFrame:FindFirstChild("UIStroke")
+    if glowEffect then
+        glowEffect.Transparency = 1
+    end
+    
+    -- Multi-stage entrance animation
+    -- Stage 1: Quick slide in from right with rotation and glow
     local slideIn = createTween(notificationFrame, {
+        Position = UDim2.new(0, 0, 0, 0),
         Size = UDim2.new(0, 208, 0, 55),
-        BackgroundTransparency = 0
-    }, 0.3, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
+        BackgroundTransparency = 0,
+        Rotation = 0
+    }, 0.4, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
     slideIn:Play()
     
-    local fadeIn = createTween(textLabel, {
-        TextTransparency = 0
-    }, 0.3, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
-    fadeIn:Play()
+    -- Glow effect animation
+    if glowEffect then
+        local glowIn = createTween(glowEffect, {
+            Transparency = 0.7
+        }, 0.3, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+        glowIn:Play()
+    end
     
-    -- Start progress bar animation
+    -- Stage 2: Text fade in with slight delay and bounce
+    task.wait(0.1) -- Small delay for staggered effect
+    local textFadeIn = createTween(textLabel, {
+        TextTransparency = 0,
+        TextStrokeTransparency = 1
+    }, 0.3, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+    textFadeIn:Play()
+    
+    -- Stage 3: Progress bar appears with smooth expansion
+    task.wait(0.15) -- Another small delay
+    local progressAppear = createTween(progressBar, {
+        BackgroundTransparency = 0
+    }, 0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+    progressAppear:Play()
+    
+    -- Enhanced progress bar animation with dynamic effects
+    task.wait(0.2) -- Wait for progress bar to appear first
     local progressTween = createTween(progressBar, {
         Size = UDim2.new(0, 184, 0, 5)
     }, notification.duration, Enum.EasingStyle.Linear, Enum.EasingDirection.Out)
     progressTween:Play()
+    
+    -- Add a subtle pulsing effect to the progress bar
+    local pulseConnection
+    pulseConnection = task.spawn(function()
+        while not notification.isClosing and progressBar.Parent do
+            local pulseTween = createTween(progressBar, {
+                Size = UDim2.new(progressBar.Size.X.Scale, progressBar.Size.X.Offset + 2, 0, 5)
+            }, 0.5, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut)
+            pulseTween:Play()
+            pulseTween.Completed:Wait()
+            
+            if not notification.isClosing and progressBar.Parent then
+                local pulseBack = createTween(progressBar, {
+                    Size = UDim2.new(progressBar.Size.X.Scale, progressBar.Size.X.Offset - 2, 0, 5)
+                }, 0.5, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut)
+                pulseBack:Play()
+                pulseBack.Completed:Wait()
+            end
+        end
+    end)
     
     -- Auto-close after duration
     task.spawn(function()
@@ -2399,12 +2461,31 @@ function Library:CreateNotification(config)
         end
     end)
     
-    -- Click to close functionality
+    -- Click to close functionality with hover effects
     local clickButton = Instance.new("TextButton")
     clickButton.BackgroundTransparency = 1
     clickButton.Size = UDim2.new(1, 0, 1, 0)
     clickButton.Text = ""
     clickButton.Parent = notificationFrame
+    
+    -- Hover effects for better interactivity
+    clickButton.MouseEnter:Connect(function()
+        if not notification.isClosing then
+            local hoverTween = createTween(notificationFrame, {
+                Size = UDim2.new(0, 212, 0, 57) -- Slightly larger on hover
+            }, 0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+            hoverTween:Play()
+        end
+    end)
+    
+    clickButton.MouseLeave:Connect(function()
+        if not notification.isClosing then
+            local normalTween = createTween(notificationFrame, {
+                Size = UDim2.new(0, 208, 0, 55) -- Back to normal size
+            }, 0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+            normalTween:Play()
+        end
+    end)
     
     clickButton.MouseButton1Click:Connect(function()
         if not notification.isClosing then
@@ -2423,17 +2504,40 @@ function Library:CloseNotification(notification)
     -- Call onClose callback
     notification.onClose(notification)
     
-    -- Animate out
-    local slideOut = createTween(notification.frame, {
-        Size = UDim2.new(0, 0, 0, 55),
+    -- Enhanced smooth and unique exit animation
+    -- Stage 1: Quick text fade out with stroke effect
+    local textFadeOut = createTween(notification.textLabel, {
+        TextTransparency = 1,
+        TextStrokeTransparency = 0
+    }, 0.15, Enum.EasingStyle.Quart, Enum.EasingDirection.In)
+    textFadeOut:Play()
+    
+    -- Stage 2: Progress bar shrinks and fades
+    local progressShrink = createTween(notification.progressBar, {
+        Size = UDim2.new(0, 0, 0, 5),
         BackgroundTransparency = 1
     }, 0.2, Enum.EasingStyle.Back, Enum.EasingDirection.In)
-    slideOut:Play()
+    progressShrink:Play()
     
-    local fadeOut = createTween(notification.textLabel, {
-        TextTransparency = 1
-    }, 0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.In)
-    fadeOut:Play()
+    -- Stage 3: Main frame slides out to the right with rotation and scale
+    task.wait(0.1) -- Small delay for staggered effect
+    
+    -- Glow effect fade out
+    local glowEffect = notification.frame:FindFirstChild("UIStroke")
+    if glowEffect then
+        local glowOut = createTween(glowEffect, {
+            Transparency = 1
+        }, 0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.In)
+        glowOut:Play()
+    end
+    
+    local slideOut = createTween(notification.frame, {
+        Position = UDim2.new(1, 20, 0, 0), -- Slide off-screen to the right
+        Size = UDim2.new(0, 0, 0, 0), -- Shrink to nothing
+        BackgroundTransparency = 1,
+        Rotation = -5 -- Slight rotation for unique effect
+    }, 0.3, Enum.EasingStyle.Back, Enum.EasingDirection.In)
+    slideOut:Play()
     
     slideOut.Completed:Connect(function()
         notification.frame:Destroy()
