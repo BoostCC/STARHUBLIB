@@ -2244,13 +2244,14 @@ function Library:CreateWatermark(cheatName)
     Libary_Name.BorderColor3 = Color3.fromRGB(0, 0, 0)
     Libary_Name.Text = cheatName or "STARHUB" -- Use provided cheat name or default
     Libary_Name.Name = "Libary_Name"
-    Libary_Name.AnchorPoint = Vector2.new(0.5, 0.5)
+    Libary_Name.AnchorPoint = Vector2.new(0, 0.5)
     Libary_Name.Size = UDim2.new(0, 1, 0, 1)
     Libary_Name.BackgroundTransparency = 1
-    Libary_Name.Position = UDim2.new(0, 45, 0.5, 0)
+    Libary_Name.Position = UDim2.new(0, 30, 0.5, 0)
     Libary_Name.BorderSizePixel = 0
     Libary_Name.AutomaticSize = Enum.AutomaticSize.XY
     Libary_Name.TextSize = 21
+    Libary_Name.TextXAlignment = Enum.TextXAlignment.Left
     Libary_Name.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
     Libary_Name.Parent = Watermark_Frame
     
