@@ -2270,23 +2270,22 @@ function Library:CreateNotification(config)
     glowEffect.Thickness = 1
     glowEffect.Parent = notificationFrame
     
-    -- Progress background with proper positioning
+    -- Progress background with proper positioning and padding
     local progressBG = Instance.new("Frame")
     progressBG.Name = "Progress_BG"
     progressBG.AnchorPoint = Vector2.new(0, 1) -- Anchor to bottom
-    progressBG.Position = UDim2.new(0, 12, 1, -8) -- 12px from left, 8px from bottom
+    progressBG.Position = UDim2.new(0, 16, 1, -8) -- 16px from left, 8px from bottom
     progressBG.BorderColor3 = Color3.fromRGB(0, 0, 0)
-    progressBG.Size = UDim2.new(0, 1, 0, 4) -- Auto-size width, 4px height
+    progressBG.Size = UDim2.new(1, -32, 0, 4) -- Full width minus 16px left and 16px right padding, 4px height
     progressBG.BorderSizePixel = 0
     progressBG.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
-    progressBG.AutomaticSize = Enum.AutomaticSize.X -- Auto-size width
     progressBG.Parent = notificationFrame
     
     local progressBGCorner = Instance.new("UICorner")
     progressBGCorner.CornerRadius = UDim.new(0, 50)
     progressBGCorner.Parent = progressBG
     
-    -- Progress bar with proper sizing
+    -- Progress bar with proper sizing and right padding
     local progressBar = Instance.new("Frame")
     progressBar.AnchorPoint = Vector2.new(0, 0.5)
     progressBar.Name = "Progress_Bar"
@@ -2363,7 +2362,7 @@ function Library:CreateNotification(config)
     textLabel.AnchorPoint = Vector2.new(0, 0)
     textLabel.BorderSizePixel = 0
     textLabel.BackgroundTransparency = 1
-    textLabel.Position = UDim2.new(0, 12, 0, 10) -- 12px padding from left, 10px from top
+    textLabel.Position = UDim2.new(0, 16, 0, 10) -- 16px padding from left, 10px from top
     textLabel.FontFace = Font.new("rbxassetid://12187365364", Enum.FontWeight.Regular, Enum.FontStyle.Normal)
     textLabel.TextSize = 18 -- Bigger text
     textLabel.AutomaticSize = Enum.AutomaticSize.X -- Auto-size width based on text
@@ -2388,16 +2387,16 @@ function Library:CreateNotification(config)
     progressBar.Size = UDim2.new(0, 0, 1, 0) -- Start at 0 width
     progressBar.BackgroundTransparency = 0
     
-    -- Simple slide in animation
+    -- Simple slide in animation with proper easing
     local slideIn = createTween(notificationFrame, {
         Size = UDim2.new(0, 1, 0, 60), -- Auto-size width
         BackgroundTransparency = 0
-    }, 0.3, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+    }, 0.4, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
     slideIn:Play()
     
     local textFadeIn = createTween(textLabel, {
         TextTransparency = 0
-    }, 0.3, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+    }, 0.4, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
     textFadeIn:Play()
     
     -- Progress bar animation - moves from left to right
@@ -2438,16 +2437,16 @@ function Library:CloseNotification(notification)
     -- Call onClose callback
     notification.onClose(notification)
     
-    -- Simple disappear animation
+    -- Simple disappear animation with proper easing
     local fadeOut = createTween(notification.frame, {
         Size = UDim2.new(0, 0, 0, 60),
         BackgroundTransparency = 1
-    }, 0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.In)
+    }, 0.3, Enum.EasingStyle.Back, Enum.EasingDirection.In)
     fadeOut:Play()
     
     local textFadeOut = createTween(notification.textLabel, {
         TextTransparency = 1
-    }, 0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.In)
+    }, 0.3, Enum.EasingStyle.Quart, Enum.EasingDirection.In)
     textFadeOut:Play()
     
     fadeOut.Completed:Connect(function()
