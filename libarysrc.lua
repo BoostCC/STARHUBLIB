@@ -2205,8 +2205,15 @@ function Library:CreateNotification(config)
         isClosing = false
     }
     
-    -- Create notification container if it doesn't exist
+    -- Create notification container if it doesn't exist (separate from main UI)
     if not NotificationContainer then
+        -- Create a separate ScreenGui just for notifications
+        local NotificationScreenGui = Instance.new("ScreenGui")
+        NotificationScreenGui.Name = "NotificationScreenGui"
+        NotificationScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Global
+        NotificationScreenGui.ResetOnSpawn = false
+        NotificationScreenGui.Parent = game:GetService("CoreGui")
+        
         NotificationContainer = Instance.new("Frame")
         NotificationContainer.Name = "NotificationContainer"
         NotificationContainer.BorderColor3 = Color3.fromRGB(0, 0, 0)
@@ -2217,7 +2224,7 @@ function Library:CreateNotification(config)
         NotificationContainer.AutomaticSize = Enum.AutomaticSize.XY
         NotificationContainer.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
         NotificationContainer.Visible = true -- Always visible, independent of main UI
-        NotificationContainer.Parent = ScreenGui
+        NotificationContainer.Parent = NotificationScreenGui
         
         local UIListLayout = Instance.new("UIListLayout")
         UIListLayout.Padding = UDim.new(0, 4)
@@ -2536,6 +2543,13 @@ function Library:Reload()
     ScreenGui.ResetOnSpawn = false
     ScreenGui.Parent = game:GetService("CoreGui")
     
+    -- Recreate notification ScreenGui (separate from main UI)
+    local NotificationScreenGui = Instance.new("ScreenGui")
+    NotificationScreenGui.Name = "NotificationScreenGui"
+    NotificationScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Global
+    NotificationScreenGui.ResetOnSpawn = false
+    NotificationScreenGui.Parent = game:GetService("CoreGui")
+    
     -- Recreate Modal overlay
     ModalOverlay = Instance.new("TextButton")
     ModalOverlay.Name = "ModalOverlay"
@@ -2695,9 +2709,26 @@ Current_Tab_Value.Parent = MainFrame
     UIScale.Parent = MainFrame
     
 
-ScreenGui.Enabled = true
+    ScreenGui.Enabled = true
 MainFrame.Visible = true
 
+    -- Recreate notification container in separate ScreenGui
+    NotificationContainer = Instance.new("Frame")
+    NotificationContainer.Name = "NotificationContainer"
+    NotificationContainer.BorderColor3 = Color3.fromRGB(0, 0, 0)
+    NotificationContainer.Size = UDim2.new(0, 1, 0, 1)
+    NotificationContainer.BorderSizePixel = 0
+    NotificationContainer.BackgroundTransparency = 1
+    NotificationContainer.Position = UDim2.new(0.8169070482254028, 0, 0.014925372786819935, 0)
+    NotificationContainer.AutomaticSize = Enum.AutomaticSize.XY
+    NotificationContainer.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    NotificationContainer.Visible = true
+    NotificationContainer.Parent = NotificationScreenGui
+    
+    local UIListLayout = Instance.new("UIListLayout")
+    UIListLayout.Padding = UDim.new(0, 4)
+    UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+    UIListLayout.Parent = NotificationContainer
 
     makeDraggable(MainFrame)
 
