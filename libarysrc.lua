@@ -289,6 +289,10 @@ function Library:CreateWindow(config)
         return Library:CreateKeybind(config)
     end
     
+    function window:CreateColorpicker(config)
+        return Library:CreateColorpicker(config)
+    end
+    
     table.insert(Windows, window)
     CurrentWindow = window
     
@@ -397,6 +401,10 @@ function Library:CreateTab(config)
     
     function tab:CreateKeybind(config)
         return Library:CreateKeybind(config)
+    end
+    
+    function tab:CreateColorpicker(config)
+        return Library:CreateColorpicker(config)
     end
     
     table.insert(CurrentWindow.tabs, tab)
@@ -648,6 +656,10 @@ function Library:CreateSection(config)
     
     function section:CreateKeybind(config)
         return Library:CreateKeybind(config, self)
+    end
+    
+    function section:CreateColorpicker(config)
+        return Library:CreateColorpicker(config, self)
     end
     
     section.frame = sectionFrame
@@ -1000,6 +1012,247 @@ UIPadding.Parent = Text_Input
     
     table.insert(section.components, textInput)
     return textInput
+end
+
+function Library:CreateColorpicker(config, section)
+    if not section then
+        if not CurrentTab or not CurrentTab.sections.left[1] and not CurrentTab.sections.right[1] then
+            error("No section created. Call CreateSection first.")
+            return
+        end
+        section = CurrentTab.sections.left[1] or CurrentTab.sections.right[1]
+    end
+    
+    local container = section.frame:FindFirstChild(section.position .. "_Container")
+    
+    local colorpicker = {
+        text = config.ColorpickerText or "Example Colorpicker",
+        value = config.defaultColor or Color3.fromRGB(255, 255, 255),
+        callback = config.callback or config.Callback or function() end,
+        isOpen = false
+    }
+    
+    -- Component shell (matches provided spec)
+    local Colorpicker_Component = Instance.new("Frame")
+    Colorpicker_Component.Name = "Colorpicker_Component"
+    Colorpicker_Component.BackgroundTransparency = 1
+    Colorpicker_Component.Position = UDim2.new(0, 0, 0.5633803009986877, 0)
+    Colorpicker_Component.BorderColor3 = Color3.fromRGB(0, 0, 0)
+    Colorpicker_Component.Size = UDim2.new(0, 318, 0, 30)
+    Colorpicker_Component.BorderSizePixel = 0
+    Colorpicker_Component.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    Colorpicker_Component.Parent = container
+    
+    local Colorpicker_Text = Instance.new("TextLabel")
+    Colorpicker_Text.FontFace = Font.new("rbxassetid://12187365364", Enum.FontWeight.Regular, Enum.FontStyle.Normal)
+    Colorpicker_Text.TextColor3 = Color3.fromRGB(255, 255, 255)
+    Colorpicker_Text.BorderColor3 = Color3.fromRGB(0, 0, 0)
+    Colorpicker_Text.Text = colorpicker.text
+    Colorpicker_Text.Name = "Colorpicker_Text"
+    Colorpicker_Text.AnchorPoint = Vector2.new(0, 0.5)
+    Colorpicker_Text.Size = UDim2.new(0, 1, 0, 1)
+    Colorpicker_Text.BackgroundTransparency = 1
+    Colorpicker_Text.Position = UDim2.new(0.044025156646966934, 0, 0.5, 0)
+    Colorpicker_Text.BorderSizePixel = 0
+    Colorpicker_Text.AutomaticSize = Enum.AutomaticSize.XY
+    Colorpicker_Text.TextSize = 16
+    Colorpicker_Text.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    Colorpicker_Text.Parent = Colorpicker_Component
+    
+    local Color_Frame = Instance.new("Frame")
+    Color_Frame.AnchorPoint = Vector2.new(1, 0.5)
+    Color_Frame.Name = "Color_Frame"
+    Color_Frame.Position = UDim2.new(0.9245283007621765, 0, 0.5, 0)
+    Color_Frame.BorderColor3 = Color3.fromRGB(0, 0, 0)
+    Color_Frame.Size = UDim2.new(0, 40, 0, 20)
+    Color_Frame.BorderSizePixel = 0
+    Color_Frame.BackgroundColor3 = colorpicker.value
+    Color_Frame.Parent = Colorpicker_Component
+    
+    local Color_Frame_UICorner = Instance.new("UICorner")
+    Color_Frame_UICorner.CornerRadius = UDim.new(0, 4)
+    Color_Frame_UICorner.Parent = Color_Frame
+    
+    -- Popup container for picker
+    local PickerContainer = Instance.new("Frame")
+    PickerContainer.Name = "PickerContainer"
+    PickerContainer.AnchorPoint = Vector2.new(1, 0)
+    PickerContainer.Position = UDim2.new(1, -10, 1, 6)
+    PickerContainer.Size = UDim2.new(0, 225, 0, 190)
+    PickerContainer.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+    PickerContainer.BorderSizePixel = 0
+    PickerContainer.Visible = false
+    PickerContainer.ZIndex = 1200
+    PickerContainer.Parent = Colorpicker_Component
+    
+    local pickerCorner = Instance.new("UICorner")
+    pickerCorner.CornerRadius = UDim.new(0, 4)
+    pickerCorner.Parent = PickerContainer
+    
+    -- SV square
+    local SVFrame = Instance.new("Frame")
+    SVFrame.Name = "SVFrame"
+    SVFrame.Position = UDim2.new(0.035, 0, 0.075, 0)
+    SVFrame.Size = UDim2.new(0, 169, 0, 169)
+    SVFrame.BorderSizePixel = 0
+    SVFrame.BackgroundColor3 = Color3.fromRGB(255, 0, 4)
+    SVFrame.Parent = PickerContainer
+    SVFrame.ZIndex = 1201
+    
+    local SVImage = Instance.new("ImageLabel")
+    SVImage.Name = "SVImage"
+    SVImage.BackgroundTransparency = 1
+    SVImage.Size = UDim2.new(1, 0, 1, 0)
+    SVImage.Image = "http://www.roblox.com/asset/?id=14684563800"
+    SVImage.BorderSizePixel = 0
+    SVImage.Parent = SVFrame
+    SVImage.ZIndex = 1201
+    
+    local SVPicker = Instance.new("Frame")
+    SVPicker.Name = "SVPicker"
+    SVPicker.Size = UDim2.new(0, 10, 0, 10)
+    SVPicker.AnchorPoint = Vector2.new(0.5, 0.5)
+    SVPicker.Position = UDim2.new(0.5, 0, 0.5, 0)
+    SVPicker.BackgroundTransparency = 1
+    SVPicker.Parent = SVFrame
+    SVPicker.ZIndex = 1202
+    
+    local SVPickerCorner = Instance.new("UICorner")
+    SVPickerCorner.CornerRadius = UDim.new(0, 50)
+    SVPickerCorner.Parent = SVPicker
+    
+    local SVPickerStroke = Instance.new("UIStroke")
+    SVPickerStroke.Color = Color3.fromRGB(255, 255, 255)
+    SVPickerStroke.Parent = SVPicker
+    
+    -- Hue bar
+    local Hue = Instance.new("ImageButton")
+    Hue.Name = "Hue"
+    Hue.AnchorPoint = Vector2.new(0, 0.5)
+    Hue.Position = UDim2.new(1.01, 0, 0.5, 0)
+    Hue.Size = UDim2.new(0, 18, 0, 169)
+    Hue.BorderSizePixel = 0
+    Hue.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    Hue.Image = "http://www.roblox.com/asset/?id=14684557999"
+    Hue.Parent = SVFrame
+    Hue.ZIndex = 1201
+    
+    local HueStroke = Instance.new("UIStroke")
+    HueStroke.Color = Color3.fromRGB(26, 26, 26)
+    HueStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+    HueStroke.Parent = Hue
+    
+    local HueDragger = Instance.new("ImageLabel")
+    HueDragger.Name = "HueDragger"
+    HueDragger.AnchorPoint = Vector2.new(0.5, 0)
+    HueDragger.BackgroundTransparency = 1
+    HueDragger.Image = "rbxassetid://107912043359755"
+    HueDragger.Size = UDim2.new(0, 25, 0, 8)
+    HueDragger.Position = UDim2.new(0.5, 0, -0.02, 0)
+    HueDragger.Parent = Hue
+    HueDragger.ZIndex = 1202
+    
+    -- State
+    local currentHue = 0
+    local currentS, currentV = 1, 1
+    
+    local function updateSVFrame()
+        SVFrame.BackgroundColor3 = Color3.fromHSV(currentHue, 1, 1)
+    end
+    
+    local function updateColor()
+        local c = Color3.fromHSV(currentHue, currentS, currentV)
+        colorpicker.value = c
+        Color_Frame.BackgroundColor3 = c
+        colorpicker.callback(c)
+    end
+    
+    -- Open/close picker
+    local openButton = Instance.new("TextButton")
+    openButton.BackgroundTransparency = 1
+    openButton.Size = UDim2.new(1, 0, 1, 0)
+    openButton.Text = ""
+    openButton.Parent = Colorpicker_Component
+    openButton.ZIndex = 1203
+    
+    openButton.MouseButton1Click:Connect(function()
+        colorpicker.isOpen = not colorpicker.isOpen
+        PickerContainer.Visible = colorpicker.isOpen
+        if colorpicker.isOpen then
+            PickerContainer.BackgroundTransparency = 1
+            PickerContainer.Size = UDim2.new(0, 225, 0, 0)
+            local fadeIn = createTween(PickerContainer, {BackgroundTransparency = 0}, 0.15)
+            fadeIn:Play()
+            local grow = createTween(PickerContainer, {Size = UDim2.new(0, 225, 0, 190)}, 0.25, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
+            grow:Play()
+        else
+            local shrink = createTween(PickerContainer, {Size = UDim2.new(0, 225, 0, 0)}, 0.2, Enum.EasingStyle.Back, Enum.EasingDirection.In)
+            shrink:Play()
+            local fadeOut = createTween(PickerContainer, {BackgroundTransparency = 1}, 0.2)
+            fadeOut:Play()
+            shrink.Completed:Connect(function()
+                PickerContainer.Visible = false
+            end)
+        end
+    end)
+    
+    -- Drag handling
+    local draggingSV = false
+    local draggingHue = false
+    
+    SVFrame.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+            draggingSV = true
+        end
+    end)
+    Hue.MouseButton1Down:Connect(function()
+        draggingHue = true
+    end)
+    
+    UserInputService.InputEnded:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+            draggingSV = false
+            draggingHue = false
+        end
+    end)
+    
+    UserInputService.InputChanged:Connect(function(input)
+        if input.UserInputType ~= Enum.UserInputType.MouseMovement then return end
+        if draggingSV then
+            local pos = UserInputService:GetMouseLocation()
+            local absPos = SVFrame.AbsolutePosition
+            local absSize = SVFrame.AbsoluteSize
+            local rx = math.clamp((pos.X - absPos.X) / absSize.X, 0, 1)
+            local ry = math.clamp((pos.Y - absPos.Y) / absSize.Y, 0, 1)
+            currentS = rx
+            currentV = 1 - ry
+            SVPicker.Position = UDim2.new(rx, 0, ry, 0)
+            updateColor()
+        end
+        if draggingHue then
+            local pos = UserInputService:GetMouseLocation()
+            local absPos = Hue.AbsolutePosition
+            local absSize = Hue.AbsoluteSize
+            local ry = math.clamp((pos.Y - absPos.Y) / absSize.Y, 0, 1)
+            currentHue = ry
+            HueDragger.Position = UDim2.new(0.5, 0, ry, 0)
+            updateSVFrame()
+            updateColor()
+        end
+    end)
+    
+    -- Initialize
+    do
+        local h, s, v = colorpicker.value:ToHSV()
+        currentHue, currentS, currentV = h, s, v
+        updateSVFrame()
+        SVPicker.Position = UDim2.new(currentS, 0, 1 - currentV, 0)
+        HueDragger.Position = UDim2.new(0.5, 0, currentHue, 0)
+        updateColor()
+    end
+    
+    table.insert(section.components, colorpicker)
+    return colorpicker
 end
 
 function Library:CreateDropdown(config, section)
