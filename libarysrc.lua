@@ -325,18 +325,30 @@ function Library:CreateTab(config)
         text = config.TabText or "Tab",
         sections = {left = {}, right = {}},
         components = {},
-        tabFrame = nil
+        tabFrame = nil,
+        tabContainer = nil
     }
     
-    -- Create tab button
+    -- Create tab container per requested design
+    local tabContainer = Instance.new("Frame")
+    tabContainer.Name = "Tab_Container"
+    tabContainer.BackgroundTransparency = 1
+    tabContainer.Size = UDim2.new(0, 100, 0, 55)
+    tabContainer.BorderSizePixel = 0
+    tabContainer.BorderColor3 = Color3.fromRGB(0, 0, 0)
+    tabContainer.Parent = Header
+    
+    -- Create tab frame inside container
     local tabFrame = Instance.new("Frame")
-    tabFrame.Name = "Tab_" .. config.TabText
-    tabFrame.Size = UDim2.new(0, 95, 0, 42)
-    tabFrame.BackgroundTransparency = 1 -- Start inactive (no background)
+    tabFrame.AnchorPoint = Vector2.new(0.5, 0)
+    tabFrame.Name = "Tab"
+    tabFrame.Position = UDim2.new(0.5, 0, 0, 0)
     tabFrame.BorderColor3 = Color3.fromRGB(0, 0, 0)
+    tabFrame.Size = UDim2.new(0, 95, 0, 42)
     tabFrame.BorderSizePixel = 0
     tabFrame.BackgroundColor3 = Color3.fromRGB(16, 16, 16)
-    tabFrame.Parent = Header
+    tabFrame.BackgroundTransparency = 1 -- start inactive
+    tabFrame.Parent = tabContainer
     
     local tabCorner = Instance.new("UICorner")
     tabCorner.CornerRadius = UDim.new(0, 4)
@@ -371,21 +383,21 @@ function Library:CreateTab(config)
     tabName.BorderSizePixel = 0
     tabName.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
     tabName.Parent = tabIcon
-    
-    -- Tab click functionality
+
+    -- Click functionality on entire container
     local tabButton = Instance.new("TextButton")
     tabButton.BackgroundTransparency = 1
     tabButton.Size = UDim2.new(1, 0, 1, 0)
-    tabButton.Text = "" -- Remove default 'Button' text
-    tabButton.Parent = tabFrame
+    tabButton.Text = ""
+    tabButton.Parent = tabContainer
     
     tabButton.MouseButton1Click:Connect(function()
-        -- Switch to this tab
         Library:SwitchTab(tab)
     end)
     
-    -- Store tab frame reference
+    -- Store references
     tab.tabFrame = tabFrame
+    tab.tabContainer = tabContainer
     
     
     -- Set as current tab if it's the first one
@@ -536,12 +548,11 @@ function Library:SwitchTab(tab)
         end
     end
     
-    -- Move and animate global inline indicator to the new tab
-    if GlobalTabInlineIndicator and tab.tabFrame then
-        -- Move the inline indicator to the new tab
-        GlobalTabInlineIndicator.Parent = tab.tabFrame
+    -- Move and animate global inline indicator anchored to the Tab_Container bottom center
+    if GlobalTabInlineIndicator and tab.tabContainer then
+        GlobalTabInlineIndicator.Parent = tab.tabContainer
         GlobalTabInlineIndicator.Position = UDim2.new(0.5, 0, 1, 0)
-        GlobalTabInlineIndicator.Size = UDim2.new(0, 0, 0, 2)
+        GlobalTabInlineIndicator.Size = UDim2.new(1, 1, 0, 3)
         GlobalTabInlineIndicator.Visible = true
         
         -- Unique slide-down and grow animation
@@ -551,7 +562,7 @@ function Library:SwitchTab(tab)
         slideDown:Play()
         
         local growWidth = createTween(GlobalTabInlineIndicator, {
-            Size = UDim2.new(0, 52, 0, 2)
+            Size = UDim2.new(1, 1, 0, 3)
         }, 0.25, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
         growWidth:Play()
     end
