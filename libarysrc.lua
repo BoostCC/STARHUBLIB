@@ -134,9 +134,9 @@ UIPadding.Parent = Header
 GlobalTabInlineIndicator = Instance.new("Frame")
 GlobalTabInlineIndicator.AnchorPoint = Vector2.new(0.5, 1)
 GlobalTabInlineIndicator.Name = "Inline"
-GlobalTabInlineIndicator.Position = UDim2.new(0.7507575750350952, 0, 1, 0)
+GlobalTabInlineIndicator.Position = UDim2.new(0.5, 0, 1, -2)
 GlobalTabInlineIndicator.BorderColor3 = Color3.fromRGB(0, 0, 0)
-GlobalTabInlineIndicator.Size = UDim2.new(0, 65, 0, 4)
+GlobalTabInlineIndicator.Size = UDim2.new(0, 40, 0, 3)
 GlobalTabInlineIndicator.BorderSizePixel = 0
 GlobalTabInlineIndicator.BackgroundColor3 = Color3.fromRGB(115, 58, 173)
 GlobalTabInlineIndicator.Visible = false
@@ -456,22 +456,14 @@ function Library:SwitchTab(tab)
     
     -- Show and animate global inline indicator
     if GlobalTabInlineIndicator and tab.tabFrame then
-        -- Calculate position to center under the tab using relative positioning
-        local tabPosition = tab.tabFrame.Position
-        local tabSize = tab.tabFrame.Size
-        
-        -- Calculate the center position of the tab relative to the Header
-        local tabCenterX = tabPosition.X.Offset + (tabSize.X.Offset / 2)
-        local headerWidth = Header.AbsoluteSize.X
-        local relativeX = tabCenterX / headerWidth
-        
-        -- Position the inline indicator centered under the tab
-        GlobalTabInlineIndicator.Position = UDim2.new(relativeX, 0, 1, 0)
+        -- Position the inline indicator inside the active tab at the bottom middle
+        GlobalTabInlineIndicator.Parent = tab.tabFrame
+        GlobalTabInlineIndicator.Position = UDim2.new(0.5, 0, 1, -2)
         GlobalTabInlineIndicator.Visible = true
         
         -- Animate the inline indicator smoothly
         local inlineTween = createTween(GlobalTabInlineIndicator, {
-            Position = UDim2.new(relativeX, 0, 1, 0)
+            Position = UDim2.new(0.5, 0, 1, -2)
         }, 0.3, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
         inlineTween:Play()
     end
