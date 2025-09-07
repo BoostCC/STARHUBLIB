@@ -551,20 +551,27 @@ function Library:SwitchTab(tab)
     -- Move and animate global inline indicator anchored to the Tab_Container bottom center
     if GlobalTabInlineIndicator and tab.tabContainer then
         GlobalTabInlineIndicator.Parent = tab.tabContainer
-        GlobalTabInlineIndicator.Position = UDim2.new(0.5, 0, 1, 0)
-        GlobalTabInlineIndicator.Size = UDim2.new(1, 1, 0, 3)
         GlobalTabInlineIndicator.Visible = true
-        
-        -- Unique slide-down and grow animation
+        -- start collapsed and slightly above for a slide-down + grow effect
+        GlobalTabInlineIndicator.BackgroundTransparency = 1
+        GlobalTabInlineIndicator.Position = UDim2.new(0.5, 0, 1, -6)
+        GlobalTabInlineIndicator.Size = UDim2.new(0, 0, 0, 3)
+
+        -- parallel tweens: fade in, slide down, and width grow with a tiny overshoot
+        local fadeIn = createTween(GlobalTabInlineIndicator, {
+            BackgroundTransparency = 0
+        }, 0.15, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+        fadeIn:Play()
+
         local slideDown = createTween(GlobalTabInlineIndicator, {
             Position = UDim2.new(0.5, 0, 1, 0)
-        }, 0.2, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
-        slideDown:Play()
-        
-        local growWidth = createTween(GlobalTabInlineIndicator, {
-            Size = UDim2.new(1, 1, 0, 3)
         }, 0.25, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
-        growWidth:Play()
+        slideDown:Play()
+
+        local grow = createTween(GlobalTabInlineIndicator, {
+            Size = UDim2.new(1, 1, 0, 3)
+        }, 0.3, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
+        grow:Play()
     end
     
     -- Update current tab display
