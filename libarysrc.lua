@@ -1101,6 +1101,7 @@ function Library:CreateDropdown(config, section)
     Dropdown_Container.BackgroundColor3 = Color3.fromRGB(23, 23, 23)
     Dropdown_Container.Visible = false
     Dropdown_Container.BackgroundTransparency = 1
+    Dropdown_Container.ZIndex = 10
     Dropdown_Container.Parent = Dropdown_Component
     
     local containerCorner = Instance.new("UICorner")
@@ -1126,6 +1127,7 @@ function Library:CreateDropdown(config, section)
         Frame.Size = UDim2.new(0, 276, 0, 20)
         Frame.BorderSizePixel = 0
         Frame.BackgroundColor3 = Color3.fromRGB(23, 23, 23)
+        Frame.ZIndex = 11
         Frame.Parent = Dropdown_Container
         
         local TextLabel = Instance.new("TextLabel")
@@ -1141,6 +1143,7 @@ function Library:CreateDropdown(config, section)
         TextLabel.AutomaticSize = Enum.AutomaticSize.XY
         TextLabel.TextSize = 16
         TextLabel.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+        TextLabel.ZIndex = 12
         TextLabel.Parent = Frame
         
         local Check_Icon = Instance.new("ImageLabel")
@@ -1154,6 +1157,7 @@ function Library:CreateDropdown(config, section)
         Check_Icon.Size = UDim2.new(0, 15, 0, 16)
         Check_Icon.BorderSizePixel = 0
         Check_Icon.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+        Check_Icon.ZIndex = 12
         Check_Icon.Parent = Frame
         
         -- Initially hide check icon and position it to the right
@@ -1165,6 +1169,7 @@ function Library:CreateDropdown(config, section)
         optionButton.BackgroundTransparency = 1
         optionButton.Size = UDim2.new(1, 0, 1, 0)
         optionButton.Text = ""
+        optionButton.ZIndex = 13
         optionButton.Parent = Frame
         
         optionButton.MouseButton1Click:Connect(function()
