@@ -1079,7 +1079,7 @@ function Library:CreateSlider(config, section)
     end)
     
     UserInputService.InputEnded:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        if input.UserInputType == Enum.UserInputType.MouseButton1 and isDragging then
             isDragging = false
         end
     end)
@@ -1505,9 +1505,44 @@ function Library:CreateColorpicker(config, section)
     
     UserInputService.InputEnded:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 then
+            if draggingSV or draggingHue or draggingAlpha then
+                draggingSV = false
+                draggingHue = false
+                draggingAlpha = false
+                BlockDragging = false
+            end
+        end
+    end)
+    
+    -- Fallback to reset BlockDragging after a short delay
+    local function resetBlockDragging()
+        task.wait(0.1)
+        if draggingSV or draggingHue or draggingAlpha then
             draggingSV = false
             draggingHue = false
             draggingAlpha = false
+            BlockDragging = false
+        end
+    end
+    
+    -- Connect to mouse leave events as fallback
+    Alpha.MouseLeave:Connect(function()
+        if draggingAlpha then
+            draggingAlpha = false
+            BlockDragging = false
+        end
+    end)
+    
+    Hue.MouseLeave:Connect(function()
+        if draggingHue then
+            draggingHue = false
+            BlockDragging = false
+        end
+    end)
+    
+    SVFrame.MouseLeave:Connect(function()
+        if draggingSV then
+            draggingSV = false
             BlockDragging = false
         end
     end)
