@@ -15,12 +15,25 @@ local DragStart = nil
 local DragStartPosition = nil
 local GlobalTabInlineIndicator = nil
 local BlockDragging = false
+local ModalOverlay = nil
 
 -- Create the main ScreenGui
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Global
 ScreenGui.ResetOnSpawn = false
 ScreenGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
+
+-- Modal overlay to capture outside clicks and block dragging when popups are open
+ModalOverlay = Instance.new("TextButton")
+ModalOverlay.Name = "ModalOverlay"
+ModalOverlay.BackgroundTransparency = 1
+ModalOverlay.Text = ""
+ModalOverlay.AutoButtonColor = false
+ModalOverlay.Visible = false
+ModalOverlay.Size = UDim2.fromScale(1, 1)
+ModalOverlay.Position = UDim2.fromOffset(0, 0)
+ModalOverlay.ZIndex = 1199
+ModalOverlay.Parent = ScreenGui
 
 local MainFrame = Instance.new("Frame")
 MainFrame.AnchorPoint = Vector2.new(0.5, 0.5)
@@ -1194,6 +1207,9 @@ function Library:CreateColorpicker(config, section)
             fadeIn:Play()
             local grow = createTween(PickerContainer, {Size = UDim2.new(0, 225, 0, 190)}, 0.25, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
             grow:Play()
+            -- enable modal overlay to intercept clicks and block dragging
+            ModalOverlay.Visible = true
+            BlockDragging = true
         else
             local shrink = createTween(PickerContainer, {Size = UDim2.new(0, 225, 0, 0)}, 0.2, Enum.EasingStyle.Back, Enum.EasingDirection.In)
             shrink:Play()
@@ -1202,6 +1218,8 @@ function Library:CreateColorpicker(config, section)
             shrink.Completed:Connect(function()
                 PickerContainer.Visible = false
             end)
+            ModalOverlay.Visible = false
+            BlockDragging = false
         end
     end)
 
@@ -1225,6 +1243,8 @@ function Library:CreateColorpicker(config, section)
             shrink.Completed:Connect(function()
                 PickerContainer.Visible = false
             end)
+            ModalOverlay.Visible = false
+            BlockDragging = false
         end
     end)
     
@@ -1926,6 +1946,18 @@ function Library:Reload()
     ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Global
     ScreenGui.ResetOnSpawn = false
     ScreenGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
+    
+    -- Recreate Modal overlay
+    ModalOverlay = Instance.new("TextButton")
+    ModalOverlay.Name = "ModalOverlay"
+    ModalOverlay.BackgroundTransparency = 1
+    ModalOverlay.Text = ""
+    ModalOverlay.AutoButtonColor = false
+    ModalOverlay.Visible = false
+    ModalOverlay.Size = UDim2.fromScale(1, 1)
+    ModalOverlay.Position = UDim2.fromOffset(0, 0)
+    ModalOverlay.ZIndex = 1199
+    ModalOverlay.Parent = ScreenGui
     
     -- Recreate MainFrame
     MainFrame = Instance.new("Frame")
