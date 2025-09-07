@@ -1580,6 +1580,7 @@ UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
                 
                 -- Close dropdown for single-select
                 dropdown.isOpen = false
+                Dropdown_Container.Size = UDim2.new(0, 279, 0, 0)
                 Dropdown_Container.Visible = false
                 
                 -- Rotate arrow back
@@ -1594,6 +1595,7 @@ UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
                     ModalOverlay.Visible = false
                     BlockDragging = false
                 end
+                if dropdown._overlayConn then dropdown._overlayConn:Disconnect() dropdown._overlayConn = nil end
                 
                 dropdown.callback(option)
             end
