@@ -2223,39 +2223,40 @@ function Library:CreateNotification(config)
         UIListLayout.Parent = NotificationContainer
     end
     
-    -- Determine colors based on type
+    -- Determine colors based on type with better contrast
     local backgroundColor, textColor, progressColor
     if notification.type == "success" then
-        backgroundColor = Color3.fromRGB(11, 11, 11)
+        backgroundColor = Color3.fromRGB(15, 15, 15)
         textColor = Color3.fromRGB(1, 255, 141)
         progressColor = Color3.fromRGB(1, 255, 141)
     elseif notification.type == "warning" then
-        backgroundColor = Color3.fromRGB(11, 11, 11)
+        backgroundColor = Color3.fromRGB(15, 15, 15)
         textColor = Color3.fromRGB(255, 193, 7)
         progressColor = Color3.fromRGB(255, 193, 7)
     elseif notification.type == "error" then
-        backgroundColor = Color3.fromRGB(11, 11, 11)
+        backgroundColor = Color3.fromRGB(15, 15, 15)
         textColor = Color3.fromRGB(220, 53, 69)
         progressColor = Color3.fromRGB(220, 53, 69)
     elseif notification.type == "custom" and notification.color then
-        backgroundColor = Color3.fromRGB(11, 11, 11)
+        backgroundColor = Color3.fromRGB(15, 15, 15)
         textColor = notification.color
         progressColor = notification.color
     else
         -- Default to success if custom type without color
-        backgroundColor = Color3.fromRGB(11, 11, 11)
+        backgroundColor = Color3.fromRGB(15, 15, 15)
         textColor = Color3.fromRGB(1, 255, 141)
         progressColor = Color3.fromRGB(1, 255, 141)
     end
     
-    -- Create notification frame
+    -- Create notification frame with dynamic sizing
     local notificationFrame = Instance.new("Frame")
     notificationFrame.Name = "Notification_Frame"
     notificationFrame.Position = UDim2.new(0, 0, 0.8371886014938354, 0)
     notificationFrame.BorderColor3 = Color3.fromRGB(0, 0, 0)
-    notificationFrame.Size = UDim2.new(0, 208, 0, 55)
+    notificationFrame.Size = UDim2.new(0, 250, 0, 1) -- Start with minimal height, will auto-size
     notificationFrame.BorderSizePixel = 0
     notificationFrame.BackgroundColor3 = backgroundColor
+    notificationFrame.AutomaticSize = Enum.AutomaticSize.Y -- Auto-size based on content
     notificationFrame.Parent = NotificationContainer
     
     local UICorner = Instance.new("UICorner")
@@ -2269,27 +2270,28 @@ function Library:CreateNotification(config)
     glowEffect.Thickness = 1
     glowEffect.Parent = notificationFrame
     
-    -- Progress background
+    -- Progress background with proper positioning
     local progressBG = Instance.new("Frame")
     progressBG.Name = "Progress_BG"
-    progressBG.Position = UDim2.new(0.06022409349679947, 0, 0.7092226147651672, 0)
+    progressBG.AnchorPoint = Vector2.new(0, 1) -- Anchor to bottom
+    progressBG.Position = UDim2.new(0, 12, 1, -8) -- 12px from left, 8px from bottom
     progressBG.BorderColor3 = Color3.fromRGB(0, 0, 0)
-    progressBG.Size = UDim2.new(0, 184, 0, 5)
+    progressBG.Size = UDim2.new(1, -24, 0, 4) -- Full width minus padding, 4px height
     progressBG.BorderSizePixel = 0
-    progressBG.BackgroundColor3 = Color3.fromRGB(23, 23, 23)
+    progressBG.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
     progressBG.Parent = notificationFrame
     
     local progressBGCorner = Instance.new("UICorner")
     progressBGCorner.CornerRadius = UDim.new(0, 50)
     progressBGCorner.Parent = progressBG
     
-    -- Progress bar
+    -- Progress bar with proper sizing
     local progressBar = Instance.new("Frame")
-    progressBar.AnchorPoint = Vector2.new(0.5, 0.5)
+    progressBar.AnchorPoint = Vector2.new(0, 0.5)
     progressBar.Name = "Progress_Bar"
-    progressBar.Position = UDim2.new(0.2974359095096588, 0, 0.5, 0)
+    progressBar.Position = UDim2.new(0, 0, 0.5, 0)
     progressBar.BorderColor3 = Color3.fromRGB(0, 0, 0)
-    progressBar.Size = UDim2.new(0, 116, 0, 5)
+    progressBar.Size = UDim2.new(0, 0, 1, 0) -- Start at 0 width, full height of progressBG
     progressBar.BorderSizePixel = 0
     progressBar.BackgroundColor3 = progressColor
     progressBar.Parent = progressBG
@@ -2330,7 +2332,7 @@ function Library:CreateNotification(config)
     end
     progressGradient.Parent = progressBar
     
-    -- Text label
+    -- Text label with proper positioning and sizing
     local textLabel = Instance.new("TextLabel")
     textLabel.RichText = true
     textLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -2356,14 +2358,17 @@ function Library:CreateNotification(config)
     end
     
     textLabel.Text = typePrefix .. notification.text
-    textLabel.Size = UDim2.new(0, 1, 0, 1)
-    textLabel.AnchorPoint = Vector2.new(0.5, 0.5)
+    textLabel.Size = UDim2.new(1, -24, 0, 1) -- Full width minus padding
+    textLabel.AnchorPoint = Vector2.new(0, 0)
     textLabel.BorderSizePixel = 0
     textLabel.BackgroundTransparency = 1
-    textLabel.Position = UDim2.new(0.45412856340408325, 0, 0.393939346075058, 0)
+    textLabel.Position = UDim2.new(0, 12, 0, 12) -- 12px padding from top and left
     textLabel.FontFace = Font.new("rbxassetid://12187365364", Enum.FontWeight.Regular, Enum.FontStyle.Normal)
-    textLabel.AutomaticSize = Enum.AutomaticSize.XY
-    textLabel.TextSize = 16
+    textLabel.AutomaticSize = Enum.AutomaticSize.Y -- Auto-size height based on text
+    textLabel.TextSize = 14
+    textLabel.TextWrapped = true -- Allow text wrapping
+    textLabel.TextXAlignment = Enum.TextXAlignment.Left
+    textLabel.TextYAlignment = Enum.TextYAlignment.Top
     textLabel.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
     textLabel.Parent = notificationFrame
     
@@ -2384,7 +2389,7 @@ function Library:CreateNotification(config)
     textLabel.TextTransparency = 1
     textLabel.TextStrokeTransparency = 0
     textLabel.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
-    progressBar.Size = UDim2.new(0, 0, 0, 5)
+    progressBar.Size = UDim2.new(0, 0, 1, 0) -- Start at 0 width, full height
     progressBar.BackgroundTransparency = 1
     
     -- Initialize glow effect
@@ -2397,7 +2402,7 @@ function Library:CreateNotification(config)
     -- Stage 1: Quick slide in from right with rotation and glow
     local slideIn = createTween(notificationFrame, {
         Position = UDim2.new(0, 0, 0, 0),
-        Size = UDim2.new(0, 208, 0, 55),
+        Size = UDim2.new(0, 250, 0, 1), -- Width 250, height will auto-size
         BackgroundTransparency = 0,
         Rotation = 0
     }, 0.4, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
@@ -2429,7 +2434,7 @@ function Library:CreateNotification(config)
     -- Enhanced progress bar animation with dynamic effects
     task.wait(0.2) -- Wait for progress bar to appear first
     local progressTween = createTween(progressBar, {
-        Size = UDim2.new(0, 184, 0, 5)
+        Size = UDim2.new(1, 0, 1, 0) -- Full width and height of progressBG
     }, notification.duration, Enum.EasingStyle.Linear, Enum.EasingDirection.Out)
     progressTween:Play()
     
@@ -2472,7 +2477,7 @@ function Library:CreateNotification(config)
     clickButton.MouseEnter:Connect(function()
         if not notification.isClosing then
             local hoverTween = createTween(notificationFrame, {
-                Size = UDim2.new(0, 212, 0, 57) -- Slightly larger on hover
+                Size = UDim2.new(0, 260, 0, 1) -- Slightly larger on hover, height auto-sizes
             }, 0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
             hoverTween:Play()
         end
@@ -2481,7 +2486,7 @@ function Library:CreateNotification(config)
     clickButton.MouseLeave:Connect(function()
         if not notification.isClosing then
             local normalTween = createTween(notificationFrame, {
-                Size = UDim2.new(0, 208, 0, 55) -- Back to normal size
+                Size = UDim2.new(0, 250, 0, 1) -- Back to normal size, height auto-sizes
             }, 0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
             normalTween:Play()
         end
@@ -2514,7 +2519,7 @@ function Library:CloseNotification(notification)
     
     -- Stage 2: Progress bar shrinks and fades
     local progressShrink = createTween(notification.progressBar, {
-        Size = UDim2.new(0, 0, 0, 5),
+        Size = UDim2.new(0, 0, 1, 0), -- Shrink width to 0, keep height
         BackgroundTransparency = 1
     }, 0.2, Enum.EasingStyle.Back, Enum.EasingDirection.In)
     progressShrink:Play()
