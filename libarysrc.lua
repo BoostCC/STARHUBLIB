@@ -259,6 +259,9 @@ function Library:CreateWindow(config)
         Libary_Icon.Image = config.library_config.Cheat_Icon
     end
     
+    -- Create watermark
+    Library:CreateWatermark()
+    
     -- Set up UI toggle keybind (only affects main UI, not notifications)
     if config.library_config and config.library_config.interface_keybind then
         local keybind = config.library_config.interface_keybind
@@ -309,6 +312,10 @@ function Library:CreateWindow(config)
     
     function window:CreateColorpicker(config)
         return Library:CreateColorpicker(config)
+    end
+    
+    function window:CreateWatermarkToggle(config)
+        return Library:CreateWatermarkToggle(config)
     end
     
     table.insert(Windows, window)
@@ -2187,6 +2194,251 @@ function Library:CreateKeybind(config, section)
     return keybind
 end
 
+-- Watermark System
+local Watermark_Frame = nil
+local WatermarkScreenGui = nil
+local WatermarkEnabled = true
+local WatermarkDragging = false
+
+function Library:CreateWatermark()
+    if Watermark_Frame then return end
+    
+    -- Create a separate ScreenGui for watermark
+    WatermarkScreenGui = Instance.new("ScreenGui")
+    WatermarkScreenGui.Name = "WatermarkScreenGui"
+    WatermarkScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Global
+    WatermarkScreenGui.ResetOnSpawn = false
+    WatermarkScreenGui.Parent = game:GetService("CoreGui")
+    
+    -- Create watermark frame
+    Watermark_Frame = Instance.new("Frame")
+    Watermark_Frame.Size = UDim2.new(0, 150, 0, 45)
+    Watermark_Frame.Name = "Watermark_Frame"
+    Watermark_Frame.Position = UDim2.new(0.011217948980629444, 0, 0.014925372786819935, 0)
+    Watermark_Frame.BorderColor3 = Color3.fromRGB(0, 0, 0)
+    Watermark_Frame.BorderSizePixel = 0
+    Watermark_Frame.AutomaticSize = Enum.AutomaticSize.XY
+    Watermark_Frame.BackgroundColor3 = Color3.fromRGB(12, 12, 12)
+    Watermark_Frame.Parent = WatermarkScreenGui
+    
+    -- Add corner radius
+    local UICorner = Instance.new("UICorner")
+    UICorner.CornerRadius = UDim.new(0, 6)
+    UICorner.Parent = Watermark_Frame
+    
+    -- Create library name label
+    local Libary_Name = Instance.new("TextLabel")
+    Libary_Name.FontFace = Font.new("rbxassetid://12187365364", Enum.FontWeight.SemiBold, Enum.FontStyle.Normal)
+    Libary_Name.TextColor3 = Color3.fromRGB(255, 255, 255)
+    Libary_Name.BorderColor3 = Color3.fromRGB(0, 0, 0)
+    Libary_Name.Text = "STARHUB"
+    Libary_Name.Name = "Libary_Name"
+    Libary_Name.AnchorPoint = Vector2.new(0.5, 0.5)
+    Libary_Name.Size = UDim2.new(0, 1, 0, 1)
+    Libary_Name.BackgroundTransparency = 1
+    Libary_Name.Position = UDim2.new(0.5922440886497498, 0, 0.4835820496082306, 0)
+    Libary_Name.BorderSizePixel = 0
+    Libary_Name.AutomaticSize = Enum.AutomaticSize.XY
+    Libary_Name.TextSize = 21
+    Libary_Name.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    Libary_Name.Parent = Watermark_Frame
+    
+    -- Create library icon
+    local Libary_Icon = Instance.new("ImageLabel")
+    Libary_Icon.ImageColor3 = Color3.fromRGB(170, 85, 255)
+    Libary_Icon.BorderColor3 = Color3.fromRGB(0, 0, 0)
+    Libary_Icon.Name = "Libary_Icon"
+    Libary_Icon.AnchorPoint = Vector2.new(0.5, 0.5)
+    Libary_Icon.Image = "rbxassetid://132964100967987"
+    Libary_Icon.BackgroundTransparency = 1
+    Libary_Icon.Position = UDim2.new(0.17633333802223206, 1, 0.4620000123977661, 0)
+    Libary_Icon.Size = UDim2.new(0, 20, 0, 20)
+    Libary_Icon.BorderSizePixel = 0
+    Libary_Icon.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    Libary_Icon.Parent = Watermark_Frame
+    
+    -- Create inline accent
+    local Inline = Instance.new("Frame")
+    Inline.BorderColor3 = Color3.fromRGB(0, 0, 0)
+    Inline.AnchorPoint = Vector2.new(0, 1)
+    Inline.Name = "Inline"
+    Inline.Position = UDim2.new(0, 0, 1, 0)
+    Inline.Size = UDim2.new(1, 1, 0, 4)
+    Inline.BorderSizePixel = 0
+    Inline.AutomaticSize = Enum.AutomaticSize.XY
+    Inline.BackgroundColor3 = Library.Accent
+    Inline.Parent = Watermark_Frame
+    
+    -- Add corner radius to inline
+    local InlineCorner = Instance.new("UICorner")
+    InlineCorner.CornerRadius = UDim.new(0, 6)
+    InlineCorner.Parent = Inline
+    
+    -- Make watermark draggable when menu is open
+    local dragConnection
+    local function updateDragging()
+        if dragConnection then
+            dragConnection:Disconnect()
+            dragConnection = nil
+        end
+        
+        if MainFrame.Visible and WatermarkEnabled then
+            -- Enable dragging when menu is open
+            dragConnection = makeDraggable(Watermark_Frame)
+        end
+    end
+    
+    -- Update dragging state when main frame visibility changes
+    MainFrame:GetPropertyChangedSignal("Visible"):Connect(updateDragging)
+    updateDragging() -- Initial setup
+    
+    -- Auto-scale width based on text content
+    local function updateWatermarkSize()
+        if not Watermark_Frame or not WatermarkEnabled then return end
+        
+        -- Get text bounds
+        local textBounds = Libary_Name.TextBounds
+        local iconWidth = 20
+        local padding = 24 -- 12px on each side
+        local minWidth = 120
+        local maxWidth = 300
+        
+        local calculatedWidth = math.max(minWidth, math.min(maxWidth, textBounds.X + iconWidth + padding))
+        
+        -- Update frame size
+        Watermark_Frame.Size = UDim2.new(0, calculatedWidth, 0, 45)
+        
+        -- Check if watermark is going out of screen bounds
+        local screenSize = game:GetService("GuiService"):GetGuiInset()
+        local watermarkPos = Watermark_Frame.AbsolutePosition
+        local watermarkSize = Watermark_Frame.AbsoluteSize
+        
+        if watermarkPos.X + watermarkSize.X > workspace.CurrentCamera.ViewportSize.X - 10 then
+            -- Move watermark to left side if it's going out of bounds
+            Watermark_Frame.Position = UDim2.new(0, 10, 0, watermarkPos.Y)
+        end
+    end
+    
+    -- Update size when text changes
+    Libary_Name:GetPropertyChangedSignal("Text"):Connect(updateWatermarkSize)
+    updateWatermarkSize() -- Initial sizing
+    
+    return Watermark_Frame
+end
+
+function Library:ToggleWatermark(enabled)
+    WatermarkEnabled = enabled
+    if Watermark_Frame then
+        Watermark_Frame.Visible = enabled
+    end
+end
+
+function Library:CreateWatermarkToggle(config)
+    if not CurrentWindow then
+        error("No window created. Call CreateWindow first.")
+    end
+    
+    local section = CurrentWindow.sections.left[1] or CurrentWindow.sections.right[1]
+    if not section then
+        error("No section available. Create a section first.")
+    end
+    
+    local toggle = {
+        config = config or {},
+        value = config.Default or false,
+        callback = config.Callback or function() end,
+        frame = nil,
+        toggleButton = nil,
+        toggleIndicator = nil,
+        toggleText = nil
+    }
+    
+    -- Create toggle frame
+    local toggleFrame = Instance.new("Frame")
+    toggleFrame.Name = "Toggle_Frame"
+    toggleFrame.Size = UDim2.new(1, 0, 0, 30)
+    toggleFrame.BorderSizePixel = 0
+    toggleFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+    toggleFrame.Parent = section.frame
+    
+    local toggleCorner = Instance.new("UICorner")
+    toggleCorner.CornerRadius = UDim.new(0, 4)
+    toggleCorner.Parent = toggleFrame
+    
+    -- Create toggle button
+    local toggleButton = Instance.new("TextButton")
+    toggleButton.Name = "Toggle_Button"
+    toggleButton.Size = UDim2.new(0, 20, 0, 20)
+    toggleButton.Position = UDim2.new(0, 8, 0, 5)
+    toggleButton.BorderSizePixel = 0
+    toggleButton.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+    toggleButton.Text = ""
+    toggleButton.Parent = toggleFrame
+    
+    local buttonCorner = Instance.new("UICorner")
+    buttonCorner.CornerRadius = UDim.new(0, 4)
+    buttonCorner.Parent = toggleButton
+    
+    -- Create toggle indicator
+    local toggleIndicator = Instance.new("Frame")
+    toggleIndicator.Name = "Toggle_Indicator"
+    toggleIndicator.Size = UDim2.new(0, 12, 0, 12)
+    toggleIndicator.Position = UDim2.new(0, 4, 0, 4)
+    toggleIndicator.BorderSizePixel = 0
+    toggleIndicator.BackgroundColor3 = Library.Accent
+    toggleIndicator.Parent = toggleButton
+    
+    local indicatorCorner = Instance.new("UICorner")
+    indicatorCorner.CornerRadius = UDim.new(0, 4)
+    indicatorCorner.Parent = toggleIndicator
+    
+    -- Create toggle text
+    local toggleText = Instance.new("TextLabel")
+    toggleText.Name = "Toggle_Text"
+    toggleText.Size = UDim2.new(1, -40, 1, 0)
+    toggleText.Position = UDim2.new(0, 35, 0, 0)
+    toggleText.BorderSizePixel = 0
+    toggleText.BackgroundTransparency = 1
+    toggleText.Text = config.ToggleText or "Enable Watermark"
+    toggleText.TextColor3 = Color3.fromRGB(255, 255, 255)
+    toggleText.TextSize = 14
+    toggleText.FontFace = Font.new("rbxassetid://12187365364", Enum.FontWeight.Medium, Enum.FontStyle.Normal)
+    toggleText.TextXAlignment = Enum.TextXAlignment.Left
+    toggleText.Parent = toggleFrame
+    
+    -- Store references
+    toggle.frame = toggleFrame
+    toggle.toggleButton = toggleButton
+    toggle.toggleIndicator = toggleIndicator
+    toggle.toggleText = toggleText
+    
+    -- Update visual state
+    local function updateToggle()
+        if toggle.value then
+            toggleIndicator.BackgroundColor3 = Library.Accent
+            toggleIndicator.Position = UDim2.new(0, 12, 0, 4)
+        else
+            toggleIndicator.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+            toggleIndicator.Position = UDim2.new(0, 4, 0, 4)
+        end
+    end
+    
+    -- Toggle functionality
+    toggleButton.MouseButton1Click:Connect(function()
+        toggle.value = not toggle.value
+        updateToggle()
+        toggle.callback(toggle.value)
+        Library:ToggleWatermark(toggle.value)
+    end)
+    
+    -- Initial state
+    updateToggle()
+    
+    -- Add to section components
+    table.insert(section.components, toggle)
+    return toggle
+end
+
 -- Notification System
 local NotificationContainer = nil
 local NotificationScreenGui = nil
@@ -2535,6 +2787,10 @@ function Library:Reload()
     DragStart = nil
     DragStartPosition = nil
     GlobalTabInlineIndicator = nil
+    Watermark_Frame = nil
+    WatermarkScreenGui = nil
+    WatermarkEnabled = true
+    WatermarkDragging = false
     NotificationContainer = nil
     ActiveNotifications = {}
     
@@ -2550,6 +2806,13 @@ function Library:Reload()
     NotificationScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Global
     NotificationScreenGui.ResetOnSpawn = false
     NotificationScreenGui.Parent = game:GetService("CoreGui")
+    
+    -- Recreate watermark ScreenGui (separate from main UI)
+    WatermarkScreenGui = Instance.new("ScreenGui")
+    WatermarkScreenGui.Name = "WatermarkScreenGui"
+    WatermarkScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Global
+    WatermarkScreenGui.ResetOnSpawn = false
+    WatermarkScreenGui.Parent = game:GetService("CoreGui")
     
     -- Recreate Modal overlay
     ModalOverlay = Instance.new("TextButton")
@@ -2730,6 +2993,9 @@ MainFrame.Visible = true
     UIListLayout.Padding = UDim.new(0, 4)
     UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
     UIListLayout.Parent = NotificationContainer
+
+    -- Recreate watermark
+    Library:CreateWatermark()
 
     makeDraggable(MainFrame)
 
