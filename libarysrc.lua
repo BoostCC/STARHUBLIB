@@ -345,19 +345,6 @@ function Library:SetAccentColor(color, alpha)
     if Libary_Icon then
         Libary_Icon.ImageColor3 = Library.Accent
     end
-    
-    -- Update watermark elements
-    if Watermark_Frame then
-        local watermarkIcon = Watermark_Frame:FindFirstChild("Libary_Icon")
-        local watermarkInline = Watermark_Frame:FindFirstChild("Inline")
-        
-        if watermarkIcon then
-            watermarkIcon.ImageColor3 = Library.Accent
-        end
-        if watermarkInline then
-            watermarkInline.BackgroundColor3 = Library.Accent
-        end
-    end
 
     -- Sweep through UI and update common accent elements
     if ScreenGui then
@@ -816,6 +803,10 @@ function Library:CreateSection(config)
     
     function section:CreateColorpicker(config)
         return Library:CreateColorpicker(config, self)
+    end
+    
+    function section:CreateWatermarkToggle(config)
+        return Library:CreateWatermarkToggle(config, self)
     end
     
     section.frame = sectionFrame
@@ -2262,7 +2253,7 @@ function Library:CreateWatermark()
     
     -- Create library icon
     local Libary_Icon = Instance.new("ImageLabel")
-    Libary_Icon.ImageColor3 = Library.Accent -- Use current accent color
+    Libary_Icon.ImageColor3 = Color3.fromRGB(170, 85, 255)
     Libary_Icon.BorderColor3 = Color3.fromRGB(0, 0, 0)
     Libary_Icon.Name = "Libary_Icon"
     Libary_Icon.AnchorPoint = Vector2.new(0.5, 0.5)
@@ -2283,7 +2274,7 @@ function Library:CreateWatermark()
     Inline.Size = UDim2.new(1, 1, 0, 4)
     Inline.BorderSizePixel = 0
     Inline.AutomaticSize = Enum.AutomaticSize.XY
-    Inline.BackgroundColor3 = Library.Accent -- Use current accent color
+    Inline.BackgroundColor3 = Library.Accent
     Inline.Parent = Watermark_Frame
     
     -- Add corner radius to inline
@@ -2350,6 +2341,110 @@ function Library:ToggleWatermark(enabled)
     end
 end
 
+function Library:CreateWatermarkToggle(config, section)
+    if not section then
+        if not CurrentTab or not CurrentTab.sections.left[1] and not CurrentTab.sections.right[1] then
+            error("No section created. Call CreateSection first.")
+            return
+        end
+        section = CurrentTab.sections.left[1] or CurrentTab.sections.right[1]
+    end
+    
+    local toggle = {
+        config = config or {},
+        value = config.Default or false,
+        callback = config.Callback or function() end,
+        frame = nil,
+        toggleButton = nil,
+        toggleIndicator = nil,
+        toggleText = nil
+    }
+    
+    -- Create toggle frame
+    local toggleFrame = Instance.new("Frame")
+    toggleFrame.Name = "Toggle_Frame"
+    toggleFrame.Size = UDim2.new(1, 0, 0, 30)
+    toggleFrame.BorderSizePixel = 0
+    toggleFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+    toggleFrame.Parent = section.frame
+    
+    local toggleCorner = Instance.new("UICorner")
+    toggleCorner.CornerRadius = UDim.new(0, 4)
+    toggleCorner.Parent = toggleFrame
+    
+    -- Create toggle button
+    local toggleButton = Instance.new("TextButton")
+    toggleButton.Name = "Toggle_Button"
+    toggleButton.Size = UDim2.new(0, 20, 0, 20)
+    toggleButton.Position = UDim2.new(0, 8, 0, 5)
+    toggleButton.BorderSizePixel = 0
+    toggleButton.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+    toggleButton.Text = ""
+    toggleButton.Parent = toggleFrame
+    
+    local buttonCorner = Instance.new("UICorner")
+    buttonCorner.CornerRadius = UDim.new(0, 4)
+    buttonCorner.Parent = toggleButton
+    
+    -- Create toggle indicator
+    local toggleIndicator = Instance.new("Frame")
+    toggleIndicator.Name = "Toggle_Indicator"
+    toggleIndicator.Size = UDim2.new(0, 12, 0, 12)
+    toggleIndicator.Position = UDim2.new(0, 4, 0, 4)
+    toggleIndicator.BorderSizePixel = 0
+    toggleIndicator.BackgroundColor3 = Library.Accent
+    toggleIndicator.Parent = toggleButton
+    
+    local indicatorCorner = Instance.new("UICorner")
+    indicatorCorner.CornerRadius = UDim.new(0, 4)
+    indicatorCorner.Parent = toggleIndicator
+    
+    -- Create toggle text
+    local toggleText = Instance.new("TextLabel")
+    toggleText.Name = "Toggle_Text"
+    toggleText.Size = UDim2.new(1, -40, 1, 0)
+    toggleText.Position = UDim2.new(0, 35, 0, 0)
+    toggleText.BorderSizePixel = 0
+    toggleText.BackgroundTransparency = 1
+    toggleText.Text = config.ToggleText or "Enable Watermark"
+    toggleText.TextColor3 = Color3.fromRGB(255, 255, 255)
+    toggleText.TextSize = 14
+    toggleText.FontFace = Font.new("rbxassetid://12187365364", Enum.FontWeight.Medium, Enum.FontStyle.Normal)
+    toggleText.TextXAlignment = Enum.TextXAlignment.Left
+    toggleText.Parent = toggleFrame
+    
+    -- Store references
+    toggle.frame = toggleFrame
+    toggle.toggleButton = toggleButton
+    toggle.toggleIndicator = toggleIndicator
+    toggle.toggleText = toggleText
+    
+    -- Update visual state
+    local function updateToggle()
+        if toggle.value then
+            toggleIndicator.BackgroundColor3 = Library.Accent
+            toggleIndicator.Position = UDim2.new(0, 12, 0, 4)
+        else
+            toggleIndicator.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+            toggleIndicator.Position = UDim2.new(0, 4, 0, 4)
+        end
+    end
+    
+    -- Toggle functionality
+    toggleButton.MouseButton1Click:Connect(function()
+        toggle.value = not toggle.value
+        updateToggle()
+        toggle.callback(toggle.value)
+        Library:ToggleWatermark(toggle.value)
+    end)
+    
+    -- Initial state
+    updateToggle()
+    
+    -- Add to section components
+    table.insert(section.components, toggle)
+    return toggle
+end
 
 -- Notification System
 local NotificationContainer = nil
@@ -2906,10 +3001,10 @@ MainFrame.Visible = true
     UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
     UIListLayout.Parent = NotificationContainer
 
-    
+    -- Recreate watermark
     Library:CreateWatermark()
     
-
+    -- Update watermark text with cheat name if available
     if Libary_Name and Libary_Name.Text and Watermark_Frame then
         local watermarkText = Watermark_Frame:FindFirstChild("Libary_Name")
         if watermarkText then
