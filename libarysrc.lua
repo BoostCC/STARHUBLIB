@@ -1214,10 +1214,11 @@ function Library:CreateColorpicker(config, section)
     Alpha.BorderColor3 = Color3.fromRGB(0, 0, 0)
     Alpha.Text = ""
     Alpha.AutoButtonColor = false
-    Alpha.AnchorPoint = Vector2.new(0, 0.5)
-    Alpha.Size = UDim2.new(0, 18, 0, 169)
+    Alpha.AnchorPoint = Vector2.new(1, 0.5)
+    Alpha.Size = UDim2.new(0.9940828680992126, 0, 0.11366861313581467, -1)
     Alpha.Name = "Alpha"
-    Alpha.Position = UDim2.new(1.19, 0, 0.5, 0)
+    Alpha.Position = UDim2.new(1.06, 0, 0.5, 0)
+    Alpha.Rotation = -90
     Alpha.BorderSizePixel = 0
     Alpha.BackgroundColor3 = Color3.fromRGB(255, 0, 4)
     Alpha.Parent = SVFrame
@@ -1227,7 +1228,7 @@ function Library:CreateColorpicker(config, section)
     Checkers.ScaleType = Enum.ScaleType.Tile
     Checkers.BorderColor3 = Color3.fromRGB(0, 0, 0)
     Checkers.Name = "Checkers"
-    Checkers.Size = UDim2.new(1, 0, 1, 0)
+    Checkers.Size = UDim2.new(0.9940828680992126, 0, 1, 0)
     Checkers.AnchorPoint = Vector2.new(0.5, 0.5)
     Checkers.Image = "http://www.roblox.com/asset/?id=18274452449"
     Checkers.TileSize = UDim2.new(0, 18, 0, 18)
@@ -1253,9 +1254,10 @@ function Library:CreateColorpicker(config, section)
     AlphaDragger.Image = "rbxassetid://107912043359755"
     AlphaDragger.BackgroundTransparency = 1
     AlphaDragger.Position = UDim2.new(0.5, 0, 0.5, 0)
+    AlphaDragger.Rotation = -90
     AlphaDragger.BorderSizePixel = 0
     AlphaDragger.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-    AlphaDragger.Parent = Alpha
+    AlphaDragger.Parent = Checkers
     AlphaDragger.ZIndex = 1202
 
     local AlphaDraggerLine = Instance.new("Frame")
