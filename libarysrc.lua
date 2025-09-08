@@ -2566,6 +2566,7 @@ function Library:CreateConfigEntry(config, section)
     Config_ICON.Size = UDim2.new(0, 36, 0, 40)
     Config_ICON.BorderSizePixel = 0
     Config_ICON.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    Config_ICON.ZIndex = 5 -- Higher than section
     Config_ICON.Parent = Section
     
     local Author_IMG = Instance.new("Frame")
@@ -2577,6 +2578,7 @@ function Library:CreateConfigEntry(config, section)
     Author_IMG.Size = UDim2.new(0, 18, 0, 18)
     Author_IMG.BorderSizePixel = 0
     Author_IMG.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+    Author_IMG.ZIndex = 6 -- Higher than config icon
     Author_IMG.Parent = Config_ICON
     
     local UICorner = Instance.new("UICorner")
@@ -2597,6 +2599,7 @@ function Library:CreateConfigEntry(config, section)
     Display_Author.Size = UDim2.new(0, 18, 0, 18)
     Display_Author.BorderSizePixel = 0
     Display_Author.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    Display_Author.ZIndex = 7 -- Higher than author img
     Display_Author.Parent = Author_IMG
     
     local UICorner = Instance.new("UICorner")
@@ -2623,6 +2626,7 @@ function Library:CreateConfigEntry(config, section)
     Config_Name.AutomaticSize = Enum.AutomaticSize.XY
     Config_Name.TextSize = 16
     Config_Name.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    Config_Name.ZIndex = 5 -- Higher than section
     Config_Name.Parent = Section
     
     local Config_Date = Instance.new("TextLabel")
@@ -2639,6 +2643,7 @@ function Library:CreateConfigEntry(config, section)
     Config_Date.AutomaticSize = Enum.AutomaticSize.XY
     Config_Date.TextSize = 12
     Config_Date.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    Config_Date.ZIndex = 5 -- Higher than section
     Config_Date.Parent = Section
     
     local Load_Config = Instance.new("TextButton")
@@ -2653,6 +2658,7 @@ function Library:CreateConfigEntry(config, section)
     Load_Config.BorderSizePixel = 0
     Load_Config.TextSize = 16
     Load_Config.BackgroundColor3 = Color3.fromRGB(24, 24, 24)
+    Load_Config.ZIndex = 5 -- Higher than section
     Load_Config.Parent = Section
     
     local UIPadding = Instance.new("UIPadding")
@@ -2703,6 +2709,7 @@ function Library:CreateConfigEntry(config, section)
     Delete_Config.BorderSizePixel = 0
     Delete_Config.TextSize = 16
     Delete_Config.BackgroundColor3 = Color3.fromRGB(24, 24, 24)
+    Delete_Config.ZIndex = 5 -- Higher than section
     Delete_Config.Parent = Section
     
     local UIPadding = Instance.new("UIPadding")
