@@ -379,8 +379,6 @@ function Library:SetAccentColor(color, alpha)
                     end
                 elseif inst.Name == "Libary_Icon" then
                     inst.ImageColor3 = Library.Accent
-                elseif inst.Name == "Config_ICON" then
-                    inst.ImageColor3 = Library.Accent
                 end
             elseif inst:IsA("TextLabel") then
                 -- Section headers live under the shadow frame
@@ -2424,9 +2422,6 @@ function Library:UpdateConfigAccent()
                         if entry.configName then
                             entry.configName.TextColor3 = Library.Accent
                         end
-                        if entry.configIcon then
-                            entry.configIcon.ImageColor3 = Library.Accent
-                        end
                         if entry.authorStroke then
                             entry.authorStroke.Color = Library.Accent
                         end
@@ -2818,7 +2813,6 @@ function Library:CreateConfigEntry(config, section)
     -- Store element references for accent color updates
     local entry = {
         configName = Config_Name,
-        configIcon = Config_ICON,
         authorStroke = UIStroke
     }
     
