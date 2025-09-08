@@ -284,6 +284,7 @@ function Library:CreateWindow(config)
     -- Update library name and icon if provided
     if config.library_config and config.library_config.Cheat_Name then
         Libary_Name.Text = config.library_config.Cheat_Name
+        Library.CheatName = config.library_config.Cheat_Name
     end
     
     if config.library_config and config.library_config.Cheat_Icon then
@@ -1319,6 +1320,7 @@ function Library:CreateColorpicker(config, section)
     local colorpicker = {
         text = config.ColorpickerText or "Example Colorpicker",
         value = config.defaultColor or Color3.fromRGB(255, 255, 255),
+        flag = config.Flag or (config.ColorpickerText or "colorpicker") .. "_" .. tostring(#section.components + 1),
         callback = config.callback or config.Callback or function() end,
         isOpen = false
     }
@@ -1459,6 +1461,8 @@ function Library:CreateColorpicker(config, section)
         colorpicker.value = c
         Color_Frame.BackgroundColor3 = c
         colorpicker.callback(c, currentA)
+        -- Registry write
+        Library.Values[colorpicker.flag] = { Color = { R = c.R, G = c.G, B = c.B } }
     end
     
     -- Open/close picker
@@ -1674,6 +1678,22 @@ function Library:CreateColorpicker(config, section)
         -- AlphaDragger.Position = UDim2.new(0.5, 0, 1 - currentA, 0) -- COMMENTED OUT FOR NOW
         updateColor()
     end
+
+    -- Apply on load from registry
+    Library.OnLoadCfg.Event:Connect(function()
+        local v = Library.Values[colorpicker.flag]
+        if v and v.Color then
+            local c = Color3.new(v.Color.R, v.Color.G, v.Color.B)
+            colorpicker.value = c
+            local h, s, vsv = c:ToHSV()
+            currentHue, currentS, currentV = h, s, vsv
+            updateSVFrame()
+            SVPicker.Position = UDim2.new(currentS, 0, 1 - currentV, 0)
+            HueDragger.Position = UDim2.new(0.5, 0, currentHue, 0)
+            Color_Frame.BackgroundColor3 = c
+            colorpicker.callback(c, currentA)
+        end
+    end)
     
     table.insert(section.components, colorpicker)
     return colorpicker
@@ -2511,162 +2531,168 @@ end
 local Configs = {}
 local CurrentConfig = nil
 
+-- Ensure each directory segment in a path exists (mirrors example's folder creation style)
+local function ensureDirectoryPathExists(targetPath)
+	if not targetPath or targetPath == "" then return end
+	local cumulative = ""
+	for segment in string.gmatch(targetPath, "[^/\\]+") do
+		cumulative = (cumulative == "" and segment) or (cumulative .. "/" .. segment)
+		if not isfolder(cumulative) then
+			pcall(function()
+				makefolder(cumulative)
+			end)
+		end
+	end
+end
+
+-- Compute config directory using Cheat_Name as the folder name
+local function getConfigDir()
+	local base = (getgenv and getgenv().WORKSPACE or (isfolder("workspace") and "workspace" or ""))
+	local cheatFolder = (Library.CheatName and tostring(Library.CheatName) ~= "" and Library.CheatName) or "STARHUB"
+	local dir = (base ~= "" and (base .. "/" .. cheatFolder .. "/Configs")) or (cheatFolder .. "/Configs")
+	return dir
+end
+
 function Library:CreateConfigSection(config, tab)
-    if not tab then
-        error("No tab provided. Call CreateConfigSection on a tab object.")
-        return
-    end
-    
-    -- Check if this tab already has a config section
-    if tab.configSection then
-        error("This tab already has a config section. Only one config section per tab is allowed.")
-        return
-    end
-    
-    local section = {
-        position = "config",
-        text = config.Text or "Config Manager",
-        components = {},
-        frame = nil,
-        configContainer = nil,
-        configHolder = nil,
-        createButton = nil,
-        refreshButton = nil
-    }
-    
-    -- Create config container
-    local Config_Container = Instance.new("Frame")
-    Config_Container.BorderColor3 = Color3.fromRGB(0, 0, 0)
-    Config_Container.AnchorPoint = Vector2.new(0.5, 1)
-    Config_Container.Name = "Config_Container"
-    Config_Container.Position = UDim2.new(0.5, 0, 1, 0)
-    Config_Container.Size = UDim2.new(0, 652, 0, 418)
-    Config_Container.ZIndex = 2
-    Config_Container.BorderSizePixel = 0
-    Config_Container.BackgroundColor3 = Color3.fromRGB(16, 16, 16)
-    Config_Container.BackgroundTransparency = 1 -- 0% opacity (fully transparent)
-    -- Set initial visibility based on whether this tab is currently active
-    Config_Container.Visible = (CurrentTab == tab)
-    Config_Container.Parent = Container
-    
-    local UICorner = Instance.new("UICorner")
-    UICorner.Parent = Config_Container
-    
-    -- Create config holder
-    local Config_Holder = Instance.new("ScrollingFrame")
-    Config_Holder.ScrollBarImageColor3 = Library.Accent
-    Config_Holder.Active = true
-    Config_Holder.BorderColor3 = Color3.fromRGB(0, 0, 0)
-    Config_Holder.ScrollBarThickness = 1
-    Config_Holder.BackgroundTransparency = 1
-    Config_Holder.Position = UDim2.new(0.029141103848814964, 0, 0.09999997168779373, 0)
-    Config_Holder.Name = "Config_Holder"
-    Config_Holder.Size = UDim2.new(0, 609, 0, 325)
-    Config_Holder.BorderSizePixel = 0
-    Config_Holder.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-    Config_Holder.Visible = true -- Always visible when container exists
-    Config_Holder.ZIndex = 3 -- Higher than container
-    Config_Holder.Parent = Config_Container
-    
-    local UIListLayout = Instance.new("UIListLayout")
-    UIListLayout.Padding = UDim.new(0, 4)
-    UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
-    UIListLayout.Parent = Config_Holder
-    
-    -- Create buttons
-    local Create_Config = Instance.new("TextButton")
-    Create_Config.FontFace = Font.new("rbxassetid://12187365364", Enum.FontWeight.Regular, Enum.FontStyle.Normal)
-    Create_Config.TextColor3 = Color3.fromRGB(255, 255, 255)
-    Create_Config.BorderColor3 = Color3.fromRGB(0, 0, 0)
-    Create_Config.Text = "Create Config"
-    Create_Config.Size = UDim2.new(0, 1, 0, 1)
-    Create_Config.Name = "Create_Config"
-    Create_Config.Position = UDim2.new(0.029141103848814964, 0, 0.8779904246330261, 0)
-    Create_Config.BorderSizePixel = 0
-    Create_Config.AutomaticSize = Enum.AutomaticSize.XY
-    Create_Config.TextSize = 18
-    Create_Config.BackgroundColor3 = Library.Accent
-    Create_Config.ZIndex = 3 -- Higher than container
-    Create_Config.Parent = Config_Container
-    
-    local CreatePadding = Instance.new("UIPadding")
-    CreatePadding.PaddingTop = UDim.new(0, 10)
-    CreatePadding.PaddingBottom = UDim.new(0, 10)
-    CreatePadding.PaddingRight = UDim.new(0, 10)
-    CreatePadding.PaddingLeft = UDim.new(0, 10)
-    CreatePadding.Parent = Create_Config
-    
-    local CreateCorner = Instance.new("UICorner")
-    CreateCorner.CornerRadius = UDim.new(0, 4)
-    CreateCorner.Parent = Create_Config
-    
-    local Refresh_Config = Instance.new("TextButton")
-    Refresh_Config.FontFace = Font.new("rbxassetid://12187365364", Enum.FontWeight.Regular, Enum.FontStyle.Normal)
-    Refresh_Config.TextColor3 = Color3.fromRGB(255, 255, 255)
-    Refresh_Config.BorderColor3 = Color3.fromRGB(0, 0, 0)
-    Refresh_Config.Text = "Refresh"
-    Refresh_Config.Size = UDim2.new(0, 1, 0, 1)
-    Refresh_Config.Name = "Refresh_Config"
-    Refresh_Config.Position = UDim2.new(0.23773005604743958, 0, 0.8779904246330261, 0)
-    Refresh_Config.BorderSizePixel = 0
-    Refresh_Config.AutomaticSize = Enum.AutomaticSize.XY
-    Refresh_Config.TextSize = 18
-    Refresh_Config.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-    Refresh_Config.ZIndex = 3 -- Higher than container
-    Refresh_Config.Parent = Config_Container
-    
-    local RefreshPadding = Instance.new("UIPadding")
-    RefreshPadding.PaddingTop = UDim.new(0, 10)
-    RefreshPadding.PaddingBottom = UDim.new(0, 10)
-    RefreshPadding.PaddingRight = UDim.new(0, 10)
-    RefreshPadding.PaddingLeft = UDim.new(0, 10)
-    RefreshPadding.Parent = Refresh_Config
-    
-    local RefreshCorner = Instance.new("UICorner")
-    RefreshCorner.CornerRadius = UDim.new(0, 4)
-    RefreshCorner.Parent = Refresh_Config
-    
-    -- Store references
-    section.frame = Config_Container
-    section.configContainer = Config_Container
-    section.configHolder = Config_Holder
-    section.createButton = Create_Config
-    section.refreshButton = Refresh_Config
-    
-    -- Button connections
-    Create_Config.MouseButton1Click:Connect(function()
-        -- Prompt for config name (simple Input dialog imitation)
-        local defaultName = "Config_" .. os.time()
-        local promptName = defaultName
-        if Library and Library.PromptText then
-            -- If a prompt helper exists in the lib, use it
-            promptName = Library:PromptText("Enter config name", defaultName) or defaultName
-        end
-        Library:CreateNewConfig(section, promptName)
-    end)
-    
-    Refresh_Config.MouseButton1Click:Connect(function()
-        Library:RefreshConfigs(section)
-    end)
-    
-    -- Add methods to section object
-    function section:CreateConfigEntry(config)
-        return Library:CreateConfigEntry(config, self)
-    end
-    
-    -- Store reference in the specific tab
-    tab.configSection = section
-    
-    -- Add to specific tab config sections (separate from regular sections)
-    if not tab.configSections then
-        tab.configSections = {}
-    end
-    table.insert(tab.configSections, section)
-    
-    -- Load configs from storage
-    Library:LoadConfigsFromFolder(section)
-    
-    return section
+	if not tab then
+		error("No tab provided. Call CreateConfigSection on a tab object.")
+		return
+	end
+	
+	-- Check if this tab already has a config section
+	if tab.configSection then
+		error("This tab already has a config section. Only one config section per tab is allowed.")
+		return
+	end
+	
+	local section = {
+		position = "config",
+		text = config.Text or "Config Manager",
+		components = {},
+		frame = nil,
+		configContainer = nil,
+		configHolder = nil,
+		createButton = nil,
+		refreshButton = nil
+	}
+	
+	-- Create config container
+	local Config_Container = Instance.new("Frame")
+	Config_Container.BorderColor3 = Color3.fromRGB(0, 0, 0)
+	Config_Container.AnchorPoint = Vector2.new(0.5, 1)
+	Config_Container.Name = "Config_Container"
+	Config_Container.Position = UDim2.new(0.5, 0, 1, 0)
+	Config_Container.Size = UDim2.new(0, 652, 0, 418)
+	Config_Container.ZIndex = 2
+	Config_Container.BorderSizePixel = 0
+	Config_Container.BackgroundColor3 = Color3.fromRGB(16, 16, 16)
+	Config_Container.BackgroundTransparency = 1 -- 0% opacity (fully transparent)
+	-- Set initial visibility based on whether this tab is currently active
+	Config_Container.Visible = (CurrentTab == tab)
+	Config_Container.Parent = Container
+	
+	local UICorner = Instance.new("UICorner")
+	UICorner.Parent = Config_Container
+	
+	-- Create config holder
+	local Config_Holder = Instance.new("ScrollingFrame")
+	Config_Holder.ScrollBarImageColor3 = Library.Accent
+	Config_Holder.Active = true
+	Config_Holder.BorderColor3 = Color3.fromRGB(0, 0, 0)
+	Config_Holder.ScrollBarThickness = 1
+	Config_Holder.BackgroundTransparency = 1
+	Config_Holder.Position = UDim2.new(0.029141103848814964, 0, 0.09999997168779373, 0)
+	Config_Holder.Name = "Config_Holder"
+	Config_Holder.Size = UDim2.new(0, 609, 0, 325)
+	Config_Holder.BorderSizePixel = 0
+	Config_Holder.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+	Config_Holder.ZIndex = 3
+	Config_Holder.Visible = (CurrentTab == tab)
+	Config_Holder.Parent = Config_Container
+	
+	-- Layout for configs
+	local UIListLayout = Instance.new("UIListLayout")
+	UIListLayout.Padding = UDim.new(0, 4)
+	UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+	UIListLayout.Parent = Config_Holder
+	
+	-- Create buttons
+	local Create_Config = Instance.new("TextButton")
+	Create_Config.FontFace = Font.new("rbxassetid://12187365364", Enum.FontWeight.Regular, Enum.FontStyle.Normal)
+	Create_Config.TextColor3 = Color3.fromRGB(0, 0, 0)
+	Create_Config.BorderColor3 = Color3.fromRGB(0, 0, 0)
+	Create_Config.Text = "Create Config"
+	Create_Config.Size = UDim2.new(0, 1, 0, 1)
+	Create_Config.Name = "Create_Config"
+	Create_Config.Position = UDim2.new(0.029141103848814964, 0, 0.8779904246330261, 0)
+	Create_Config.BorderSizePixel = 0
+	Create_Config.AutomaticSize = Enum.AutomaticSize.XY
+	Create_Config.TextSize = 18
+	Create_Config.BackgroundColor3 = Library.Accent
+	Create_Config.ZIndex = 3
+	Create_Config.Parent = Config_Container
+	
+	local UIPadding = Instance.new("UIPadding")
+	UIPadding.PaddingTop = UDim.new(0, 10)
+	UIPadding.PaddingBottom = UDim.new(0, 10)
+	UIPadding.PaddingRight = UDim.new(0, 10)
+	UIPadding.PaddingLeft = UDim.new(0, 10)
+	UIPadding.Parent = Create_Config
+	
+	local UICorner = Instance.new("UICorner")
+	UICorner.CornerRadius = UDim.new(0, 4)
+	UICorner.Parent = Create_Config
+	
+	local Refresh_Config = Instance.new("TextButton")
+	Refresh_Config.FontFace = Font.new("rbxassetid://12187365364", Enum.FontWeight.Regular, Enum.FontStyle.Normal)
+	Refresh_Config.TextColor3 = Color3.fromRGB(0, 0, 0)
+	Refresh_Config.BorderColor3 = Color3.fromRGB(0, 0, 0)
+	Refresh_Config.Text = "Refresh"
+	Refresh_Config.Size = UDim2.new(0, 1, 0, 1)
+	Refresh_Config.Name = "Refresh_Config"
+	Refresh_Config.Position = UDim2.new(0.23773005604743958, 0, 0.8779904246330261, 0)
+	Refresh_Config.BorderSizePixel = 0
+	Refresh_Config.AutomaticSize = Enum.AutomaticSize.XY
+	Refresh_Config.TextSize = 18
+	Refresh_Config.BackgroundColor3 = Library.Accent
+	Refresh_Config.ZIndex = 3
+	Refresh_Config.Parent = Config_Container
+	
+	local UIPadding2 = Instance.new("UIPadding")
+	UIPadding2.PaddingTop = UDim.new(0, 10)
+	UIPadding2.PaddingBottom = UDim.new(0, 10)
+	UIPadding2.PaddingRight = UDim.new(0, 10)
+	UIPadding2.PaddingLeft = UDim.new(0, 10)
+	UIPadding2.Parent = Refresh_Config
+	
+	local UICorner2 = Instance.new("UICorner")
+	UICorner2.CornerRadius = UDim.new(0, 4)
+	UICorner2.Parent = Refresh_Config
+	
+	-- Store references
+	section.configContainer = Config_Container
+	section.configHolder = Config_Holder
+	section.createButton = Create_Config
+	section.refreshButton = Refresh_Config
+	
+	-- Store section on tab
+	tab.configSection = section
+	tab.configSections = tab.configSections or {}
+	table.insert(tab.configSections, section)
+	
+	-- Hook up events
+	Create_Config.MouseButton1Click:Connect(function()
+		Library:CreateNewConfig(section)
+	end)
+	
+	Refresh_Config.MouseButton1Click:Connect(function()
+		Library:RefreshConfigs(section)
+	end)
+	
+	-- Load configs from storage
+	Library:LoadConfigsFromFolder(section)
+	
+	return section
 end
 
 function Library:CreateConfigEntry(config, section)
@@ -2973,12 +2999,8 @@ function Library:SaveConfigToFile(config)
     -- Save config to file system
     local success, error = pcall(function()
         local jsonString = game:GetService("HttpService"):JSONEncode(config)
-        local base = (getgenv and getgenv().WORKSPACE or (isfolder("workspace") and "workspace" or ""))
-        local dir = (base ~= "" and (base .. "/STARHUB/Configs")) or "STARHUB/Configs"
-        if not isfolder(dir) then
-            if not isfolder(base .. "/STARHUB") and base ~= "" then makefolder(base .. "/STARHUB") end
-            if not isfolder(dir) then makefolder(dir) end
-        end
+        local dir = getConfigDir()
+        ensureDirectoryPathExists(dir)
         writefile(dir .. "/" .. config.name .. ".json", jsonString)
         config.__path = dir .. "/" .. config.name .. ".json"
     end)
@@ -2991,8 +3013,8 @@ end
 function Library:LoadConfigFromFile(filename)
     -- Load config from file system
     local success, config = pcall(function()
-        local base = (getgenv and getgenv().WORKSPACE or (isfolder("workspace") and "workspace" or ""))
-        local dir = (base ~= "" and (base .. "/STARHUB/Configs")) or "STARHUB/Configs"
+        local dir = getConfigDir()
+        ensureDirectoryPathExists(dir)
         local jsonString = readfile(dir .. "/" .. filename)
         return game:GetService("HttpService"):JSONDecode(jsonString)
     end)
@@ -3068,8 +3090,8 @@ function Library:DeleteConfig(config)
     
     -- Delete file
     local success, error = pcall(function()
-        local base = (getgenv and getgenv().WORKSPACE or (isfolder("workspace") and "workspace" or ""))
-        local dir = (base ~= "" and (base .. "/STARHUB/Configs")) or "STARHUB/Configs"
+        local dir = getConfigDir()
+        ensureDirectoryPathExists(dir)
         delfile(dir .. "/" .. config.name .. ".json")
     end)
     
@@ -3083,9 +3105,8 @@ end
 function Library:LoadConfigsFromFolder(section)
     -- Load configs from local Config folder
     local success, files = pcall(function()
-        local base = (getgenv and getgenv().WORKSPACE or (isfolder("workspace") and "workspace" or ""))
-        local dir = (base ~= "" and (base .. "/STARHUB/Configs")) or "STARHUB/Configs"
-        if not isfolder(dir) then return {} end
+        local dir = getConfigDir()
+        ensureDirectoryPathExists(dir)
         return listfiles(dir)
     end)
     
