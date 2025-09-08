@@ -291,9 +291,6 @@ function Library:CreateWindow(config)
         return Library:CreateSection(config)
     end
 
-    function window:CreateConfigSection(config)
-        return Library:CreateConfigSection(config)
-    end
     
     function window:CreateToggle(config)
         return Library:CreateToggle(config)
@@ -513,6 +510,10 @@ function Library:CreateTab(config)
         return Library:CreateSection(config)
     end
     
+    function tab:CreateConfigSection(config)
+        return Library:CreateConfigSection(config)
+    end
+    
     function tab:CreateToggle(config)
         return Library:CreateToggle(config)
     end
@@ -570,15 +571,17 @@ function Library:SwitchTab(tab)
             end
         end
         
-        -- Hide config section if it exists
-        if CurrentTab.configSection and CurrentTab.configSection.configContainer then
-            local fadeOut = createTween(CurrentTab.configSection.configContainer, {
-                BackgroundTransparency = 1
-            }, 0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.In)
-            fadeOut:Play()
-            fadeOut.Completed:Connect(function()
-                CurrentTab.configSection.configContainer.Visible = false
-            end)
+        -- Hide config sections
+        for _, section in pairs(CurrentTab.sections.left) do
+            if section.position == "config" and section.configContainer then
+                local fadeOut = createTween(section.configContainer, {
+                    BackgroundTransparency = 1
+                }, 0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.In)
+                fadeOut:Play()
+                fadeOut.Completed:Connect(function()
+                    section.configContainer.Visible = false
+                end)
+            end
         end
         
         -- Animate current tab to inactive with clean transition
@@ -631,12 +634,14 @@ function Library:SwitchTab(tab)
         end
     end
     
-    -- Handle config section visibility
-    if tab.configSection and tab.configSection.configContainer then
-        tab.configSection.configContainer.Visible = true
-        tab.configSection.configContainer.BackgroundTransparency = 1
-        local fade = createTween(tab.configSection.configContainer, {BackgroundTransparency = 0}, 0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
-        fade:Play()
+    -- Handle config sections (special positioning)
+    for _, section in pairs(tab.sections.left) do
+        if section.position == "config" and section.configContainer then
+            section.configContainer.Visible = true
+            section.configContainer.BackgroundTransparency = 1
+            local fade = createTween(section.configContainer, {BackgroundTransparency = 0}, 0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+            fade:Play()
+        end
     end
     
     -- Animate new tab to active with unique effects
@@ -2369,7 +2374,7 @@ function Library:CreateConfigSection(config)
     
     local section = {
         position = "config",
-        text = "Config Manager",
+        text = config.Text or "Config Manager",
         components = {},
         frame = nil,
         configContainer = nil,
@@ -2487,6 +2492,9 @@ function Library:CreateConfigSection(config)
     
     -- Store reference in the tab
     CurrentTab.configSection = section
+    
+    -- Add to tab sections for proper management
+    table.insert(CurrentTab.sections.left, section)
     
     -- Load sample configs
     Library:LoadSampleConfigs(section)
