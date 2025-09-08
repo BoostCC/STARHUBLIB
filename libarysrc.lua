@@ -20,6 +20,36 @@ local BlockDragging = false
 local ModalOverlay = nil
 local PopupOpenCount = 0
 
+-- Config registry and load event
+Library.Values = Library.Values or {}
+Library.OnLoadCfg = Library.OnLoadCfg or Instance.new("BindableEvent")
+
+local function deepCopySerialize(value)
+    local t = typeof(value)
+    if t == "Color3" then
+        return { __color = true, R = value.R, G = value.G, B = value.B }
+    elseif t ~= "table" then
+        return value
+    end
+    local out = {}
+    for k, v in pairs(value) do
+        out[k] = deepCopySerialize(v)
+    end
+    return out
+end
+
+local function deepDeserialize(value)
+    if typeof(value) ~= "table" then return value end
+    if value.__color then
+        return Color3.new(value.R, value.G, value.B)
+    end
+    local out = {}
+    for k, v in pairs(value) do
+        out[k] = deepDeserialize(v)
+    end
+    return out
+end
+
 -- Create the main ScreenGui in CoreGui
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Global
@@ -907,7 +937,8 @@ function Library:CreateToggle(config, section)
     local toggle = {
         text = config.ToggleText or "Toggle",
         callback = config.Callback or function() end,
-        value = false
+        value = false,
+        flag = config.Flag or (config.ToggleText or ("toggle_" .. tostring(#section.components + 1)))
     }
     
     -- Create toggle component
@@ -1013,6 +1044,27 @@ function Library:CreateToggle(config, section)
     checkIcon.ImageTransparency = 1
     toggleText.TextColor3 = inactiveColor
     
+    -- Registry integration
+    Library.Values[toggle.flag] = Library.Values[toggle.flag] or { Toggle = toggle.value }
+    local function applyToggle(v)
+        toggle.value = v.Toggle and true or false
+        if toggle.value then
+            toggleFill.Size = UDim2.new(0, 20, 0, 20)
+            checkIcon.ImageTransparency = 0
+            toggleText.TextColor3 = activeColor
+        else
+            toggleFill.Size = UDim2.new(0, 0, 0, 0)
+            checkIcon.ImageTransparency = 1
+            toggleText.TextColor3 = inactiveColor
+        end
+        toggle.callback(toggle.value)
+        Library.Values[toggle.flag] = { Toggle = toggle.value }
+    end
+    Library.OnLoadCfg.Event:Connect(function()
+        local v = Library.Values[toggle.flag]
+        if v then applyToggle(v) end
+    end)
+
     table.insert(section.components, toggle)
     return toggle
 end
@@ -1033,6 +1085,7 @@ function Library:CreateSlider(config, section)
         min = config.Min or 0,
         max = config.Max or 100,
         value = config.Value or 50,
+        flag = config.Flag or (config.SliderText or ("slider_" .. tostring(#section.components + 1))),
         callback = config.Callback or function() end
     }
     
@@ -1072,6 +1125,22 @@ function Library:CreateSlider(config, section)
     pointer.Name = "Pointer"
     pointer.Size = UDim2.new(0, 15, 0, 15)
     pointer.Position = UDim2.new(1, 0, 0.5, 0)
+    -- Registry integration
+    Library.Values[slider.flag] = Library.Values[slider.flag] or { Slider = slider.value }
+    local function applySlider(v)
+        local val = math.clamp(tonumber(v.Slider) or slider.value, slider.min, slider.max)
+        slider.value = val
+        local pct = (val - slider.min) / math.max(1, (slider.max - slider.min))
+        progressBar.Size = UDim2.new(pct, 0, 0, 3)
+        pointer.Position = UDim2.new(pct, 0, 0.5, 0)
+        slider.callback(val)
+        Library.Values[slider.flag] = { Slider = val }
+    end
+    Library.OnLoadCfg.Event:Connect(function()
+        local v = Library.Values[slider.flag]
+        if v then applySlider(v) end
+    end)
+
     pointer.AnchorPoint = Vector2.new(1, 0.5)
     pointer.BackgroundColor3 = Library.Accent
     pointer.Parent = progressBar
@@ -2566,7 +2635,14 @@ function Library:CreateConfigSection(config, tab)
     
     -- Button connections
     Create_Config.MouseButton1Click:Connect(function()
-        Library:CreateNewConfig(section)
+        -- Prompt for config name (simple Input dialog imitation)
+        local defaultName = "Config_" .. os.time()
+        local promptName = defaultName
+        if Library and Library.PromptText then
+            -- If a prompt helper exists in the lib, use it
+            promptName = Library:PromptText("Enter config name", defaultName) or defaultName
+        end
+        Library:CreateNewConfig(section, promptName)
     end)
     
     Refresh_Config.MouseButton1Click:Connect(function()
@@ -2587,8 +2663,8 @@ function Library:CreateConfigSection(config, tab)
     end
     table.insert(tab.configSections, section)
     
-    -- Load sample configs
-    Library:LoadSampleConfigs(section)
+    -- Load configs from storage
+    Library:LoadConfigsFromFolder(section)
     
     return section
 end
@@ -2897,7 +2973,14 @@ function Library:SaveConfigToFile(config)
     -- Save config to file system
     local success, error = pcall(function()
         local jsonString = game:GetService("HttpService"):JSONEncode(config)
-        writefile("Config/" .. config.name .. ".json", jsonString)
+        local base = (getgenv and getgenv().WORKSPACE or (isfolder("workspace") and "workspace" or ""))
+        local dir = (base ~= "" and (base .. "/STARHUB/Configs")) or "STARHUB/Configs"
+        if not isfolder(dir) then
+            if not isfolder(base .. "/STARHUB") and base ~= "" then makefolder(base .. "/STARHUB") end
+            if not isfolder(dir) then makefolder(dir) end
+        end
+        writefile(dir .. "/" .. config.name .. ".json", jsonString)
+        config.__path = dir .. "/" .. config.name .. ".json"
     end)
     
     if not success then
@@ -2908,7 +2991,9 @@ end
 function Library:LoadConfigFromFile(filename)
     -- Load config from file system
     local success, config = pcall(function()
-        local jsonString = readfile("Config/" .. filename)
+        local base = (getgenv and getgenv().WORKSPACE or (isfolder("workspace") and "workspace" or ""))
+        local dir = (base ~= "" and (base .. "/STARHUB/Configs")) or "STARHUB/Configs"
+        local jsonString = readfile(dir .. "/" .. filename)
         return game:GetService("HttpService"):JSONDecode(jsonString)
     end)
     
@@ -2920,9 +3005,9 @@ function Library:LoadConfigFromFile(filename)
     end
 end
 
-function Library:CreateNewConfig(section)
+function Library:CreateNewConfig(section, nameOverride)
     local player = game.Players.LocalPlayer
-    local configName = "Config_" .. os.time()
+    local configName = nameOverride or ("Config_" .. os.time())
     
     -- Capture all current UI states
     local uiStates = Library:CaptureAllUIStates()
@@ -3025,7 +3110,9 @@ function Library:DeleteConfig(config)
     
     -- Delete file
     local success, error = pcall(function()
-        delfile("Config/" .. config.name .. ".json")
+        local base = (getgenv and getgenv().WORKSPACE or (isfolder("workspace") and "workspace" or ""))
+        local dir = (base ~= "" and (base .. "/STARHUB/Configs")) or "STARHUB/Configs"
+        delfile(dir .. "/" .. config.name .. ".json")
     end)
     
     if not success then
@@ -3038,12 +3125,15 @@ end
 function Library:LoadConfigsFromFolder(section)
     -- Load configs from local Config folder
     local success, files = pcall(function()
-        return listfiles("Config/")
+        local base = (getgenv and getgenv().WORKSPACE or (isfolder("workspace") and "workspace" or ""))
+        local dir = (base ~= "" and (base .. "/STARHUB/Configs")) or "STARHUB/Configs"
+        if not isfolder(dir) then return {} end
+        return listfiles(dir)
     end)
     
     if success and files then
         for _, filePath in ipairs(files) do
-            local filename = filePath:match("Config/(.+)")
+            local filename = filePath:match("([^/\\]+)$")
             if filename and filename:match("%.json$") then
                 local config = Library:LoadConfigFromFile(filename)
                 if config then
@@ -3080,22 +3170,8 @@ function Library:LoadConfigsFromFolder(section)
 end
 
 function Library:LoadSampleConfigs(section)
-    -- Create a sample config
-    local player = game.Players.LocalPlayer
-    local sampleConfig = {
-        name = "Sample Config",
-        authorId = player.UserId,
-        authorName = player.Name,
-        date = os.date("%m/%d/%Y %I:%M%p"),
-        dateCreated = os.time() - 86400, -- 1 day ago
-        data = {}
-    }
-    
-    table.insert(Configs, sampleConfig)
-    Library:CreateConfigEntry(sampleConfig, section)
-    
-    -- Also try to load from external config folder
-    Library:LoadConfigsFromFolder(section)
+    -- Deprecated: keep stub to avoid runtime errors if referenced elsewhere
+    return Library:LoadConfigsFromFolder(section)
 end
 
 function Library:SortConfigsByDate()
@@ -3116,8 +3192,8 @@ function Library:RefreshConfigs(section)
     -- Clear configs list
     Configs = {}
     
-    -- Reload sample configs
-    Library:LoadSampleConfigs(section)
+    -- Reload configs from storage
+    Library:LoadConfigsFromFolder(section)
     
     -- Sort configs by date
     Library:SortConfigsByDate()
