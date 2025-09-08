@@ -3009,16 +3009,13 @@ function Library:CreateNewConfig(section, nameOverride)
     local player = game.Players.LocalPlayer
     local configName = nameOverride or ("Config_" .. os.time())
     
-    -- Capture all current UI states
-    local uiStates = Library:CaptureAllUIStates()
-    
     local config = {
         name = configName,
         authorId = player.UserId,
         authorName = player.Name,
         date = os.date("%m/%d/%Y %I:%M%p"),
         dateCreated = os.time(), -- Unix timestamp for sorting
-        data = uiStates,
+        data = deepCopySerialize(Library.Values),
         accent = deepCopySerialize(Library.Accent)
     }
     
@@ -3043,58 +3040,10 @@ function Library:LoadConfig(config)
         return
     end
     
-    -- Restore all UI states
-    for elementPath, state in pairs(config.data) do
-        local element = ScreenGui:FindFirstChild(elementPath, true)
-        if element then
-            if state.type == "toggle" then
-                -- Restore toggle state
-                local toggleFill = element:FindFirstChild("Toggle_Fill")
-                if toggleFill then
-                    if state.enabled then
-                        toggleFill.BackgroundTransparency = 0
-                        local checkIcon = element:FindFirstChild("Check_Icon")
-                        if checkIcon then
-                            checkIcon.ImageTransparency = 0
-                        end
-                    else
-                        toggleFill.BackgroundTransparency = 1
-                        local checkIcon = element:FindFirstChild("Check_Icon")
-                        if checkIcon then
-                            checkIcon.ImageTransparency = 1
-                        end
-                    end
-                end
-            elseif state.type == "slider" then
-                -- Restore slider value
-                local pointer = element:FindFirstChild("Pointer")
-                if pointer then
-                    local newX = 0.05 + (state.value * 0.9) -- Convert back to position
-                    pointer.Position = UDim2.new(newX, 0, 0.5, 0)
-                end
-            elseif state.type == "textbox" then
-                -- Restore text input
-                element.Text = state.text
-            elseif state.type == "dropdown" then
-                -- Restore dropdown selection
-                local container = element
-                for _, item in ipairs(container:GetChildren()) do
-                    if item:IsA("Frame") then
-                        local label = item:FindFirstChild("TextLabel")
-                        local checkIcon = item:FindFirstChild("Check_Icon")
-                        if label and checkIcon then
-                            if label.Text == state.selected then
-                                checkIcon.ImageTransparency = 0
-                                label.TextColor3 = Library.Accent
-                            else
-                                checkIcon.ImageTransparency = 1
-                                label.TextColor3 = Color3.fromRGB(134, 134, 134)
-                            end
-                        end
-                    end
-                end
-            end
-        end
+    -- Replace registry and notify controls
+    if config.data then
+        Library.Values = deepDeserialize(config.data)
+        Library.OnLoadCfg:Fire()
     end
     
     -- Apply accent color if present
