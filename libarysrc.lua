@@ -572,15 +572,17 @@ function Library:SwitchTab(tab)
         end
         
         -- Hide config sections
-        for _, section in pairs(CurrentTab.sections.left) do
-            if section.position == "config" and section.configContainer then
-                local fadeOut = createTween(section.configContainer, {
-                    BackgroundTransparency = 1
-                }, 0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.In)
-                fadeOut:Play()
-                fadeOut.Completed:Connect(function()
-                    section.configContainer.Visible = false
-                end)
+        if CurrentTab.configSections then
+            for _, section in pairs(CurrentTab.configSections) do
+                if section.configContainer then
+                    local fadeOut = createTween(section.configContainer, {
+                        BackgroundTransparency = 1
+                    }, 0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.In)
+                    fadeOut:Play()
+                    fadeOut.Completed:Connect(function()
+                        section.configContainer.Visible = false
+                    end)
+                end
             end
         end
         
@@ -636,9 +638,9 @@ function Library:SwitchTab(tab)
     
     -- Hide config sections from all other tabs first
     for _, windowTab in pairs(CurrentWindow.tabs) do
-        if windowTab ~= tab then
-            for _, section in pairs(windowTab.sections.left) do
-                if section.position == "config" and section.configContainer then
+        if windowTab ~= tab and windowTab.configSections then
+            for _, section in pairs(windowTab.configSections) do
+                if section.configContainer then
                     section.configContainer.Visible = false
                 end
             end
@@ -646,12 +648,18 @@ function Library:SwitchTab(tab)
     end
     
     -- Handle config sections (special positioning) - only for the current tab
-    for _, section in pairs(tab.sections.left) do
-        if section.position == "config" and section.configContainer then
-            section.configContainer.Visible = true
-            section.configContainer.BackgroundTransparency = 1
-            local fade = createTween(section.configContainer, {BackgroundTransparency = 0}, 0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
-            fade:Play()
+    if tab.configSections then
+        for _, section in pairs(tab.configSections) do
+            if section.configContainer then
+                section.configContainer.Visible = true
+                -- Only animate if it's not already visible
+                if section.configContainer.BackgroundTransparency == 1 then
+                    local fade = createTween(section.configContainer, {BackgroundTransparency = 0}, 0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+                    fade:Play()
+                else
+                    section.configContainer.BackgroundTransparency = 0
+                end
+            end
         end
     end
     
@@ -2410,7 +2418,13 @@ function Library:CreateConfigSection(config, tab)
     Config_Container.ZIndex = 2
     Config_Container.BorderSizePixel = 0
     Config_Container.BackgroundColor3 = Color3.fromRGB(16, 16, 16)
-    Config_Container.Visible = false
+    -- Set initial visibility based on whether this tab is currently active
+    Config_Container.Visible = (CurrentTab == tab)
+    if Config_Container.Visible then
+        Config_Container.BackgroundTransparency = 0
+    else
+        Config_Container.BackgroundTransparency = 1
+    end
     Config_Container.Parent = Container
     
     local UICorner = Instance.new("UICorner")
@@ -2510,8 +2524,11 @@ function Library:CreateConfigSection(config, tab)
     -- Store reference in the specific tab
     tab.configSection = section
     
-    -- Add to specific tab sections for proper management
-    table.insert(tab.sections.left, section)
+    -- Add to specific tab config sections (separate from regular sections)
+    if not tab.configSections then
+        tab.configSections = {}
+    end
+    table.insert(tab.configSections, section)
     
     -- Load sample configs
     Library:LoadSampleConfigs(section)
