@@ -657,7 +657,7 @@ function Library:SwitchTab(tab)
         for _, section in pairs(tab.configSections) do
             if section.configContainer then
                 section.configContainer.Visible = true
-                -- Show config holder immediately
+                -- Ensure config holder is visible
                 local configHolder = section.configContainer:FindFirstChild("Config_Holder")
                 if configHolder then
                     configHolder.Visible = true
@@ -2442,7 +2442,7 @@ function Library:CreateConfigSection(config, tab)
     Config_Holder.Size = UDim2.new(0, 609, 0, 325)
     Config_Holder.BorderSizePixel = 0
     Config_Holder.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-    Config_Holder.Visible = Config_Container.Visible -- Match container visibility
+    Config_Holder.Visible = true -- Always visible when container exists
     Config_Holder.ZIndex = 3 -- Higher than container
     Config_Holder.Parent = Config_Container
     
@@ -2547,8 +2547,9 @@ function Library:CreateConfigEntry(config, section)
     Section.BorderColor3 = Color3.fromRGB(0, 0, 0)
     Section.Size = UDim2.new(0, 609, 0, 70)
     Section.BorderSizePixel = 0
-    Section.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+    Section.BackgroundColor3 = Color3.fromRGB(30, 30, 30) -- Slightly lighter for better visibility
     Section.ZIndex = 4 -- Higher than config holder
+    Section.Visible = true -- Ensure config entries are visible
     Section.Parent = section.configHolder
     
     local UICorner = Instance.new("UICorner")
