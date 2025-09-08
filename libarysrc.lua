@@ -2710,7 +2710,7 @@ function Library:CreateConfigEntry(config, section)
     Delete_Config.Size = UDim2.new(0, 115, 0, 35)
     Delete_Config.BorderSizePixel = 0
     Delete_Config.TextSize = 16
-    Delete_Config.BackgroundColor3 = Color3.fromRGB(24, 24, 24)
+    Delete_Config.BackgroundColor3 = Color3.fromRGB(50, 50, 50) -- Slightly lighter for visibility
     Delete_Config.ZIndex = 5 -- Ensure visibility
     Delete_Config.Parent = Section
     
@@ -2731,7 +2731,7 @@ function Library:CreateConfigEntry(config, section)
     Icon_Holder.BorderColor3 = Color3.fromRGB(0, 0, 0)
     Icon_Holder.Size = UDim2.new(0, 35, 0, 35)
     Icon_Holder.BorderSizePixel = 0
-    Icon_Holder.BackgroundColor3 = Color3.fromRGB(22, 22, 22)
+    Icon_Holder.BackgroundColor3 = Color3.fromRGB(40, 40, 40) -- Slightly lighter for visibility
     Icon_Holder.ZIndex = 6 -- Ensure visibility
     Icon_Holder.Parent = Delete_Config
     
