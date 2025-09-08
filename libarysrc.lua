@@ -262,9 +262,6 @@ function Library:CreateWindow(config)
     -- Create watermark with cheat name
     Library:CreateWatermark(config.library_config and config.library_config.Cheat_Name)
     
-    -- Initialize global config container
-    InitializeGlobalConfigContainer()
-    
     -- Set up UI toggle keybind (only affects main UI, not notifications)
     if config.library_config and config.library_config.interface_keybind then
         local keybind = config.library_config.interface_keybind
@@ -596,17 +593,6 @@ function Library:SwitchTab(tab)
             end)
         end
         
-        -- Hide global config container
-        if GlobalConfigContainer then
-            local fadeOut = createTween(GlobalConfigContainer, {
-                BackgroundTransparency = 1
-            }, 0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.In)
-            fadeOut:Play()
-            fadeOut.Completed:Connect(function()
-                GlobalConfigContainer.Visible = false
-            end)
-        end
-        
         -- Animate current tab to inactive with clean transition
         if CurrentTab.tabFrame then
             -- Smooth background fade out
@@ -657,27 +643,12 @@ function Library:SwitchTab(tab)
         end
     end
     
-    -- Show config section if it exists and this is the Config tab
+    -- Show config section if it exists
     if tab.configSection and tab.configSection.frame then
-        -- Only show config container if this is the Config tab
-        local isConfigTab = tab.TabText == "Config"
-        tab.configSection.frame.Visible = isConfigTab
-        if isConfigTab then
-            tab.configSection.frame.BackgroundTransparency = 1
-            local fade = createTween(tab.configSection.frame, {BackgroundTransparency = 0}, 0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
-            fade:Play()
-        end
-    end
-    
-    -- Show global config container only for Config tab
-    if GlobalConfigContainer then
-        local isConfigTab = tab.TabText == "Config"
-        GlobalConfigContainer.Visible = isConfigTab
-        if isConfigTab then
-            GlobalConfigContainer.BackgroundTransparency = 1
-            local fade = createTween(GlobalConfigContainer, {BackgroundTransparency = 0}, 0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
-            fade:Play()
-        end
+        tab.configSection.frame.Visible = true
+        tab.configSection.frame.BackgroundTransparency = 1
+        local fade = createTween(tab.configSection.frame, {BackgroundTransparency = 0}, 0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+        fade:Play()
     end
     
     -- Animate new tab to active with unique effects
@@ -2401,108 +2372,6 @@ function Library:UpdateWatermarkAccent()
     end
 end
 
--- Global config container (created once)
-local GlobalConfigContainer = nil
-
--- Initialize global config container
-local function InitializeGlobalConfigContainer()
-    if not GlobalConfigContainer then
-        GlobalConfigContainer = Instance.new("Frame")
-        GlobalConfigContainer.BorderColor3 = Color3.fromRGB(0, 0, 0)
-        GlobalConfigContainer.AnchorPoint = Vector2.new(0.5, 1)
-        GlobalConfigContainer.Name = "Config_Container"
-        GlobalConfigContainer.Position = UDim2.new(0.5, 0, 1, 0)
-        GlobalConfigContainer.Size = UDim2.new(0, 652, 0, 418)
-        GlobalConfigContainer.ZIndex = 2
-        GlobalConfigContainer.BorderSizePixel = 0
-        GlobalConfigContainer.BackgroundColor3 = Color3.fromRGB(16, 16, 16)
-        GlobalConfigContainer.Visible = false
-        GlobalConfigContainer.Parent = Container
-        
-        local UICorner = Instance.new("UICorner")
-        UICorner.Parent = GlobalConfigContainer
-        
-        -- Create config holder
-        local Config_Holder = Instance.new("ScrollingFrame")
-        Config_Holder.ScrollBarImageColor3 = Library.Accent
-        Config_Holder.Active = true
-        Config_Holder.BorderColor3 = Color3.fromRGB(0, 0, 0)
-        Config_Holder.ScrollBarThickness = 1
-        Config_Holder.BackgroundTransparency = 1
-        Config_Holder.Position = UDim2.new(0.029141103848814964, 0, 0.10000000149011612, 0)
-        Config_Holder.Name = "Config_Holder"
-        Config_Holder.Size = UDim2.new(0, 609, 0, 360)
-        Config_Holder.BorderSizePixel = 0
-        Config_Holder.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-        Config_Holder.Parent = GlobalConfigContainer
-        
-        local UIListLayout = Instance.new("UIListLayout")
-        UIListLayout.Padding = UDim.new(0, 4)
-        UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
-        UIListLayout.Parent = Config_Holder
-        
-        -- Create header
-        local Header = Instance.new("Frame")
-        Header.Name = "Header"
-        Header.Size = UDim2.new(1, 0, 0, 50)
-        Header.BorderSizePixel = 0
-        Header.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
-        Header.Parent = GlobalConfigContainer
-        
-        local HeaderCorner = Instance.new("UICorner")
-        HeaderCorner.CornerRadius = UDim.new(0, 4)
-        HeaderCorner.Parent = Header
-        
-        local Title = Instance.new("TextLabel")
-        Title.FontFace = Font.new("rbxassetid://12187365364", Enum.FontWeight.SemiBold, Enum.FontStyle.Normal)
-        Title.TextColor3 = Color3.fromRGB(255, 255, 255)
-        Title.Text = "Config Manager"
-        Title.Size = UDim2.new(0, 1, 0, 1)
-        Title.Position = UDim2.new(0, 20, 0.5, 0)
-        Title.AnchorPoint = Vector2.new(0, 0.5)
-        Title.BackgroundTransparency = 1
-        Title.AutomaticSize = Enum.AutomaticSize.XY
-        Title.TextSize = 18
-        Title.Parent = Header
-        
-        -- Create buttons in bottom left corner
-        local CreateButton = Instance.new("TextButton")
-        CreateButton.FontFace = Font.new("rbxassetid://12187365364", Enum.FontWeight.Regular, Enum.FontStyle.Normal)
-        CreateButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-        CreateButton.Text = "Create Config"
-        CreateButton.AnchorPoint = Vector2.new(0, 1)
-        CreateButton.Position = UDim2.new(0, 20, 1, -20)
-        CreateButton.Size = UDim2.new(0, 120, 0, 35)
-        CreateButton.BorderSizePixel = 0
-        CreateButton.TextSize = 14
-        CreateButton.BackgroundColor3 = Library.Accent
-        CreateButton.Parent = GlobalConfigContainer
-        
-        local CreateCorner = Instance.new("UICorner")
-        CreateCorner.Parent = CreateButton
-        
-        local RefreshButton = Instance.new("TextButton")
-        RefreshButton.FontFace = Font.new("rbxassetid://12187365364", Enum.FontWeight.Regular, Enum.FontStyle.Normal)
-        RefreshButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-        RefreshButton.Text = "Refresh"
-        RefreshButton.AnchorPoint = Vector2.new(0, 1)
-        RefreshButton.Position = UDim2.new(0, 150, 1, -20)
-        RefreshButton.Size = UDim2.new(0, 100, 0, 35)
-        RefreshButton.BorderSizePixel = 0
-        RefreshButton.TextSize = 14
-        RefreshButton.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-        RefreshButton.Parent = GlobalConfigContainer
-        
-        local RefreshCorner = Instance.new("UICorner")
-        RefreshCorner.Parent = RefreshButton
-        
-        -- Store references for later use
-        GlobalConfigContainer.configHolder = Config_Holder
-        GlobalConfigContainer.createButton = CreateButton
-        GlobalConfigContainer.refreshButton = RefreshButton
-    end
-end
-
 -- Config Section System
 function Library:CreateConfigSection(config)
     if not CurrentTab then
@@ -2510,28 +2379,115 @@ function Library:CreateConfigSection(config)
         return
     end
     
-    -- Initialize global config container
-    InitializeGlobalConfigContainer()
-    
     local section = {
         position = "config",
         text = "Config Manager",
         components = {},
-        frame = GlobalConfigContainer,
-        configHolder = GlobalConfigContainer.configHolder
+        frame = nil,
+        configHolder = nil
     }
     
+    -- Create config container (positioned at bottom middle)
+    local configContainer = Instance.new("Frame")
+    configContainer.BorderColor3 = Color3.fromRGB(0, 0, 0)
+    configContainer.AnchorPoint = Vector2.new(0.5, 1)
+    configContainer.Name = "Config_Container"
+    configContainer.Position = UDim2.new(0.5, 0, 1, 0)
+    configContainer.Size = UDim2.new(0, 652, 0, 418)
+    configContainer.ZIndex = 2
+    configContainer.BorderSizePixel = 0
+    configContainer.BackgroundColor3 = Color3.fromRGB(16, 16, 16)
+    configContainer.Visible = false
+    configContainer.Parent = Container
+    
+    local UICorner = Instance.new("UICorner")
+    UICorner.Parent = configContainer
+    
+    -- Create config holder
+    local Config_Holder = Instance.new("ScrollingFrame")
+    Config_Holder.ScrollBarImageColor3 = Library.Accent
+    Config_Holder.Active = true
+    Config_Holder.BorderColor3 = Color3.fromRGB(0, 0, 0)
+    Config_Holder.ScrollBarThickness = 1
+    Config_Holder.BackgroundTransparency = 1
+    Config_Holder.Position = UDim2.new(0.029141103848814964, 0, 0.10000000149011612, 0)
+    Config_Holder.Name = "Config_Holder"
+    Config_Holder.Size = UDim2.new(0, 609, 0, 360)
+    Config_Holder.BorderSizePixel = 0
+    Config_Holder.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    Config_Holder.Parent = configContainer
+    
+    local UIListLayout = Instance.new("UIListLayout")
+    UIListLayout.Padding = UDim.new(0, 4)
+    UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+    UIListLayout.Parent = Config_Holder
+    
+    -- Create header
+    local Header = Instance.new("Frame")
+    Header.Name = "Header"
+    Header.Size = UDim2.new(1, 0, 0, 50)
+    Header.BorderSizePixel = 0
+    Header.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+    Header.Parent = configContainer
+    
+    local HeaderCorner = Instance.new("UICorner")
+    HeaderCorner.CornerRadius = UDim.new(0, 4)
+    HeaderCorner.Parent = Header
+    
+    local Title = Instance.new("TextLabel")
+    Title.FontFace = Font.new("rbxassetid://12187365364", Enum.FontWeight.SemiBold, Enum.FontStyle.Normal)
+    Title.TextColor3 = Color3.fromRGB(255, 255, 255)
+    Title.Text = "Config Manager"
+    Title.Size = UDim2.new(0, 1, 0, 1)
+    Title.Position = UDim2.new(0, 20, 0.5, 0)
+    Title.AnchorPoint = Vector2.new(0, 0.5)
+    Title.BackgroundTransparency = 1
+    Title.AutomaticSize = Enum.AutomaticSize.XY
+    Title.TextSize = 18
+    Title.Parent = Header
+    
+    local CreateButton = Instance.new("TextButton")
+    CreateButton.FontFace = Font.new("rbxassetid://12187365364", Enum.FontWeight.Regular, Enum.FontStyle.Normal)
+    CreateButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+    CreateButton.Text = "Create Config"
+    CreateButton.AnchorPoint = Vector2.new(1, 0.5)
+    CreateButton.Position = UDim2.new(1, -140, 0.5, 0)
+    CreateButton.Size = UDim2.new(0, 120, 0, 35)
+    CreateButton.BorderSizePixel = 0
+    CreateButton.TextSize = 14
+    CreateButton.BackgroundColor3 = Library.Accent
+    CreateButton.Parent = Header
+    
+    local CreateCorner = Instance.new("UICorner")
+    CreateCorner.Parent = CreateButton
+    
+    local RefreshButton = Instance.new("TextButton")
+    RefreshButton.FontFace = Font.new("rbxassetid://12187365364", Enum.FontWeight.Regular, Enum.FontStyle.Normal)
+    RefreshButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+    RefreshButton.Text = "Refresh"
+    RefreshButton.AnchorPoint = Vector2.new(1, 0.5)
+    RefreshButton.Position = UDim2.new(1, -20, 0.5, 0)
+    RefreshButton.Size = UDim2.new(0, 100, 0, 35)
+    RefreshButton.BorderSizePixel = 0
+    RefreshButton.TextSize = 14
+    RefreshButton.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+    RefreshButton.Parent = Header
+    
+    local RefreshCorner = Instance.new("UICorner")
+    RefreshCorner.Parent = RefreshButton
+    
     -- Button connections
-    GlobalConfigContainer.createButton.MouseButton1Click:Connect(function()
+    CreateButton.MouseButton1Click:Connect(function()
         Library:CreateNewConfig(section)
     end)
     
-    GlobalConfigContainer.refreshButton.MouseButton1Click:Connect(function()
+    RefreshButton.MouseButton1Click:Connect(function()
         Library:RefreshConfigs(section)
     end)
     
-    -- Store reference in the tab
-    CurrentTab.configSection = section
+    -- Store references
+    section.frame = configContainer
+    section.configHolder = Config_Holder
     
     -- Add methods to section object
     function section:CreateConfigEntry(config)
