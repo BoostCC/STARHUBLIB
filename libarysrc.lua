@@ -575,6 +575,11 @@ function Library:SwitchTab(tab)
         if CurrentTab.configSections then
             for _, section in pairs(CurrentTab.configSections) do
                 if section.configContainer then
+                    -- Hide config holder immediately
+                    local configHolder = section.configContainer:FindFirstChild("Config_Holder")
+                    if configHolder then
+                        configHolder.Visible = false
+                    end
                     local fadeOut = createTween(section.configContainer, {
                         BackgroundTransparency = 1
                     }, 0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.In)
@@ -641,6 +646,11 @@ function Library:SwitchTab(tab)
         if windowTab ~= tab and windowTab.configSections then
             for _, section in pairs(windowTab.configSections) do
                 if section.configContainer then
+                    -- Hide config holder immediately
+                    local configHolder = section.configContainer:FindFirstChild("Config_Holder")
+                    if configHolder then
+                        configHolder.Visible = false
+                    end
                     section.configContainer.Visible = false
                 end
             end
@@ -652,6 +662,11 @@ function Library:SwitchTab(tab)
         for _, section in pairs(tab.configSections) do
             if section.configContainer then
                 section.configContainer.Visible = true
+                -- Show config holder immediately
+                local configHolder = section.configContainer:FindFirstChild("Config_Holder")
+                if configHolder then
+                    configHolder.Visible = true
+                end
                 -- Only animate if it's not already visible
                 if section.configContainer.BackgroundTransparency == 1 then
                     local fade = createTween(section.configContainer, {BackgroundTransparency = 0}, 0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
@@ -2415,7 +2430,7 @@ function Library:CreateConfigSection(config, tab)
     Config_Container.Name = "Config_Container"
     Config_Container.Position = UDim2.new(0.5, 0, 1, 0)
     Config_Container.Size = UDim2.new(0, 652, 0, 418)
-    Config_Container.ZIndex = 2
+    Config_Container.ZIndex = 10
     Config_Container.BorderSizePixel = 0
     Config_Container.BackgroundColor3 = Color3.fromRGB(16, 16, 16)
     -- Set initial visibility based on whether this tab is currently active
@@ -2442,6 +2457,7 @@ function Library:CreateConfigSection(config, tab)
     Config_Holder.Size = UDim2.new(0, 609, 0, 325)
     Config_Holder.BorderSizePixel = 0
     Config_Holder.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    Config_Holder.Visible = Config_Container.Visible -- Match container visibility
     Config_Holder.Parent = Config_Container
     
     local UIListLayout = Instance.new("UIListLayout")
