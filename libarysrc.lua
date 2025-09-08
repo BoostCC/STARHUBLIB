@@ -2711,7 +2711,6 @@ function Library:CreateConfigEntry(config, section)
     Delete_Config.BorderSizePixel = 0
     Delete_Config.TextSize = 16
     Delete_Config.BackgroundColor3 = Color3.fromRGB(24, 24, 24)
-    Delete_Config.ZIndex = 5 -- Higher than section
     Delete_Config.Parent = Section
     
     local UIPadding = Instance.new("UIPadding")
@@ -2732,7 +2731,6 @@ function Library:CreateConfigEntry(config, section)
     Icon_Holder.Size = UDim2.new(0, 35, 0, 35)
     Icon_Holder.BorderSizePixel = 0
     Icon_Holder.BackgroundColor3 = Color3.fromRGB(22, 22, 22)
-    Icon_Holder.ZIndex = 6 -- Higher than button
     Icon_Holder.Parent = Delete_Config
     
     local UICorner = Instance.new("UICorner")
@@ -2749,7 +2747,6 @@ function Library:CreateConfigEntry(config, section)
     Delete_Icon.Size = UDim2.new(0, 15, 0, 15)
     Delete_Icon.BorderSizePixel = 0
     Delete_Icon.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-    Delete_Icon.ZIndex = 7 -- Higher than icon holder
     Delete_Icon.Parent = Icon_Holder
     
     -- Button connections
