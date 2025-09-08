@@ -1,4 +1,3 @@
--- STARHUB UI Library
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
@@ -20,7 +19,6 @@ local BlockDragging = false
 local ModalOverlay = nil
 local PopupOpenCount = 0
 
--- Config registry and load event
 Library.Values = Library.Values or {}
 Library.OnLoadCfg = Library.OnLoadCfg or Instance.new("BindableEvent")
 
@@ -50,13 +48,11 @@ local function deepDeserialize(value)
     return out
 end
 
--- Create the main ScreenGui in CoreGui
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Global
 ScreenGui.ResetOnSpawn = false
 ScreenGui.Parent = game:GetService("CoreGui")
 
--- Modal overlay to capture outside clicks and block dragging when popups are open
 ModalOverlay = Instance.new("TextButton")
 ModalOverlay.Name = "ModalOverlay"
 ModalOverlay.BackgroundTransparency = 1
@@ -177,7 +173,6 @@ UIPadding.PaddingTop = UDim.new(0, 10)
 UIPadding.PaddingRight = UDim.new(0, 20)
 UIPadding.Parent = Header
 
--- Create global tab inline indicator
 GlobalTabInlineIndicator = Instance.new("Frame")
 GlobalTabInlineIndicator.AnchorPoint = Vector2.new(0.5, 1)
 GlobalTabInlineIndicator.Name = "Inline"
@@ -229,12 +224,10 @@ Current_Tab_Value.Parent = MainFrame
 ScreenGui.Enabled = true
 MainFrame.Visible = true
 
--- Animation Functions
 local function createTween(object, properties, duration, easingStyle, easingDirection)
     return TweenService:Create(object, TweenInfo.new(duration, easingStyle or Enum.EasingStyle.Quart, easingDirection or Enum.EasingDirection.Out), properties)
 end
 
--- Draggable Functionality
 local function makeDraggable(frame)
     local dragToggle = nil
     local dragSpeed = 0.25
@@ -268,10 +261,8 @@ local function makeDraggable(frame)
     end)
 end
 
--- Make main frame draggable
 makeDraggable(MainFrame)
 
--- Library Methods
 function Library:CreateWindow(config)
     local window = {
         config = config or {},
