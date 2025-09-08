@@ -511,7 +511,7 @@ function Library:CreateTab(config)
     end
     
     function tab:CreateConfigSection(config)
-        return Library:CreateConfigSection(config)
+        return Library:CreateConfigSection(config, self)
     end
     
     function tab:CreateToggle(config)
@@ -634,7 +634,18 @@ function Library:SwitchTab(tab)
         end
     end
     
-    -- Handle config sections (special positioning)
+    -- Hide config sections from all other tabs first
+    for _, windowTab in pairs(CurrentWindow.tabs) do
+        if windowTab ~= tab then
+            for _, section in pairs(windowTab.sections.left) do
+                if section.position == "config" and section.configContainer then
+                    section.configContainer.Visible = false
+                end
+            end
+        end
+    end
+    
+    -- Handle config sections (special positioning) - only for the current tab
     for _, section in pairs(tab.sections.left) do
         if section.position == "config" and section.configContainer then
             section.configContainer.Visible = true
@@ -2366,9 +2377,15 @@ end
 local Configs = {}
 local CurrentConfig = nil
 
-function Library:CreateConfigSection(config)
-    if not CurrentTab then
-        error("No tab created. Call CreateTab first.")
+function Library:CreateConfigSection(config, tab)
+    if not tab then
+        error("No tab provided. Call CreateConfigSection on a tab object.")
+        return
+    end
+    
+    -- Check if this tab already has a config section
+    if tab.configSection then
+        error("This tab already has a config section. Only one config section per tab is allowed.")
         return
     end
     
@@ -2490,11 +2507,11 @@ function Library:CreateConfigSection(config)
         return Library:CreateConfigEntry(config, self)
     end
     
-    -- Store reference in the tab
-    CurrentTab.configSection = section
+    -- Store reference in the specific tab
+    tab.configSection = section
     
-    -- Add to tab sections for proper management
-    table.insert(CurrentTab.sections.left, section)
+    -- Add to specific tab sections for proper management
+    table.insert(tab.sections.left, section)
     
     -- Load sample configs
     Library:LoadSampleConfigs(section)
