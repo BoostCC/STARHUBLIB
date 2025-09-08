@@ -580,13 +580,8 @@ function Library:SwitchTab(tab)
                     if configHolder then
                         configHolder.Visible = false
                     end
-                    local fadeOut = createTween(section.configContainer, {
-                        BackgroundTransparency = 1
-                    }, 0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.In)
-                    fadeOut:Play()
-                    fadeOut.Completed:Connect(function()
-                        section.configContainer.Visible = false
-                    end)
+                    -- Hide container immediately (no animation needed)
+                    section.configContainer.Visible = false
                 end
             end
         end
@@ -667,13 +662,7 @@ function Library:SwitchTab(tab)
                 if configHolder then
                     configHolder.Visible = true
                 end
-                -- Only animate if it's not already visible
-                if section.configContainer.BackgroundTransparency == 1 then
-                    local fade = createTween(section.configContainer, {BackgroundTransparency = 0}, 0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
-                    fade:Play()
-                else
-                    section.configContainer.BackgroundTransparency = 0
-                end
+                -- Container is always transparent, no animation needed
             end
         end
     end
@@ -2433,13 +2422,9 @@ function Library:CreateConfigSection(config, tab)
     Config_Container.ZIndex = 2
     Config_Container.BorderSizePixel = 0
     Config_Container.BackgroundColor3 = Color3.fromRGB(16, 16, 16)
+    Config_Container.BackgroundTransparency = 1 -- 0% opacity (fully transparent)
     -- Set initial visibility based on whether this tab is currently active
     Config_Container.Visible = (CurrentTab == tab)
-    if Config_Container.Visible then
-        Config_Container.BackgroundTransparency = 0
-    else
-        Config_Container.BackgroundTransparency = 1
-    end
     Config_Container.Parent = Container
     
     local UICorner = Instance.new("UICorner")
