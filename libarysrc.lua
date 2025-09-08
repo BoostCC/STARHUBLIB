@@ -1,3 +1,8 @@
+--[[
+SOLARHUB UI MADE BY BOOST
+]]
+
+
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
