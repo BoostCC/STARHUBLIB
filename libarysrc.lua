@@ -582,6 +582,17 @@ function Library:SwitchTab(tab)
             end
         end
         
+        -- Hide config section if it exists
+        if CurrentTab.configSection and CurrentTab.configSection.frame then
+            local fadeOut = createTween(CurrentTab.configSection.frame, {
+                BackgroundTransparency = 1
+            }, 0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.In)
+            fadeOut:Play()
+            fadeOut.Completed:Connect(function()
+                CurrentTab.configSection.frame.Visible = false
+            end)
+        end
+        
         -- Animate current tab to inactive with clean transition
         if CurrentTab.tabFrame then
             -- Smooth background fade out
@@ -630,6 +641,14 @@ function Library:SwitchTab(tab)
             local fade = createTween(section.frame, {BackgroundTransparency = 0}, 0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
             move:Play(); fade:Play()
         end
+    end
+    
+    -- Show config section if it exists
+    if tab.configSection and tab.configSection.frame then
+        tab.configSection.frame.Visible = true
+        tab.configSection.frame.BackgroundTransparency = 1
+        local fade = createTween(tab.configSection.frame, {BackgroundTransparency = 0}, 0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+        fade:Play()
     end
     
     -- Animate new tab to active with unique effects
@@ -2362,7 +2381,7 @@ function Library:CreateConfigSection(config)
     
     local section = {
         position = "config",
-        text = config.SectionText or "Config Manager",
+        text = "Config Manager",
         components = {},
         frame = nil,
         configHolder = nil
@@ -2378,6 +2397,7 @@ function Library:CreateConfigSection(config)
     configContainer.ZIndex = 2
     configContainer.BorderSizePixel = 0
     configContainer.BackgroundColor3 = Color3.fromRGB(16, 16, 16)
+    configContainer.Visible = false
     configContainer.Parent = Container
     
     local UICorner = Instance.new("UICorner")
@@ -2431,7 +2451,7 @@ function Library:CreateConfigSection(config)
     CreateButton.TextColor3 = Color3.fromRGB(255, 255, 255)
     CreateButton.Text = "Create Config"
     CreateButton.AnchorPoint = Vector2.new(1, 0.5)
-    CreateButton.Position = UDim2.new(1, -20, 0.5, 0)
+    CreateButton.Position = UDim2.new(1, -140, 0.5, 0)
     CreateButton.Size = UDim2.new(0, 120, 0, 35)
     CreateButton.BorderSizePixel = 0
     CreateButton.TextSize = 14
@@ -2441,9 +2461,28 @@ function Library:CreateConfigSection(config)
     local CreateCorner = Instance.new("UICorner")
     CreateCorner.Parent = CreateButton
     
+    local RefreshButton = Instance.new("TextButton")
+    RefreshButton.FontFace = Font.new("rbxassetid://12187365364", Enum.FontWeight.Regular, Enum.FontStyle.Normal)
+    RefreshButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+    RefreshButton.Text = "Refresh"
+    RefreshButton.AnchorPoint = Vector2.new(1, 0.5)
+    RefreshButton.Position = UDim2.new(1, -20, 0.5, 0)
+    RefreshButton.Size = UDim2.new(0, 100, 0, 35)
+    RefreshButton.BorderSizePixel = 0
+    RefreshButton.TextSize = 14
+    RefreshButton.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+    RefreshButton.Parent = Header
+    
+    local RefreshCorner = Instance.new("UICorner")
+    RefreshCorner.Parent = RefreshButton
+    
     -- Button connections
     CreateButton.MouseButton1Click:Connect(function()
         Library:CreateNewConfig(section)
+    end)
+    
+    RefreshButton.MouseButton1Click:Connect(function()
+        Library:RefreshConfigs(section)
     end)
     
     -- Store references
@@ -2728,6 +2767,24 @@ function Library:LoadSampleConfigs(section)
     
     table.insert(Configs, sampleConfig)
     Library:CreateConfigEntry(sampleConfig, section)
+end
+
+function Library:RefreshConfigs(section)
+    -- Clear existing config entries
+    for _, child in ipairs(section.configHolder:GetChildren()) do
+        if child:IsA("Frame") and child.Name == "Section" then
+            child:Destroy()
+        end
+    end
+    
+    -- Clear configs list
+    Configs = {}
+    
+    -- Reload sample configs
+    Library:LoadSampleConfigs(section)
+    
+    -- Show notification
+    Library:NotifySuccess("Configs refreshed!", 2)
 end
 
 
