@@ -3018,7 +3018,8 @@ function Library:CreateNewConfig(section, nameOverride)
         authorName = player.Name,
         date = os.date("%m/%d/%Y %I:%M%p"),
         dateCreated = os.time(), -- Unix timestamp for sorting
-        data = uiStates
+        data = uiStates,
+        accent = deepCopySerialize(Library.Accent)
     }
     
     -- Add to configs list
@@ -3093,6 +3094,14 @@ function Library:LoadConfig(config)
                     end
                 end
             end
+        end
+    end
+    
+    -- Apply accent color if present
+    if config.accent then
+        local c = deepDeserialize(config.accent)
+        if c then
+            Library:SetAccentColor(c)
         end
     end
     
