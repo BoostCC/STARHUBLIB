@@ -282,10 +282,8 @@ function Library:CreateWindow(config)
         Libary_Icon.Image = config.library_config.Cheat_Icon
     end
     
-    -- Create watermark with cheat name
     Library:CreateWatermark(config.library_config and config.library_config.Cheat_Name)
     
-    -- Set up UI toggle keybind (only affects main UI, not notifications)
     if config.library_config and config.library_config.interface_keybind then
         local keybind = config.library_config.interface_keybind
         UserInputService.InputBegan:Connect(function(input, gameProcessed)
@@ -295,7 +293,6 @@ function Library:CreateWindow(config)
             end
         end)
     else
-        -- Default Insert key
         UserInputService.InputBegan:Connect(function(input, gameProcessed)
             if gameProcessed then return end
             if input.KeyCode == Enum.KeyCode.Insert then
@@ -304,7 +301,6 @@ function Library:CreateWindow(config)
         end)
     end
     
-    -- Add methods to window object
     function window:CreateTab(config)
         return Library:CreateTab(config)
     end
@@ -344,12 +340,9 @@ function Library:CreateWindow(config)
     return window
 end
 
--- Accent color API
 function Library:SetAccentColor(color, alpha)
-    -- fallback to default if not provided
     Library.Accent = color or Library.Accent or Color3.fromRGB(155, 77, 255)
     local a = alpha
-    -- Update inline and headings
     if GlobalTabInlineIndicator then
         GlobalTabInlineIndicator.BackgroundColor3 = Library.Accent
     end
@@ -357,20 +350,15 @@ function Library:SetAccentColor(color, alpha)
         -- no-op; sample place if we later tint other elements
     end
 
-    -- Update library icon
     if Libary_Icon then
         Libary_Icon.ImageColor3 = Library.Accent
     end
     
-    -- Update watermark elements
     Library:UpdateWatermarkAccent()
     
-    -- Update config elements
     Library:UpdateConfigAccent()
 
-    -- Sweep through UI and update common accent elements
     if ScreenGui then
-        -- Update active tab icon/text immediately
         if CurrentTab and CurrentTab.tabFrame then
             local icon = CurrentTab.tabFrame:FindFirstChild("Tab_Icon")
             local text = icon and icon:FindFirstChild("Tab_Name")
@@ -402,13 +390,11 @@ function Library:SetAccentColor(color, alpha)
                 elseif inst.Name == "Libary_Icon" then
                     inst.ImageColor3 = Library.Accent
                 elseif inst.Name == "Config_ICON" then
-                    -- Skip Config_ICON - it should stay grey
                     if not inst:GetAttribute("IgnoreAccentColor") then
                         inst.ImageColor3 = Library.Accent
                     end
                 end
             elseif inst:IsA("TextLabel") then
-                -- Section headers live under the shadow frame
                 if inst.Parent and inst.Parent.Name == "Shadow" then
                     inst.TextColor3 = Library.Accent
                 elseif inst.Name == "Config_Name" then
@@ -419,7 +405,6 @@ function Library:SetAccentColor(color, alpha)
                     inst.TextColor3 = Library.Accent
                     local stroke = inst:FindFirstChildOfClass("UIStroke")
                     if stroke then
-                        -- ensure no border is shown
                         stroke.Transparency = 1
                     end
                 else
@@ -436,7 +421,6 @@ function Library:SetAccentColor(color, alpha)
                 end
             end
         end
-        -- For dropdown active text, ensure selected options are refreshed
         for _, container in ipairs(ScreenGui:GetDescendants()) do
             if container:IsA("Frame") and container.Name == "Dropdown_Container" then
                 for _, item in ipairs(container:GetChildren()) do
@@ -471,7 +455,6 @@ function Library:CreateTab(config)
         tabContainer = nil
     }
     
-    -- Create tab container per requested design
     local tabContainer = Instance.new("Frame")
     tabContainer.Name = "Tab_Container"
     tabContainer.BackgroundTransparency = 1
@@ -480,7 +463,6 @@ function Library:CreateTab(config)
     tabContainer.BorderColor3 = Color3.fromRGB(0, 0, 0)
     tabContainer.Parent = Header
     
-    -- Create tab frame inside container
     local tabFrame = Instance.new("Frame")
     tabFrame.AnchorPoint = Vector2.new(0.5, 0)
     tabFrame.Name = "Tab"
@@ -489,7 +471,7 @@ function Library:CreateTab(config)
     tabFrame.Size = UDim2.new(0, 95, 0, 42)
     tabFrame.BorderSizePixel = 0
     tabFrame.BackgroundColor3 = Color3.fromRGB(16, 16, 16)
-    tabFrame.BackgroundTransparency = 1 -- start inactive
+    tabFrame.BackgroundTransparency = 1 
     tabFrame.Parent = tabContainer
     
     local tabCorner = Instance.new("UICorner")
@@ -497,7 +479,7 @@ function Library:CreateTab(config)
     tabCorner.Parent = tabFrame
     
     local tabIcon = Instance.new("ImageLabel")
-    tabIcon.ImageColor3 = Color3.fromRGB(58, 58, 58) -- Start inactive (gray)
+    tabIcon.ImageColor3 = Color3.fromRGB(58, 58, 58) 
     tabIcon.ScaleType = Enum.ScaleType.Fit
     tabIcon.Image = config.icon or "rbxassetid://133833791023200"
     tabIcon.BackgroundTransparency = 1
@@ -512,7 +494,7 @@ function Library:CreateTab(config)
     
     local tabName = Instance.new("TextLabel")
     tabName.FontFace = Font.new("rbxassetid://12187365364", Enum.FontWeight.Medium, Enum.FontStyle.Normal)
-    tabName.TextColor3 = Color3.fromRGB(58, 58, 58) -- Start inactive (gray)
+    tabName.TextColor3 = Color3.fromRGB(58, 58, 58) 
     tabName.Text = config.TabText or "Tab"
     tabName.BackgroundTransparency = 1
     tabName.Size = UDim2.new(0, 1, 0, 1)
@@ -526,7 +508,6 @@ function Library:CreateTab(config)
     tabName.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
     tabName.Parent = tabIcon
 
-    -- Click functionality on entire container
     local tabButton = Instance.new("TextButton")
     tabButton.BackgroundTransparency = 1
     tabButton.Size = UDim2.new(1, 0, 1, 0)
@@ -537,17 +518,14 @@ function Library:CreateTab(config)
         Library:SwitchTab(tab)
     end)
     
-    -- Store references
     tab.tabFrame = tabFrame
     tab.tabContainer = tabContainer
     
     
-    -- Set as current tab if it's the first one
     if #CurrentWindow.tabs == 0 then
         Library:SwitchTab(tab)
     end
     
-    -- Add methods to tab object
     function tab:CreateSection(config)
         return Library:CreateSection(config)
     end
@@ -585,11 +563,9 @@ function Library:CreateTab(config)
 end
 
 function Library:SwitchTab(tab)
-    -- Check if we're clicking the same tab
     local isSameTab = CurrentTab == tab
     
     if CurrentTab and not isSameTab then
-        -- Hide current tab sections with smooth fade
         for _, section in pairs(CurrentTab.sections.left) do
             if section.frame then
                 local fadeOut = createTween(section.frame, {
@@ -613,24 +589,19 @@ function Library:SwitchTab(tab)
             end
         end
         
-        -- Hide config sections
         if CurrentTab.configSections then
             for _, section in pairs(CurrentTab.configSections) do
                 if section.configContainer then
-                    -- Hide config holder immediately
                     local configHolder = section.configContainer:FindFirstChild("Config_Holder")
                     if configHolder then
                         configHolder.Visible = false
                     end
-                    -- Hide container immediately (no animation needed)
                     section.configContainer.Visible = false
                 end
             end
         end
         
-        -- Animate current tab to inactive with clean transition
         if CurrentTab.tabFrame then
-            -- Smooth background fade out
             local bgTween = createTween(CurrentTab.tabFrame, {
                 BackgroundTransparency = 1
             }, 0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
@@ -639,7 +610,6 @@ function Library:SwitchTab(tab)
             local icon = CurrentTab.tabFrame:FindFirstChild("Tab_Icon")
             local text = icon and icon:FindFirstChild("Tab_Name")
             if icon and text then
-                -- Smooth color transition to gray
                 local iconTween = createTween(icon, {
                     ImageColor3 = Color3.fromRGB(58, 58, 58)
                 }, 0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
@@ -869,7 +839,6 @@ function Library:CreateSection(config)
     padding.PaddingTop = UDim.new(0, 10)
     padding.Parent = container
     
-    -- Add methods to section object
     function section:CreateToggle(config)
         return Library:CreateToggle(config, self)
     end
@@ -898,9 +867,7 @@ function Library:CreateSection(config)
     section.frame = sectionFrame
     section.targetPosition = targetPosition
     
-    -- If this section is created on the active tab, play the entry animation immediately
     if CurrentTab and table.find(CurrentTab.sections[position], section) == nil then
-        -- ensure visibility and start state
         sectionFrame.Visible = true
         sectionFrame.BackgroundTransparency = 1
         sectionFrame.Position = targetPosition + UDim2.new(0, 0, 0, 10)
@@ -933,7 +900,6 @@ function Library:CreateToggle(config, section)
         flag = config.Flag or (config.ToggleText or ("toggle_" .. tostring(#section.components + 1)))
     }
     
-    -- Create toggle component
     local toggleFrame = Instance.new("Frame")
     toggleFrame.Name = "Toggle_Component"
     toggleFrame.Size = UDim2.new(0, 318, 0, 20)
@@ -990,11 +956,9 @@ function Library:CreateToggle(config, section)
     toggleText.TextSize = 16
     toggleText.Parent = toggleButton
     
-    -- Store inactive color
     local inactiveColor = Color3.fromRGB(52, 52, 52)
     local activeColor = Color3.fromRGB(255, 255, 255)
     
-    -- Click functionality
     local clickButton = Instance.new("TextButton")
     clickButton.BackgroundTransparency = 1
     clickButton.Size = UDim2.new(1, 0, 1, 0)
@@ -1005,25 +969,21 @@ function Library:CreateToggle(config, section)
         toggle.value = not toggle.value
         
         if toggle.value then
-            -- Smooth grow animation
             local growTween = createTween(toggleFill, {Size = UDim2.new(0, 20, 0, 20)}, 0.2)
             growTween:Play()
             
             local iconTween = createTween(checkIcon, {ImageTransparency = 0}, 0.2)
             iconTween:Play()
             
-            -- Set active color
             local colorTween = createTween(toggleText, {TextColor3 = activeColor}, 0.2)
             colorTween:Play()
         else
-            -- Fast reverse effect
             local shrinkTween = createTween(toggleFill, {Size = UDim2.new(0, 0, 0, 0)}, 0.1)
             shrinkTween:Play()
             
             local iconTween = createTween(checkIcon, {ImageTransparency = 1}, 0.1)
             iconTween:Play()
             
-            -- Set inactive color
             local colorTween = createTween(toggleText, {TextColor3 = inactiveColor}, 0.1)
             colorTween:Play()
         end
@@ -1031,7 +991,6 @@ function Library:CreateToggle(config, section)
         toggle.callback(toggle.value)
     end)
     
-    -- Initially hide the fill and set inactive color
     toggleFill.Size = UDim2.new(0, 0, 0, 0)
     checkIcon.ImageTransparency = 1
     toggleText.TextColor3 = inactiveColor
@@ -1117,7 +1076,6 @@ function Library:CreateSlider(config, section)
     pointer.Name = "Pointer"
     pointer.Size = UDim2.new(0, 15, 0, 15)
     pointer.Position = UDim2.new(1, 0, 0.5, 0)
-    -- Registry integration
     Library.Values[slider.flag] = Library.Values[slider.flag] or { Slider = slider.value }
     local function applySlider(v)
         local val = math.clamp(tonumber(v.Slider) or slider.value, slider.min, slider.max)
@@ -1169,7 +1127,6 @@ function Library:CreateSlider(config, section)
     valuePadding.PaddingRight = UDim.new(0, 4)
     valuePadding.Parent = sliderValue
     
-    -- Slider functionality
     local sliderButton = Instance.new("TextButton")
     sliderButton.BackgroundTransparency = 1
     sliderButton.Size = UDim2.new(1, 0, 1, 0)
@@ -1193,12 +1150,10 @@ function Library:CreateSlider(config, section)
             
             slider.value = math.clamp(slider.min + (slider.max - slider.min) * percentage, slider.min, slider.max)
             
-            -- Update visual
             local progressWidth = sliderWidth * percentage
             progressBar.Size = UDim2.new(0, progressWidth, 0, 3)
             sliderValue.Text = string.format("%.2f", slider.value)
             
-            -- Heartbeat pulse animation
             local pulseTween = createTween(sliderValue, {TextColor3 = Color3.fromRGB(255, 255, 255)}, 0.1)
             pulseTween:Play()
             
@@ -1217,7 +1172,6 @@ function Library:CreateSlider(config, section)
         end
     end)
     
-    -- Set initial value
     local initialPercentage = (slider.value - slider.min) / (slider.max - slider.min)
     progressBar.Size = UDim2.new(0, 278 * initialPercentage, 0, 3)
     
@@ -1242,7 +1196,6 @@ function Library:CreateTextInput(config, section)
         value = ""
     }
     
-    -- Create text input component
 local TextInput_Component = Instance.new("Frame")
 TextInput_Component.Name = "TextInput_Component"
 TextInput_Component.BackgroundTransparency = 1
@@ -1278,16 +1231,13 @@ local UIPadding = Instance.new("UIPadding")
 UIPadding.PaddingLeft = UDim.new(0, 12)
 UIPadding.Parent = Text_Input
 
-    -- Text input functionality
     Text_Input.FocusLost:Connect(function(enterPressed)
         textInput.value = Text_Input.Text
         textInput.callback(Text_Input.Text)
-        -- remove accent when not focused
         createTween(Text_Input, {TextColor3 = Color3.fromRGB(109, 109, 109)}, 0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.Out):Play()
         Text_Input:SetAttribute("ActiveInput", false)
     end)
     
-    -- Focus gained animation (apply accent)
     Text_Input.Focused:Connect(function()
         createTween(Text_Input, {TextColor3 = Library.Accent}, 0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.Out):Play()
         Text_Input:SetAttribute("ActiveInput", true)
@@ -1316,7 +1266,6 @@ function Library:CreateColorpicker(config, section)
         isOpen = false
     }
     
-    -- Component shell (matches provided spec)
     local Colorpicker_Component = Instance.new("Frame")
     Colorpicker_Component.Name = "Colorpicker_Component"
     Colorpicker_Component.BackgroundTransparency = 1
@@ -1357,7 +1306,6 @@ function Library:CreateColorpicker(config, section)
     Color_Frame_UICorner.CornerRadius = UDim.new(0, 4)
     Color_Frame_UICorner.Parent = Color_Frame
     
-    -- Popup container for picker
     local PickerContainer = Instance.new("Frame")
     PickerContainer.Name = "PickerContainer"
     PickerContainer.AnchorPoint = Vector2.new(1, 0)
@@ -1373,7 +1321,6 @@ function Library:CreateColorpicker(config, section)
     pickerCorner.CornerRadius = UDim.new(0, 4)
     pickerCorner.Parent = PickerContainer
     
-    -- SV square
     local SVFrame = Instance.new("Frame")
     SVFrame.Name = "SVFrame"
     SVFrame.Position = UDim2.new(0.035, 0, 0.075, 0)
@@ -1409,7 +1356,6 @@ function Library:CreateColorpicker(config, section)
     SVPickerStroke.Color = Color3.fromRGB(255, 255, 255)
     SVPickerStroke.Parent = SVPicker
     
-    -- Hue bar
     local Hue = Instance.new("ImageButton")
     Hue.Name = "Hue"
     Hue.AnchorPoint = Vector2.new(0, 0.5)
@@ -1436,12 +1382,10 @@ function Library:CreateColorpicker(config, section)
     HueDragger.Parent = Hue
     HueDragger.ZIndex = 1202
     
-    -- Alpha bar removed - no longer needed
-    
-    -- State
+
     local currentHue = 0
     local currentS, currentV = 1, 1
-    local currentA = 1 -- Alpha disabled for now
+    local currentA = 1 
     
     local function updateSVFrame()
         SVFrame.BackgroundColor3 = Color3.fromHSV(currentHue, 1, 1)
@@ -1452,12 +1396,9 @@ function Library:CreateColorpicker(config, section)
         colorpicker.value = c
         Color_Frame.BackgroundColor3 = c
         colorpicker.callback(c, currentA)
-        -- Registry write
         Library.Values[colorpicker.flag] = { Color = { R = c.R, G = c.G, B = c.B } }
     end
     
-    -- Open/close picker
-    -- Only the color frame opens the picker (not the label)
     local openButton = Instance.new("TextButton")
     openButton.BackgroundTransparency = 1
     openButton.Size = UDim2.new(0, 40, 0, 20)
@@ -1471,7 +1412,6 @@ function Library:CreateColorpicker(config, section)
         colorpicker.isOpen = not colorpicker.isOpen
         PickerContainer.Visible = colorpicker.isOpen
         if colorpicker.isOpen then
-            -- position popup relative to preview frame in screen space
             local absPos = Color_Frame.AbsolutePosition
             local absSize = Color_Frame.AbsoluteSize
             local x = absPos.X + absSize.X - 10
@@ -1483,7 +1423,6 @@ function Library:CreateColorpicker(config, section)
             fadeIn:Play()
             local grow = createTween(PickerContainer, {Size = UDim2.new(0, 225, 0, 190)}, 0.25, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
             grow:Play()
-            -- enable modal overlay to intercept clicks and block dragging
             PopupOpenCount = PopupOpenCount + 1
             ModalOverlay.Visible = true
             BlockDragging = true
@@ -1503,8 +1442,6 @@ function Library:CreateColorpicker(config, section)
         end
     end)
 
-    -- Close when clicking outside the popup
-    -- Close when clicking on the overlay (outside the popup)
     ModalOverlay.MouseButton1Click:Connect(function()
         if not colorpicker.isOpen then return end
         if draggingSV or draggingHue then return end
@@ -1523,16 +1460,13 @@ function Library:CreateColorpicker(config, section)
         end
     end)
     
-    -- Drag handling
     local draggingSV = false
     local draggingHue = false
-    -- local draggingAlpha = false -- Alpha removed
     
     SVFrame.InputBegan:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 then
             draggingSV = true
             BlockDragging = true
-            -- set initial pick on click
             local absPos = SVFrame.AbsolutePosition
             local absSize = SVFrame.AbsoluteSize
             local rx = math.clamp((input.Position.X - absPos.X) / absSize.X, 0, 1)
@@ -1546,7 +1480,7 @@ function Library:CreateColorpicker(config, section)
     Hue.MouseButton1Down:Connect(function(input)
         draggingHue = true
         BlockDragging = true
-        -- set initial hue on click
+       
         local absPos = Hue.AbsolutePosition
         local absSize = Hue.AbsoluteSize
         local ry = math.clamp((input.Position.Y - absPos.Y) / absSize.Y, 0, 1)
