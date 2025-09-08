@@ -2679,6 +2679,7 @@ function Library:CreateConfigEntry(config, section)
     Icon_Holder.Size = UDim2.new(0, 35, 0, 35)
     Icon_Holder.BorderSizePixel = 0
     Icon_Holder.BackgroundColor3 = Color3.fromRGB(22, 22, 22)
+    Icon_Holder.ZIndex = 6 -- Higher than button
     Icon_Holder.Parent = Load_Config
     
     local UICorner = Instance.new("UICorner")
@@ -2695,6 +2696,7 @@ function Library:CreateConfigEntry(config, section)
     Load_Icon.Size = UDim2.new(0, 15, 0, 15)
     Load_Icon.BorderSizePixel = 0
     Load_Icon.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    Load_Icon.ZIndex = 7 -- Higher than icon holder
     Load_Icon.Parent = Icon_Holder
     
     local Delete_Config = Instance.new("TextButton")
@@ -2730,6 +2732,7 @@ function Library:CreateConfigEntry(config, section)
     Icon_Holder.Size = UDim2.new(0, 35, 0, 35)
     Icon_Holder.BorderSizePixel = 0
     Icon_Holder.BackgroundColor3 = Color3.fromRGB(22, 22, 22)
+    Icon_Holder.ZIndex = 6 -- Higher than button
     Icon_Holder.Parent = Delete_Config
     
     local UICorner = Instance.new("UICorner")
@@ -2746,6 +2749,7 @@ function Library:CreateConfigEntry(config, section)
     Delete_Icon.Size = UDim2.new(0, 15, 0, 15)
     Delete_Icon.BorderSizePixel = 0
     Delete_Icon.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    Delete_Icon.ZIndex = 7 -- Higher than icon holder
     Delete_Icon.Parent = Icon_Holder
     
     -- Button connections
