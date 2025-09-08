@@ -366,6 +366,8 @@ function Library:SetAccentColor(color, alpha)
                     inst.BackgroundColor3 = Library.Accent
                 elseif inst.Name == "Shadow" then
                     inst.BackgroundColor3 = Library.Accent
+                elseif inst.Name == "Create_Config" then
+                    inst.BackgroundColor3 = Library.Accent
                 end
             elseif inst:IsA("ImageLabel") then
                 if inst.Name == "Check_Icon" then
@@ -374,10 +376,14 @@ function Library:SetAccentColor(color, alpha)
                     end
                 elseif inst.Name == "Libary_Icon" then
                     inst.ImageColor3 = Library.Accent
+                elseif inst.Name == "Config_ICON" then
+                    inst.ImageColor3 = Library.Accent
                 end
             elseif inst:IsA("TextLabel") then
                 -- Section headers live under the shadow frame
                 if inst.Parent and inst.Parent.Name == "Shadow" then
+                    inst.TextColor3 = Library.Accent
+                elseif inst.Name == "Config_Name" then
                     inst.TextColor3 = Library.Accent
                 end
             elseif inst:IsA("TextBox") then
@@ -391,6 +397,14 @@ function Library:SetAccentColor(color, alpha)
                 else
                     local stroke = inst:FindFirstChildOfClass("UIStroke")
                     if stroke then stroke.Transparency = 1 end
+                end
+            elseif inst:IsA("UIStroke") then
+                if inst.Parent and inst.Parent.Name == "Author_IMG" then
+                    inst.Color = Library.Accent
+                end
+            elseif inst:IsA("ScrollingFrame") then
+                if inst.Name == "Config_Holder" then
+                    inst.ScrollBarImageColor3 = Library.Accent
                 end
             end
         end
@@ -2710,7 +2724,7 @@ function Library:CreateConfigEntry(config, section)
     Delete_Config.Size = UDim2.new(0, 115, 0, 35)
     Delete_Config.BorderSizePixel = 0
     Delete_Config.TextSize = 16
-    Delete_Config.BackgroundColor3 = Color3.fromRGB(50, 50, 50) -- Slightly lighter for visibility
+    Delete_Config.BackgroundColor3 = Color3.fromRGB(24, 24, 24) -- Match Load button
     Delete_Config.ZIndex = 5 -- Ensure visibility
     Delete_Config.Parent = Section
     
@@ -2731,7 +2745,7 @@ function Library:CreateConfigEntry(config, section)
     Icon_Holder.BorderColor3 = Color3.fromRGB(0, 0, 0)
     Icon_Holder.Size = UDim2.new(0, 35, 0, 35)
     Icon_Holder.BorderSizePixel = 0
-    Icon_Holder.BackgroundColor3 = Color3.fromRGB(40, 40, 40) -- Slightly lighter for visibility
+    Icon_Holder.BackgroundColor3 = Color3.fromRGB(22, 22, 22) -- Match Load button Icon_Holder
     Icon_Holder.ZIndex = 6 -- Ensure visibility
     Icon_Holder.Parent = Delete_Config
     
