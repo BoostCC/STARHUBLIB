@@ -2430,7 +2430,7 @@ function Library:CreateConfigSection(config, tab)
     Config_Container.Name = "Config_Container"
     Config_Container.Position = UDim2.new(0.5, 0, 1, 0)
     Config_Container.Size = UDim2.new(0, 652, 0, 418)
-    Config_Container.ZIndex = 10
+    Config_Container.ZIndex = 2
     Config_Container.BorderSizePixel = 0
     Config_Container.BackgroundColor3 = Color3.fromRGB(16, 16, 16)
     -- Set initial visibility based on whether this tab is currently active
@@ -2458,6 +2458,7 @@ function Library:CreateConfigSection(config, tab)
     Config_Holder.BorderSizePixel = 0
     Config_Holder.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
     Config_Holder.Visible = Config_Container.Visible -- Match container visibility
+    Config_Holder.ZIndex = 3 -- Higher than container
     Config_Holder.Parent = Config_Container
     
     local UIListLayout = Instance.new("UIListLayout")
@@ -2478,6 +2479,7 @@ function Library:CreateConfigSection(config, tab)
     Create_Config.AutomaticSize = Enum.AutomaticSize.XY
     Create_Config.TextSize = 18
     Create_Config.BackgroundColor3 = Library.Accent
+    Create_Config.ZIndex = 3 -- Higher than container
     Create_Config.Parent = Config_Container
     
     local CreatePadding = Instance.new("UIPadding")
@@ -2503,6 +2505,7 @@ function Library:CreateConfigSection(config, tab)
     Refresh_Config.AutomaticSize = Enum.AutomaticSize.XY
     Refresh_Config.TextSize = 18
     Refresh_Config.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+    Refresh_Config.ZIndex = 3 -- Higher than container
     Refresh_Config.Parent = Config_Container
     
     local RefreshPadding = Instance.new("UIPadding")
@@ -2560,6 +2563,7 @@ function Library:CreateConfigEntry(config, section)
     Section.Size = UDim2.new(0, 609, 0, 70)
     Section.BorderSizePixel = 0
     Section.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+    Section.ZIndex = 4 -- Higher than config holder
     Section.Parent = section.configHolder
     
     local UICorner = Instance.new("UICorner")
