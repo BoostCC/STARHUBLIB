@@ -593,6 +593,17 @@ function Library:SwitchTab(tab)
             end)
         end
         
+        -- Hide global config container
+        if GlobalConfigContainer then
+            local fadeOut = createTween(GlobalConfigContainer, {
+                BackgroundTransparency = 1
+            }, 0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.In)
+            fadeOut:Play()
+            fadeOut.Completed:Connect(function()
+                GlobalConfigContainer.Visible = false
+            end)
+        end
+        
         -- Animate current tab to inactive with clean transition
         if CurrentTab.tabFrame then
             -- Smooth background fade out
@@ -643,12 +654,27 @@ function Library:SwitchTab(tab)
         end
     end
     
-    -- Show config section if it exists
+    -- Show config section if it exists and this is the Config tab
     if tab.configSection and tab.configSection.frame then
-        tab.configSection.frame.Visible = true
-        tab.configSection.frame.BackgroundTransparency = 1
-        local fade = createTween(tab.configSection.frame, {BackgroundTransparency = 0}, 0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
-        fade:Play()
+        -- Only show config container if this is the Config tab
+        local isConfigTab = tab.TabText == "Config"
+        tab.configSection.frame.Visible = isConfigTab
+        if isConfigTab then
+            tab.configSection.frame.BackgroundTransparency = 1
+            local fade = createTween(tab.configSection.frame, {BackgroundTransparency = 0}, 0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+            fade:Play()
+        end
+    end
+    
+    -- Show global config container only for Config tab
+    if GlobalConfigContainer then
+        local isConfigTab = tab.TabText == "Config"
+        GlobalConfigContainer.Visible = isConfigTab
+        if isConfigTab then
+            GlobalConfigContainer.BackgroundTransparency = 1
+            local fade = createTween(GlobalConfigContainer, {BackgroundTransparency = 0}, 0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+            fade:Play()
+        end
     end
     
     -- Animate new tab to active with unique effects
@@ -2372,6 +2398,9 @@ function Library:UpdateWatermarkAccent()
     end
 end
 
+-- Global config container (created once)
+local GlobalConfigContainer = nil
+
 -- Config Section System
 function Library:CreateConfigSection(config)
     if not CurrentTab then
@@ -2387,18 +2416,22 @@ function Library:CreateConfigSection(config)
         configHolder = nil
     }
     
-    -- Create config container (positioned at bottom middle)
-    local configContainer = Instance.new("Frame")
-    configContainer.BorderColor3 = Color3.fromRGB(0, 0, 0)
-    configContainer.AnchorPoint = Vector2.new(0.5, 1)
-    configContainer.Name = "Config_Container"
-    configContainer.Position = UDim2.new(0.5, 0, 1, 0)
-    configContainer.Size = UDim2.new(0, 652, 0, 418)
-    configContainer.ZIndex = 2
-    configContainer.BorderSizePixel = 0
-    configContainer.BackgroundColor3 = Color3.fromRGB(16, 16, 16)
-    configContainer.Visible = false
-    configContainer.Parent = Container
+    -- Create global config container if it doesn't exist
+    if not GlobalConfigContainer then
+        GlobalConfigContainer = Instance.new("Frame")
+        GlobalConfigContainer.BorderColor3 = Color3.fromRGB(0, 0, 0)
+        GlobalConfigContainer.AnchorPoint = Vector2.new(0.5, 1)
+        GlobalConfigContainer.Name = "Config_Container"
+        GlobalConfigContainer.Position = UDim2.new(0.5, 0, 1, 0)
+        GlobalConfigContainer.Size = UDim2.new(0, 652, 0, 418)
+        GlobalConfigContainer.ZIndex = 2
+        GlobalConfigContainer.BorderSizePixel = 0
+        GlobalConfigContainer.BackgroundColor3 = Color3.fromRGB(16, 16, 16)
+        GlobalConfigContainer.Visible = false
+        GlobalConfigContainer.Parent = Container
+    end
+    
+    local configContainer = GlobalConfigContainer
     
     local UICorner = Instance.new("UICorner")
     UICorner.Parent = configContainer
@@ -2450,13 +2483,13 @@ function Library:CreateConfigSection(config)
     CreateButton.FontFace = Font.new("rbxassetid://12187365364", Enum.FontWeight.Regular, Enum.FontStyle.Normal)
     CreateButton.TextColor3 = Color3.fromRGB(255, 255, 255)
     CreateButton.Text = "Create Config"
-    CreateButton.AnchorPoint = Vector2.new(1, 0.5)
-    CreateButton.Position = UDim2.new(1, -140, 0.5, 0)
+    CreateButton.AnchorPoint = Vector2.new(0, 1)
+    CreateButton.Position = UDim2.new(0, 20, 1, -20)
     CreateButton.Size = UDim2.new(0, 120, 0, 35)
     CreateButton.BorderSizePixel = 0
     CreateButton.TextSize = 14
     CreateButton.BackgroundColor3 = Library.Accent
-    CreateButton.Parent = Header
+    CreateButton.Parent = configContainer
     
     local CreateCorner = Instance.new("UICorner")
     CreateCorner.Parent = CreateButton
@@ -2465,13 +2498,13 @@ function Library:CreateConfigSection(config)
     RefreshButton.FontFace = Font.new("rbxassetid://12187365364", Enum.FontWeight.Regular, Enum.FontStyle.Normal)
     RefreshButton.TextColor3 = Color3.fromRGB(255, 255, 255)
     RefreshButton.Text = "Refresh"
-    RefreshButton.AnchorPoint = Vector2.new(1, 0.5)
-    RefreshButton.Position = UDim2.new(1, -20, 0.5, 0)
+    RefreshButton.AnchorPoint = Vector2.new(0, 1)
+    RefreshButton.Position = UDim2.new(0, 150, 1, -20)
     RefreshButton.Size = UDim2.new(0, 100, 0, 35)
     RefreshButton.BorderSizePixel = 0
     RefreshButton.TextSize = 14
     RefreshButton.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-    RefreshButton.Parent = Header
+    RefreshButton.Parent = configContainer
     
     local RefreshCorner = Instance.new("UICorner")
     RefreshCorner.Parent = RefreshButton
@@ -2488,6 +2521,9 @@ function Library:CreateConfigSection(config)
     -- Store references
     section.frame = configContainer
     section.configHolder = Config_Holder
+    
+    -- Store reference in the tab
+    CurrentTab.configSection = section
     
     -- Add methods to section object
     function section:CreateConfigEntry(config)
