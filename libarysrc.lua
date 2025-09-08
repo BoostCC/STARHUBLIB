@@ -247,7 +247,8 @@ function Library:CreateWindow(config)
         config = config or {},
         tabs = {},
         currentTab = nil,
-        sections = {left = {}, right = {}}
+        sections = {left = {}, right = {}},
+        configSection = nil
     }
     
     -- Update library name and icon if provided
@@ -288,6 +289,10 @@ function Library:CreateWindow(config)
     
     function window:CreateSection(config)
         return Library:CreateSection(config)
+    end
+
+    function window:CreateConfigSection(config)
+        return Library:CreateConfigSection(config)
     end
     
     function window:CreateToggle(config)
@@ -565,6 +570,17 @@ function Library:SwitchTab(tab)
             end
         end
         
+        -- Hide config section if it exists
+        if CurrentTab.configSection and CurrentTab.configSection.configContainer then
+            local fadeOut = createTween(CurrentTab.configSection.configContainer, {
+                BackgroundTransparency = 1
+            }, 0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.In)
+            fadeOut:Play()
+            fadeOut.Completed:Connect(function()
+                CurrentTab.configSection.configContainer.Visible = false
+            end)
+        end
+        
         -- Animate current tab to inactive with clean transition
         if CurrentTab.tabFrame then
             -- Smooth background fade out
@@ -613,6 +629,14 @@ function Library:SwitchTab(tab)
             local fade = createTween(section.frame, {BackgroundTransparency = 0}, 0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
             move:Play(); fade:Play()
         end
+    end
+    
+    -- Handle config section visibility
+    if tab.configSection and tab.configSection.configContainer then
+        tab.configSection.configContainer.Visible = true
+        tab.configSection.configContainer.BackgroundTransparency = 1
+        local fade = createTween(tab.configSection.configContainer, {BackgroundTransparency = 0}, 0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+        fade:Play()
     end
     
     -- Animate new tab to active with unique effects
@@ -2332,6 +2356,427 @@ function Library:UpdateWatermarkAccent()
     end
 end
 
+
+-- Config System
+local Configs = {}
+local CurrentConfig = nil
+
+function Library:CreateConfigSection(config)
+    if not CurrentTab then
+        error("No tab created. Call CreateTab first.")
+        return
+    end
+    
+    local section = {
+        position = "config",
+        text = "Config Manager",
+        components = {},
+        frame = nil,
+        configContainer = nil,
+        configHolder = nil,
+        createButton = nil,
+        refreshButton = nil
+    }
+    
+    -- Create config container
+    local Config_Container = Instance.new("Frame")
+    Config_Container.BorderColor3 = Color3.fromRGB(0, 0, 0)
+    Config_Container.AnchorPoint = Vector2.new(0.5, 1)
+    Config_Container.Name = "Config_Container"
+    Config_Container.Position = UDim2.new(0.5, 0, 1, 0)
+    Config_Container.Size = UDim2.new(0, 652, 0, 418)
+    Config_Container.ZIndex = 2
+    Config_Container.BorderSizePixel = 0
+    Config_Container.BackgroundColor3 = Color3.fromRGB(16, 16, 16)
+    Config_Container.Visible = false
+    Config_Container.Parent = Container
+    
+    local UICorner = Instance.new("UICorner")
+    UICorner.Parent = Config_Container
+    
+    -- Create config holder
+    local Config_Holder = Instance.new("ScrollingFrame")
+    Config_Holder.ScrollBarImageColor3 = Library.Accent
+    Config_Holder.Active = true
+    Config_Holder.BorderColor3 = Color3.fromRGB(0, 0, 0)
+    Config_Holder.ScrollBarThickness = 1
+    Config_Holder.BackgroundTransparency = 1
+    Config_Holder.Position = UDim2.new(0.029141103848814964, 0, 0.09999997168779373, 0)
+    Config_Holder.Name = "Config_Holder"
+    Config_Holder.Size = UDim2.new(0, 609, 0, 325)
+    Config_Holder.BorderSizePixel = 0
+    Config_Holder.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    Config_Holder.Parent = Config_Container
+    
+    local UIListLayout = Instance.new("UIListLayout")
+    UIListLayout.Padding = UDim.new(0, 4)
+    UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+    UIListLayout.Parent = Config_Holder
+    
+    -- Create buttons
+    local Create_Config = Instance.new("TextButton")
+    Create_Config.FontFace = Font.new("rbxassetid://12187365364", Enum.FontWeight.Regular, Enum.FontStyle.Normal)
+    Create_Config.TextColor3 = Color3.fromRGB(255, 255, 255)
+    Create_Config.BorderColor3 = Color3.fromRGB(0, 0, 0)
+    Create_Config.Text = "Create Config"
+    Create_Config.Size = UDim2.new(0, 1, 0, 1)
+    Create_Config.Name = "Create_Config"
+    Create_Config.Position = UDim2.new(0.029141103848814964, 0, 0.8779904246330261, 0)
+    Create_Config.BorderSizePixel = 0
+    Create_Config.AutomaticSize = Enum.AutomaticSize.XY
+    Create_Config.TextSize = 18
+    Create_Config.BackgroundColor3 = Library.Accent
+    Create_Config.Parent = Config_Container
+    
+    local CreatePadding = Instance.new("UIPadding")
+    CreatePadding.PaddingTop = UDim.new(0, 10)
+    CreatePadding.PaddingBottom = UDim.new(0, 10)
+    CreatePadding.PaddingRight = UDim.new(0, 10)
+    CreatePadding.PaddingLeft = UDim.new(0, 10)
+    CreatePadding.Parent = Create_Config
+    
+    local CreateCorner = Instance.new("UICorner")
+    CreateCorner.CornerRadius = UDim.new(0, 4)
+    CreateCorner.Parent = Create_Config
+    
+    local Refresh_Config = Instance.new("TextButton")
+    Refresh_Config.FontFace = Font.new("rbxassetid://12187365364", Enum.FontWeight.Regular, Enum.FontStyle.Normal)
+    Refresh_Config.TextColor3 = Color3.fromRGB(255, 255, 255)
+    Refresh_Config.BorderColor3 = Color3.fromRGB(0, 0, 0)
+    Refresh_Config.Text = "Refresh"
+    Refresh_Config.Size = UDim2.new(0, 1, 0, 1)
+    Refresh_Config.Name = "Refresh_Config"
+    Refresh_Config.Position = UDim2.new(0.23773005604743958, 0, 0.8779904246330261, 0)
+    Refresh_Config.BorderSizePixel = 0
+    Refresh_Config.AutomaticSize = Enum.AutomaticSize.XY
+    Refresh_Config.TextSize = 18
+    Refresh_Config.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+    Refresh_Config.Parent = Config_Container
+    
+    local RefreshPadding = Instance.new("UIPadding")
+    RefreshPadding.PaddingTop = UDim.new(0, 10)
+    RefreshPadding.PaddingBottom = UDim.new(0, 10)
+    RefreshPadding.PaddingRight = UDim.new(0, 10)
+    RefreshPadding.PaddingLeft = UDim.new(0, 10)
+    RefreshPadding.Parent = Refresh_Config
+    
+    local RefreshCorner = Instance.new("UICorner")
+    RefreshCorner.CornerRadius = UDim.new(0, 4)
+    RefreshCorner.Parent = Refresh_Config
+    
+    -- Store references
+    section.frame = Config_Container
+    section.configContainer = Config_Container
+    section.configHolder = Config_Holder
+    section.createButton = Create_Config
+    section.refreshButton = Refresh_Config
+    
+    -- Button connections
+    Create_Config.MouseButton1Click:Connect(function()
+        Library:CreateNewConfig(section)
+    end)
+    
+    Refresh_Config.MouseButton1Click:Connect(function()
+        Library:RefreshConfigs(section)
+    end)
+    
+    -- Add methods to section object
+    function section:CreateConfigEntry(config)
+        return Library:CreateConfigEntry(config, self)
+    end
+    
+    -- Store reference in the tab
+    CurrentTab.configSection = section
+    
+    -- Load sample configs
+    Library:LoadSampleConfigs(section)
+    
+    return section
+end
+
+function Library:CreateConfigEntry(config, section)
+    local Section = Instance.new("Frame")
+    Section.Name = "Section"
+    Section.Position = UDim2.new(0.029531842097640038, 0, 0.09756097197532654, 0)
+    Section.BorderColor3 = Color3.fromRGB(0, 0, 0)
+    Section.Size = UDim2.new(0, 609, 0, 70)
+    Section.BorderSizePixel = 0
+    Section.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+    Section.Parent = section.configHolder
+    
+    local UICorner = Instance.new("UICorner")
+    UICorner.CornerRadius = UDim.new(0, 4)
+    UICorner.Parent = Section
+    
+    local Config_ICON = Instance.new("ImageLabel")
+    Config_ICON.ImageColor3 = Color3.fromRGB(81, 81, 81)
+    Config_ICON.BorderColor3 = Color3.fromRGB(0, 0, 0)
+    Config_ICON.Name = "Config_ICON"
+    Config_ICON.Image = "rbxassetid://98527607765894"
+    Config_ICON.BackgroundTransparency = 1
+    Config_ICON.Position = UDim2.new(0.021056829020380974, 0, 0.20778155326843262, 0)
+    Config_ICON.Size = UDim2.new(0, 36, 0, 40)
+    Config_ICON.BorderSizePixel = 0
+    Config_ICON.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    Config_ICON.Parent = Section
+    
+    local Author_IMG = Instance.new("Frame")
+    Author_IMG.BorderColor3 = Color3.fromRGB(0, 0, 0)
+    Author_IMG.AnchorPoint = Vector2.new(1, 1)
+    Author_IMG.BackgroundTransparency = 0.25
+    Author_IMG.Position = UDim2.new(1, 0, 1, 0)
+    Author_IMG.Name = "Author_IMG"
+    Author_IMG.Size = UDim2.new(0, 18, 0, 18)
+    Author_IMG.BorderSizePixel = 0
+    Author_IMG.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+    Author_IMG.Parent = Config_ICON
+    
+    local UICorner = Instance.new("UICorner")
+    UICorner.CornerRadius = UDim.new(0, 50)
+    UICorner.Parent = Author_IMG
+    
+    local UIStroke = Instance.new("UIStroke")
+    UIStroke.Color = Library.Accent
+    UIStroke.Parent = Author_IMG
+    
+    local Display_Author = Instance.new("ImageLabel")
+    Display_Author.BorderColor3 = Color3.fromRGB(0, 0, 0)
+    Display_Author.Name = "Display_Author"
+    Display_Author.AnchorPoint = Vector2.new(0.5, 0.5)
+    Display_Author.Image = "rbxasset://textures/ui/GuiImagePlaceholder.png"
+    Display_Author.BackgroundTransparency = 1
+    Display_Author.Position = UDim2.new(0.5, 0, 0.5, 0)
+    Display_Author.Size = UDim2.new(0, 18, 0, 18)
+    Display_Author.BorderSizePixel = 0
+    Display_Author.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    Display_Author.Parent = Author_IMG
+    
+    local UICorner = Instance.new("UICorner")
+    UICorner.CornerRadius = UDim.new(0, 50)
+    UICorner.Parent = Display_Author
+    
+    -- Load author image
+    if config.authorId then
+        pcall(function()
+            Display_Author.Image = "https://www.roblox.com/headshot-thumbnail/image?userId=" .. config.authorId .. "&width=150&height=150&format=png"
+        end)
+    end
+    
+    local Config_Name = Instance.new("TextLabel")
+    Config_Name.FontFace = Font.new("rbxassetid://12187365364", Enum.FontWeight.SemiBold, Enum.FontStyle.Normal)
+    Config_Name.TextColor3 = Library.Accent
+    Config_Name.BorderColor3 = Color3.fromRGB(0, 0, 0)
+    Config_Name.Text = config.name or "Example Config"
+    Config_Name.Name = "Config_Name"
+    Config_Name.Size = UDim2.new(0, 1, 0, 1)
+    Config_Name.BackgroundTransparency = 1
+    Config_Name.Position = UDim2.new(0.0989999994635582, 0, 0.2150000035762787, 4)
+    Config_Name.BorderSizePixel = 0
+    Config_Name.AutomaticSize = Enum.AutomaticSize.XY
+    Config_Name.TextSize = 16
+    Config_Name.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    Config_Name.Parent = Section
+    
+    local Config_Date = Instance.new("TextLabel")
+    Config_Date.FontFace = Font.new("rbxassetid://12187365364", Enum.FontWeight.SemiBold, Enum.FontStyle.Normal)
+    Config_Date.TextColor3 = Color3.fromRGB(81, 81, 81)
+    Config_Date.BorderColor3 = Color3.fromRGB(0, 0, 0)
+    Config_Date.Text = '<font color="#ffffff">' .. (config.authorName or "AUTHORNAME") .. '</font> CREATED AT ' .. (config.date or "9/5/2025 11:25PM")
+    Config_Date.Name = "Config_Date"
+    Config_Date.Size = UDim2.new(0, 1, 0, 1)
+    Config_Date.BorderSizePixel = 0
+    Config_Date.BackgroundTransparency = 1
+    Config_Date.Position = UDim2.new(0.09900002926588058, 0, 0.5004285573959351, 5)
+    Config_Date.RichText = true
+    Config_Date.AutomaticSize = Enum.AutomaticSize.XY
+    Config_Date.TextSize = 12
+    Config_Date.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    Config_Date.Parent = Section
+    
+    local Load_Config = Instance.new("TextButton")
+    Load_Config.FontFace = Font.new("rbxassetid://12187365364", Enum.FontWeight.Regular, Enum.FontStyle.Normal)
+    Load_Config.TextColor3 = Color3.fromRGB(134, 134, 134)
+    Load_Config.BorderColor3 = Color3.fromRGB(0, 0, 0)
+    Load_Config.Text = "Load"
+    Load_Config.AnchorPoint = Vector2.new(1, 0.5)
+    Load_Config.Name = "Load_Config"
+    Load_Config.Position = UDim2.new(0.9662400484085083, 0, 0.4879786968231201, 0)
+    Load_Config.Size = UDim2.new(0, 115, 0, 35)
+    Load_Config.BorderSizePixel = 0
+    Load_Config.TextSize = 16
+    Load_Config.BackgroundColor3 = Color3.fromRGB(24, 24, 24)
+    Load_Config.Parent = Section
+    
+    local UIPadding = Instance.new("UIPadding")
+    UIPadding.PaddingTop = UDim.new(0, 5)
+    UIPadding.PaddingBottom = UDim.new(0, 5)
+    UIPadding.PaddingRight = UDim.new(0, 5)
+    UIPadding.PaddingLeft = UDim.new(0, 5)
+    UIPadding.Parent = Load_Config
+    
+    local UICorner = Instance.new("UICorner")
+    UICorner.Parent = Load_Config
+    
+    local Icon_Holder = Instance.new("Frame")
+    Icon_Holder.AnchorPoint = Vector2.new(0, 0.5)
+    Icon_Holder.Name = "Icon_Holder"
+    Icon_Holder.Position = UDim2.new(-0.07777797430753708, 0, 0.5, 0)
+    Icon_Holder.BorderColor3 = Color3.fromRGB(0, 0, 0)
+    Icon_Holder.Size = UDim2.new(0, 35, 0, 35)
+    Icon_Holder.BorderSizePixel = 0
+    Icon_Holder.BackgroundColor3 = Color3.fromRGB(22, 22, 22)
+    Icon_Holder.Parent = Load_Config
+    
+    local UICorner = Instance.new("UICorner")
+    UICorner.Parent = Icon_Holder
+    
+    local Load_Icon = Instance.new("ImageLabel")
+    Load_Icon.ImageColor3 = Color3.fromRGB(159, 159, 159)
+    Load_Icon.BorderColor3 = Color3.fromRGB(0, 0, 0)
+    Load_Icon.Name = "Load_Icon"
+    Load_Icon.AnchorPoint = Vector2.new(0.5, 0.5)
+    Load_Icon.Image = "rbxassetid://132976298748516"
+    Load_Icon.BackgroundTransparency = 1
+    Load_Icon.Position = UDim2.new(0.5, 0, 0.5, 0)
+    Load_Icon.Size = UDim2.new(0, 15, 0, 15)
+    Load_Icon.BorderSizePixel = 0
+    Load_Icon.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    Load_Icon.Parent = Icon_Holder
+    
+    local Delete_Config = Instance.new("TextButton")
+    Delete_Config.FontFace = Font.new("rbxassetid://12187365364", Enum.FontWeight.Regular, Enum.FontStyle.Normal)
+    Delete_Config.TextColor3 = Color3.fromRGB(134, 134, 134)
+    Delete_Config.BorderColor3 = Color3.fromRGB(0, 0, 0)
+    Delete_Config.Text = "Delete"
+    Delete_Config.AnchorPoint = Vector2.new(1, 0.5)
+    Delete_Config.Name = "Delete_Config"
+    Delete_Config.Position = UDim2.new(0.7478492259979248, 0, 0.4879786968231201, 0)
+    Delete_Config.Size = UDim2.new(0, 115, 0, 35)
+    Delete_Config.BorderSizePixel = 0
+    Delete_Config.TextSize = 16
+    Delete_Config.BackgroundColor3 = Color3.fromRGB(24, 24, 24)
+    Delete_Config.Parent = Section
+    
+    local UIPadding = Instance.new("UIPadding")
+    UIPadding.PaddingTop = UDim.new(0, 5)
+    UIPadding.PaddingBottom = UDim.new(0, 5)
+    UIPadding.PaddingRight = UDim.new(0, 5)
+    UIPadding.PaddingLeft = UDim.new(0, 5)
+    UIPadding.Parent = Delete_Config
+    
+    local UICorner = Instance.new("UICorner")
+    UICorner.Parent = Delete_Config
+    
+    local Icon_Holder = Instance.new("Frame")
+    Icon_Holder.AnchorPoint = Vector2.new(0, 0.5)
+    Icon_Holder.Name = "Icon_Holder"
+    Icon_Holder.Position = UDim2.new(-0.07777797430753708, 0, 0.5, 0)
+    Icon_Holder.BorderColor3 = Color3.fromRGB(0, 0, 0)
+    Icon_Holder.Size = UDim2.new(0, 35, 0, 35)
+    Icon_Holder.BorderSizePixel = 0
+    Icon_Holder.BackgroundColor3 = Color3.fromRGB(22, 22, 22)
+    Icon_Holder.Parent = Delete_Config
+    
+    local UICorner = Instance.new("UICorner")
+    UICorner.Parent = Icon_Holder
+    
+    local Delete_Icon = Instance.new("ImageLabel")
+    Delete_Icon.ImageColor3 = Color3.fromRGB(159, 159, 159)
+    Delete_Icon.BorderColor3 = Color3.fromRGB(0, 0, 0)
+    Delete_Icon.Name = "Delete_Icon"
+    Delete_Icon.AnchorPoint = Vector2.new(0.5, 0.5)
+    Delete_Icon.Image = "rbxassetid://81288781766435"
+    Delete_Icon.BackgroundTransparency = 1
+    Delete_Icon.Position = UDim2.new(0.5, 0, 0.5, 0)
+    Delete_Icon.Size = UDim2.new(0, 15, 0, 15)
+    Delete_Icon.BorderSizePixel = 0
+    Delete_Icon.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    Delete_Icon.Parent = Icon_Holder
+    
+    -- Button connections
+    Load_Config.MouseButton1Click:Connect(function()
+        Library:LoadConfig(config)
+    end)
+    
+    Delete_Config.MouseButton1Click:Connect(function()
+        Library:DeleteConfig(config)
+        Section:Destroy()
+    end)
+    
+    return Section
+end
+
+function Library:CreateNewConfig(section)
+    local player = game.Players.LocalPlayer
+    local configName = "Config_" .. os.time()
+    local config = {
+        name = configName,
+        authorId = player.UserId,
+        authorName = player.Name,
+        date = os.date("%m/%d/%Y %I:%M%p"),
+        data = {}
+    }
+    
+    -- Add to configs list
+    table.insert(Configs, config)
+    
+    -- Create config entry
+    Library:CreateConfigEntry(config, section)
+    
+    -- Show notification
+    Library:NotifySuccess("Config created successfully!", 3)
+end
+
+function Library:LoadConfig(config)
+    CurrentConfig = config
+    Library:NotifySuccess("Config loaded: " .. config.name, 3)
+    -- Here you would load the actual config data
+end
+
+function Library:DeleteConfig(config)
+    -- Remove from configs list
+    for i, cfg in ipairs(Configs) do
+        if cfg == config then
+            table.remove(Configs, i)
+            break
+        end
+    end
+    
+    Library:NotifyWarning("Config deleted: " .. config.name, 3)
+end
+
+function Library:LoadSampleConfigs(section)
+    -- Create a sample config
+    local player = game.Players.LocalPlayer
+    local sampleConfig = {
+        name = "Sample Config",
+        authorId = player.UserId,
+        authorName = player.Name,
+        date = os.date("%m/%d/%Y %I:%M%p"),
+        data = {}
+    }
+    
+    table.insert(Configs, sampleConfig)
+    Library:CreateConfigEntry(sampleConfig, section)
+end
+
+function Library:RefreshConfigs(section)
+    -- Clear existing config entries
+    for _, child in ipairs(section.configHolder:GetChildren()) do
+        if child:IsA("Frame") and child.Name == "Section" then
+            child:Destroy()
+        end
+    end
+    
+    -- Clear configs list
+    Configs = {}
+    
+    -- Reload sample configs
+    Library:LoadSampleConfigs(section)
+    
+    -- Show notification
+    Library:NotifySuccess("Configs refreshed!", 2)
+end
 
 -- Notification System
 local NotificationContainer = nil
