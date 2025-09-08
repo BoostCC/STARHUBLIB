@@ -262,6 +262,9 @@ function Library:CreateWindow(config)
     -- Create watermark with cheat name
     Library:CreateWatermark(config.library_config and config.library_config.Cheat_Name)
     
+    -- Initialize global config container
+    InitializeGlobalConfigContainer()
+    
     -- Set up UI toggle keybind (only affects main UI, not notifications)
     if config.library_config and config.library_config.interface_keybind then
         local keybind = config.library_config.interface_keybind
@@ -2401,22 +2404,8 @@ end
 -- Global config container (created once)
 local GlobalConfigContainer = nil
 
--- Config Section System
-function Library:CreateConfigSection(config)
-    if not CurrentTab then
-        error("No tab created. Call CreateTab first.")
-        return
-    end
-    
-    local section = {
-        position = "config",
-        text = "Config Manager",
-        components = {},
-        frame = nil,
-        configHolder = nil
-    }
-    
-    -- Create global config container if it doesn't exist
+-- Initialize global config container
+local function InitializeGlobalConfigContainer()
     if not GlobalConfigContainer then
         GlobalConfigContainer = Instance.new("Frame")
         GlobalConfigContainer.BorderColor3 = Color3.fromRGB(0, 0, 0)
@@ -2429,98 +2418,117 @@ function Library:CreateConfigSection(config)
         GlobalConfigContainer.BackgroundColor3 = Color3.fromRGB(16, 16, 16)
         GlobalConfigContainer.Visible = false
         GlobalConfigContainer.Parent = Container
+        
+        local UICorner = Instance.new("UICorner")
+        UICorner.Parent = GlobalConfigContainer
+        
+        -- Create config holder
+        local Config_Holder = Instance.new("ScrollingFrame")
+        Config_Holder.ScrollBarImageColor3 = Library.Accent
+        Config_Holder.Active = true
+        Config_Holder.BorderColor3 = Color3.fromRGB(0, 0, 0)
+        Config_Holder.ScrollBarThickness = 1
+        Config_Holder.BackgroundTransparency = 1
+        Config_Holder.Position = UDim2.new(0.029141103848814964, 0, 0.10000000149011612, 0)
+        Config_Holder.Name = "Config_Holder"
+        Config_Holder.Size = UDim2.new(0, 609, 0, 360)
+        Config_Holder.BorderSizePixel = 0
+        Config_Holder.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+        Config_Holder.Parent = GlobalConfigContainer
+        
+        local UIListLayout = Instance.new("UIListLayout")
+        UIListLayout.Padding = UDim.new(0, 4)
+        UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+        UIListLayout.Parent = Config_Holder
+        
+        -- Create header
+        local Header = Instance.new("Frame")
+        Header.Name = "Header"
+        Header.Size = UDim2.new(1, 0, 0, 50)
+        Header.BorderSizePixel = 0
+        Header.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+        Header.Parent = GlobalConfigContainer
+        
+        local HeaderCorner = Instance.new("UICorner")
+        HeaderCorner.CornerRadius = UDim.new(0, 4)
+        HeaderCorner.Parent = Header
+        
+        local Title = Instance.new("TextLabel")
+        Title.FontFace = Font.new("rbxassetid://12187365364", Enum.FontWeight.SemiBold, Enum.FontStyle.Normal)
+        Title.TextColor3 = Color3.fromRGB(255, 255, 255)
+        Title.Text = "Config Manager"
+        Title.Size = UDim2.new(0, 1, 0, 1)
+        Title.Position = UDim2.new(0, 20, 0.5, 0)
+        Title.AnchorPoint = Vector2.new(0, 0.5)
+        Title.BackgroundTransparency = 1
+        Title.AutomaticSize = Enum.AutomaticSize.XY
+        Title.TextSize = 18
+        Title.Parent = Header
+        
+        -- Create buttons in bottom left corner
+        local CreateButton = Instance.new("TextButton")
+        CreateButton.FontFace = Font.new("rbxassetid://12187365364", Enum.FontWeight.Regular, Enum.FontStyle.Normal)
+        CreateButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+        CreateButton.Text = "Create Config"
+        CreateButton.AnchorPoint = Vector2.new(0, 1)
+        CreateButton.Position = UDim2.new(0, 20, 1, -20)
+        CreateButton.Size = UDim2.new(0, 120, 0, 35)
+        CreateButton.BorderSizePixel = 0
+        CreateButton.TextSize = 14
+        CreateButton.BackgroundColor3 = Library.Accent
+        CreateButton.Parent = GlobalConfigContainer
+        
+        local CreateCorner = Instance.new("UICorner")
+        CreateCorner.Parent = CreateButton
+        
+        local RefreshButton = Instance.new("TextButton")
+        RefreshButton.FontFace = Font.new("rbxassetid://12187365364", Enum.FontWeight.Regular, Enum.FontStyle.Normal)
+        RefreshButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+        RefreshButton.Text = "Refresh"
+        RefreshButton.AnchorPoint = Vector2.new(0, 1)
+        RefreshButton.Position = UDim2.new(0, 150, 1, -20)
+        RefreshButton.Size = UDim2.new(0, 100, 0, 35)
+        RefreshButton.BorderSizePixel = 0
+        RefreshButton.TextSize = 14
+        RefreshButton.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+        RefreshButton.Parent = GlobalConfigContainer
+        
+        local RefreshCorner = Instance.new("UICorner")
+        RefreshCorner.Parent = RefreshButton
+        
+        -- Store references for later use
+        GlobalConfigContainer.configHolder = Config_Holder
+        GlobalConfigContainer.createButton = CreateButton
+        GlobalConfigContainer.refreshButton = RefreshButton
+    end
+end
+
+-- Config Section System
+function Library:CreateConfigSection(config)
+    if not CurrentTab then
+        error("No tab created. Call CreateTab first.")
+        return
     end
     
-    local configContainer = GlobalConfigContainer
+    -- Initialize global config container
+    InitializeGlobalConfigContainer()
     
-    local UICorner = Instance.new("UICorner")
-    UICorner.Parent = configContainer
-    
-    -- Create config holder
-    local Config_Holder = Instance.new("ScrollingFrame")
-    Config_Holder.ScrollBarImageColor3 = Library.Accent
-    Config_Holder.Active = true
-    Config_Holder.BorderColor3 = Color3.fromRGB(0, 0, 0)
-    Config_Holder.ScrollBarThickness = 1
-    Config_Holder.BackgroundTransparency = 1
-    Config_Holder.Position = UDim2.new(0.029141103848814964, 0, 0.10000000149011612, 0)
-    Config_Holder.Name = "Config_Holder"
-    Config_Holder.Size = UDim2.new(0, 609, 0, 360)
-    Config_Holder.BorderSizePixel = 0
-    Config_Holder.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-    Config_Holder.Parent = configContainer
-    
-    local UIListLayout = Instance.new("UIListLayout")
-    UIListLayout.Padding = UDim.new(0, 4)
-    UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
-    UIListLayout.Parent = Config_Holder
-    
-    -- Create header
-    local Header = Instance.new("Frame")
-    Header.Name = "Header"
-    Header.Size = UDim2.new(1, 0, 0, 50)
-    Header.BorderSizePixel = 0
-    Header.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
-    Header.Parent = configContainer
-    
-    local HeaderCorner = Instance.new("UICorner")
-    HeaderCorner.CornerRadius = UDim.new(0, 4)
-    HeaderCorner.Parent = Header
-    
-    local Title = Instance.new("TextLabel")
-    Title.FontFace = Font.new("rbxassetid://12187365364", Enum.FontWeight.SemiBold, Enum.FontStyle.Normal)
-    Title.TextColor3 = Color3.fromRGB(255, 255, 255)
-    Title.Text = "Config Manager"
-    Title.Size = UDim2.new(0, 1, 0, 1)
-    Title.Position = UDim2.new(0, 20, 0.5, 0)
-    Title.AnchorPoint = Vector2.new(0, 0.5)
-    Title.BackgroundTransparency = 1
-    Title.AutomaticSize = Enum.AutomaticSize.XY
-    Title.TextSize = 18
-    Title.Parent = Header
-    
-    local CreateButton = Instance.new("TextButton")
-    CreateButton.FontFace = Font.new("rbxassetid://12187365364", Enum.FontWeight.Regular, Enum.FontStyle.Normal)
-    CreateButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-    CreateButton.Text = "Create Config"
-    CreateButton.AnchorPoint = Vector2.new(0, 1)
-    CreateButton.Position = UDim2.new(0, 20, 1, -20)
-    CreateButton.Size = UDim2.new(0, 120, 0, 35)
-    CreateButton.BorderSizePixel = 0
-    CreateButton.TextSize = 14
-    CreateButton.BackgroundColor3 = Library.Accent
-    CreateButton.Parent = configContainer
-    
-    local CreateCorner = Instance.new("UICorner")
-    CreateCorner.Parent = CreateButton
-    
-    local RefreshButton = Instance.new("TextButton")
-    RefreshButton.FontFace = Font.new("rbxassetid://12187365364", Enum.FontWeight.Regular, Enum.FontStyle.Normal)
-    RefreshButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-    RefreshButton.Text = "Refresh"
-    RefreshButton.AnchorPoint = Vector2.new(0, 1)
-    RefreshButton.Position = UDim2.new(0, 150, 1, -20)
-    RefreshButton.Size = UDim2.new(0, 100, 0, 35)
-    RefreshButton.BorderSizePixel = 0
-    RefreshButton.TextSize = 14
-    RefreshButton.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-    RefreshButton.Parent = configContainer
-    
-    local RefreshCorner = Instance.new("UICorner")
-    RefreshCorner.Parent = RefreshButton
+    local section = {
+        position = "config",
+        text = "Config Manager",
+        components = {},
+        frame = GlobalConfigContainer,
+        configHolder = GlobalConfigContainer.configHolder
+    }
     
     -- Button connections
-    CreateButton.MouseButton1Click:Connect(function()
+    GlobalConfigContainer.createButton.MouseButton1Click:Connect(function()
         Library:CreateNewConfig(section)
     end)
     
-    RefreshButton.MouseButton1Click:Connect(function()
+    GlobalConfigContainer.refreshButton.MouseButton1Click:Connect(function()
         Library:RefreshConfigs(section)
     end)
-    
-    -- Store references
-    section.frame = configContainer
-    section.configHolder = Config_Holder
     
     -- Store reference in the tab
     CurrentTab.configSection = section
