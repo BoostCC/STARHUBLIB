@@ -342,6 +342,9 @@ function Library:SetAccentColor(color, alpha)
     
     -- Update watermark elements
     Library:UpdateWatermarkAccent()
+    
+    -- Update config elements
+    Library:UpdateConfigAccent()
 
     -- Sweep through UI and update common accent elements
     if ScreenGui then
@@ -2398,6 +2401,42 @@ function Library:UpdateWatermarkAccent()
     end
 end
 
+function Library:UpdateConfigAccent()
+    -- Update all config sections
+    if CurrentWindow and CurrentWindow.tabs then
+        for _, tab in pairs(CurrentWindow.tabs) do
+            if tab.configSection then
+                local section = tab.configSection
+                
+                -- Update Create_Config button
+                if section.createButton then
+                    section.createButton.BackgroundColor3 = Library.Accent
+                end
+                
+                -- Update Config_Holder scrollbar
+                if section.configHolder then
+                    section.configHolder.ScrollBarImageColor3 = Library.Accent
+                end
+                
+                -- Update all config entries in this section
+                if section.configEntries then
+                    for _, entry in pairs(section.configEntries) do
+                        if entry.configName then
+                            entry.configName.TextColor3 = Library.Accent
+                        end
+                        if entry.configIcon then
+                            entry.configIcon.ImageColor3 = Library.Accent
+                        end
+                        if entry.authorStroke then
+                            entry.authorStroke.Color = Library.Accent
+                        end
+                    end
+                end
+            end
+        end
+    end
+end
+
 
 -- Config System
 local Configs = {}
@@ -2775,6 +2814,19 @@ function Library:CreateConfigEntry(config, section)
         Library:DeleteConfig(config)
         Section:Destroy()
     end)
+    
+    -- Store element references for accent color updates
+    local entry = {
+        configName = Config_Name,
+        configIcon = Config_ICON,
+        authorStroke = UIStroke
+    }
+    
+    -- Initialize configEntries array if it doesn't exist
+    if not section.configEntries then
+        section.configEntries = {}
+    end
+    table.insert(section.configEntries, entry)
     
     return Section
 end
