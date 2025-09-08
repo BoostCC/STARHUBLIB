@@ -657,15 +657,21 @@ function Library:SwitchTab(tab)
         end
     end
     
-    -- Show global config container only for Config tab
-    local isConfigTab = tab.TabText == "Config"
-    
-    -- Ensure global config container exists
-    if not GlobalConfigContainer then
-        InitializeGlobalConfigContainer()
+    -- Show config section if it exists and this is the Config tab
+    if tab.configSection and tab.configSection.frame then
+        -- Only show config container if this is the Config tab
+        local isConfigTab = tab.TabText == "Config"
+        tab.configSection.frame.Visible = isConfigTab
+        if isConfigTab then
+            tab.configSection.frame.BackgroundTransparency = 1
+            local fade = createTween(tab.configSection.frame, {BackgroundTransparency = 0}, 0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+            fade:Play()
+        end
     end
     
+    -- Show global config container only for Config tab
     if GlobalConfigContainer then
+        local isConfigTab = tab.TabText == "Config"
         GlobalConfigContainer.Visible = isConfigTab
         if isConfigTab then
             GlobalConfigContainer.BackgroundTransparency = 1
@@ -2526,9 +2532,6 @@ function Library:CreateConfigSection(config)
     
     -- Store reference in the tab
     CurrentTab.configSection = section
-    
-    -- Also store reference to the global container in the tab
-    CurrentTab.configContainer = GlobalConfigContainer
     
     -- Add methods to section object
     function section:CreateConfigEntry(config)
