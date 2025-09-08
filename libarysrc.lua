@@ -1,8 +1,3 @@
---[[
-SOLARHUB UI MADE BY BOOST
-]]
-
-
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
@@ -78,6 +73,27 @@ MainFrame.Size = UDim2.new(0, 720, 0, 550)
 MainFrame.BorderSizePixel = 0
 MainFrame.BackgroundColor3 = Color3.fromRGB(12, 12, 12)
 MainFrame.Parent = ScreenGui
+
+local UIScaleMain = Instance.new("UIScale")
+UIScaleMain.Parent = MainFrame
+local UIScaleWatermark = nil
+local UIScaleNotifications = nil
+local Open_Interface = nil
+
+local function UpdateScale()
+    local cam = workspace.CurrentCamera
+    local vp = cam and cam.ViewportSize or Vector2.new(1920,1080)
+    local isMobile = game:GetService("UserInputService").TouchEnabled and not game:GetService("UserInputService").KeyboardEnabled
+    local s = 1
+    if isMobile then
+        s = math.clamp(math.min(vp.X/1920, vp.Y/1080), 0.5, 1)
+    end
+    if UIScaleMain then UIScaleMain.Scale = s end
+    if UIScaleWatermark then UIScaleWatermark.Scale = s end
+    if UIScaleNotifications then UIScaleNotifications.Scale = s end
+end
+
+game:GetService("RunService").RenderStepped:Connect(UpdateScale)
 
 local UICorner = Instance.new("UICorner")
 UICorner.CornerRadius = UDim.new(0, 4)
@@ -277,7 +293,7 @@ function Library:CreateWindow(config)
         configSection = nil
     }
     
-    -- Update library name and icon if provided
+
     if config.library_config and config.library_config.Cheat_Name then
         Libary_Name.Text = config.library_config.Cheat_Name
         Library.CheatName = config.library_config.Cheat_Name
@@ -303,6 +319,48 @@ function Library:CreateWindow(config)
             if input.KeyCode == Enum.KeyCode.Insert then
                 MainFrame.Visible = not MainFrame.Visible
             end
+        end)
+    end
+
+    if UserInputService.TouchEnabled and not UserInputService.KeyboardEnabled then
+        Open_Interface = Instance.new("Frame")
+        Open_Interface.Name = "Open_Interface"
+        Open_Interface.Position = UDim2.new(0.048076923936605453, 0, 0.1977611929178238, 0)
+        Open_Interface.BorderColor3 = Color3.fromRGB(0, 0, 0)
+        Open_Interface.Size = UDim2.new(0, 50, 0, 50)
+        Open_Interface.BorderSizePixel = 0
+        Open_Interface.BackgroundColor3 = Color3.fromRGB(12, 12, 12)
+        Open_Interface.Parent = ScreenGui
+
+        local OpenCorner = Instance.new("UICorner")
+        OpenCorner.CornerRadius = UDim.new(0, 50)
+        OpenCorner.Parent = Open_Interface
+
+        local OpenStroke = Instance.new("UIStroke")
+        OpenStroke.Thickness = 2
+        OpenStroke.Color = Library.Accent
+        OpenStroke.Parent = Open_Interface
+
+        local OpenIcon = Instance.new("ImageLabel")
+        OpenIcon.ImageColor3 = Library.Accent
+        OpenIcon.BorderColor3 = Color3.fromRGB(0, 0, 0)
+        OpenIcon.Name = "Libary_Icon"
+        OpenIcon.AnchorPoint = Vector2.new(0.5, 0.5)
+        OpenIcon.Image = "rbxassetid://132964100967987"
+        OpenIcon.BackgroundTransparency = 1
+        OpenIcon.Position = UDim2.new(0.5, 0, 0.5, 0)
+        OpenIcon.Size = UDim2.new(0, 25, 0, 25)
+        OpenIcon.BorderSizePixel = 0
+        OpenIcon.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+        OpenIcon.Parent = Open_Interface
+
+        local OpenButton = Instance.new("TextButton")
+        OpenButton.BackgroundTransparency = 1
+        OpenButton.Size = UDim2.fromScale(1,1)
+        OpenButton.Text = ""
+        OpenButton.Parent = Open_Interface
+        OpenButton.MouseButton1Click:Connect(function()
+            MainFrame.Visible = not MainFrame.Visible
         end)
     end
     
@@ -352,7 +410,7 @@ function Library:SetAccentColor(color, alpha)
         GlobalTabInlineIndicator.BackgroundColor3 = Library.Accent
     end
     if Build_Date then
-        -- no-op; sample place if we later tint other elements
+    
     end
 
     if Libary_Icon then
@@ -630,12 +688,12 @@ function Library:SwitchTab(tab)
     
     CurrentTab = tab
     
-    -- Show new tab sections with fast, clean slide-fade in
+   
     for _, section in pairs(tab.sections.left) do
         if section.frame then
             section.frame.Visible = true
             section.frame.BackgroundTransparency = 1
-            -- start slightly lower and faded
+           
             section.frame.Position = section.targetPosition + UDim2.new(0, 0, 0, 10)
             local move = createTween(section.frame, {Position = section.targetPosition}, 0.18, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
             local fade = createTween(section.frame, {BackgroundTransparency = 0}, 0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
@@ -653,12 +711,12 @@ function Library:SwitchTab(tab)
         end
     end
     
-    -- Hide config sections from all other tabs first
+
     for _, windowTab in pairs(CurrentWindow.tabs) do
         if windowTab ~= tab and windowTab.configSections then
             for _, section in pairs(windowTab.configSections) do
                 if section.configContainer then
-                    -- Hide config holder immediately
+                 
                     local configHolder = section.configContainer:FindFirstChild("Config_Holder")
                     if configHolder then
                         configHolder.Visible = false
@@ -669,28 +727,28 @@ function Library:SwitchTab(tab)
         end
     end
     
-    -- Handle config sections (special positioning) - only for the current tab
+
     if tab.configSections then
         for _, section in pairs(tab.configSections) do
             if section.configContainer then
                 section.configContainer.Visible = true
-                -- Ensure config holder is visible
+             
                 local configHolder = section.configContainer:FindFirstChild("Config_Holder")
                 if configHolder then
                     configHolder.Visible = true
                 end
-                -- Container is always transparent, no animation needed
+               
             end
         end
     end
     
-    -- Animate new tab to active with unique effects
+
     if tab.tabFrame then
-        -- Start with clean state
+      
         tab.tabFrame.BackgroundTransparency = 1
         tab.tabFrame.Size = UDim2.new(0, 95, 0, 42)
         
-        -- Smooth background fade in
+      
         local bgTween = createTween(tab.tabFrame, {
             BackgroundTransparency = 0
         }, 0.25, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
@@ -699,11 +757,11 @@ function Library:SwitchTab(tab)
         local icon = tab.tabFrame:FindFirstChild("Tab_Icon")
         local text = icon and icon:FindFirstChild("Tab_Name")
         if icon and text then
-            -- Start with gray and animate to purple
+           
             icon.ImageColor3 = Color3.fromRGB(58, 58, 58)
             text.TextColor3 = Color3.fromRGB(58, 58, 58)
             
-            -- Color transition with slight delay
+            
             local iconTween = createTween(icon, {
                 ImageColor3 = Library.Accent
             }, 0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
@@ -716,16 +774,14 @@ function Library:SwitchTab(tab)
         end
     end
     
-    -- Move and animate global inline indicator anchored to the Tab_Container bottom center
+
     if GlobalTabInlineIndicator and tab.tabContainer then
         GlobalTabInlineIndicator.Parent = tab.tabContainer
         GlobalTabInlineIndicator.Visible = true
-        -- reset start state every switch
         GlobalTabInlineIndicator.BackgroundTransparency = 1
         GlobalTabInlineIndicator.Position = UDim2.new(0.5, 0, 1, -6)
         GlobalTabInlineIndicator.Size = UDim2.new(0, 0, 0, 3)
 
-        -- Defer one frame so Roblox registers initial state before tweens
         task.defer(function()
             local fadeIn = createTween(GlobalTabInlineIndicator, {
                 BackgroundTransparency = 0
@@ -744,7 +800,6 @@ function Library:SwitchTab(tab)
         end)
     end
     
-    -- Update current tab display
     Current_Tab_Value.Text = tab.text
 end
 
@@ -757,7 +812,6 @@ function Library:CreateSection(config)
     local position = config.position or "left"
     local sectionText = config.SectionText or "Section"
     
-    -- Check section limit
     if SectionCount[position] >= 1 then
         warn("Maximum 1 " .. position .. " section allowed per tab!")
         return nil
@@ -772,7 +826,6 @@ function Library:CreateSection(config)
         frame = nil
     }
     
-    -- Create section frame
     local sectionFrame = Instance.new("Frame")
     sectionFrame.Name = "Section_" .. position
     sectionFrame.Size = UDim2.new(0, 318, 0, 411)
@@ -784,14 +837,12 @@ function Library:CreateSection(config)
     else
         sectionFrame.Position = UDim2.new(0.5120617151260376, 0, 0.17085854709148407, 0)
     end
-    -- store target position for animations
     local targetPosition = sectionFrame.Position
     
     local sectionCorner = Instance.new("UICorner")
     sectionCorner.CornerRadius = UDim.new(0, 4)
     sectionCorner.Parent = sectionFrame
     
-    -- Create shadow header
     local shadow = Instance.new("Frame")
     shadow.Name = "Shadow"
     shadow.Size = UDim2.new(0, 318, 0, 40)
@@ -2292,6 +2343,8 @@ function Library:CreateWatermark(cheatName)
     Watermark_Frame.BackgroundColor3 = Color3.fromRGB(12, 12, 12)
     Watermark_Frame.Visible = WatermarkEnabled
     Watermark_Frame.Parent = WatermarkScreenGui
+    UIScaleWatermark = UIScaleWatermark or Instance.new("UIScale")
+    UIScaleWatermark.Parent = Watermark_Frame
     
     -- Add corner radius
     local UICorner = Instance.new("UICorner")
@@ -2584,7 +2637,7 @@ function Library:CreateConfigSection(config, tab)
 	Refresh_Config.BorderSizePixel = 0
 	Refresh_Config.AutomaticSize = Enum.AutomaticSize.XY
 	Refresh_Config.TextSize = 18
-	Refresh_Config.BackgroundColor3 = Library.Accent
+	Refresh_Config.BackgroundColor3 = Color3.fromRGB(24, 24, 24)
 	Refresh_Config.ZIndex = 3
 	Refresh_Config.Parent = Config_Container
 	
@@ -3196,6 +3249,10 @@ function Library:CreateNotification(config)
     notificationFrame.BorderSizePixel = 0
     notificationFrame.BackgroundColor3 = backgroundColor
     notificationFrame.Parent = NotificationContainer
+    if not UIScaleNotifications then
+        UIScaleNotifications = Instance.new("UIScale")
+        UIScaleNotifications.Parent = NotificationContainer
+    end
     
     local UICorner = Instance.new("UICorner")
     UICorner.CornerRadius = UDim.new(0, 4)
