@@ -2831,19 +2831,116 @@ function Library:CreateConfigEntry(config, section)
     return Section
 end
 
+function Library:CaptureAllUIStates()
+    local uiStates = {}
+    
+    if ScreenGui then
+        for _, inst in ipairs(ScreenGui:GetDescendants()) do
+            if inst:IsA("TextButton") then
+                -- Handle toggles
+                if inst.Name == "Toggle_Button" then
+                    local toggleFill = inst:FindFirstChild("Toggle_Fill")
+                    if toggleFill then
+                        local isEnabled = toggleFill.BackgroundTransparency < 0.5
+                        uiStates[inst:GetFullName()] = {
+                            type = "toggle",
+                            enabled = isEnabled
+                        }
+                    end
+                end
+                -- Handle buttons with callbacks
+                if inst:GetAttribute("Callback") then
+                    uiStates[inst:GetFullName()] = {
+                        type = "button",
+                        callback = inst:GetAttribute("Callback")
+                    }
+                end
+            elseif inst:IsA("Frame") then
+                -- Handle sliders
+                if inst.Name == "Slider_BG" then
+                    local pointer = inst:FindFirstChild("Pointer")
+                    if pointer then
+                        local sliderValue = (pointer.Position.X.Scale - 0.05) / 0.9 -- Convert to 0-1 range
+                        uiStates[inst:GetFullName()] = {
+                            type = "slider",
+                            value = math.clamp(sliderValue, 0, 1)
+                        }
+                    end
+                end
+            elseif inst:IsA("TextBox") then
+                -- Handle text inputs
+                if inst:GetAttribute("IsInput") then
+                    uiStates[inst:GetFullName()] = {
+                        type = "textbox",
+                        text = inst.Text
+                    }
+                end
+            elseif inst:IsA("TextLabel") then
+                -- Handle dropdown selections
+                if inst.Parent and inst.Parent.Name == "Dropdown_Container" then
+                    local checkIcon = inst.Parent:FindFirstChild("Check_Icon")
+                    if checkIcon and checkIcon.ImageTransparency < 0.5 then
+                        uiStates[inst.Parent:GetFullName()] = {
+                            type = "dropdown",
+                            selected = inst.Text
+                        }
+                    end
+                end
+            end
+        end
+    end
+    
+    return uiStates
+end
+
+function Library:SaveConfigToFile(config)
+    -- Save config to file system
+    local success, error = pcall(function()
+        local jsonString = game:GetService("HttpService"):JSONEncode(config)
+        writefile("Config/" .. config.name .. ".json", jsonString)
+    end)
+    
+    if not success then
+        Library:NotifyError("Failed to save config: " .. tostring(error), 3)
+    end
+end
+
+function Library:LoadConfigFromFile(filename)
+    -- Load config from file system
+    local success, config = pcall(function()
+        local jsonString = readfile("Config/" .. filename)
+        return game:GetService("HttpService"):JSONDecode(jsonString)
+    end)
+    
+    if success and config then
+        return config
+    else
+        Library:NotifyError("Failed to load config: " .. tostring(config), 3)
+        return nil
+    end
+end
+
 function Library:CreateNewConfig(section)
     local player = game.Players.LocalPlayer
     local configName = "Config_" .. os.time()
+    
+    -- Capture all current UI states
+    local uiStates = Library:CaptureAllUIStates()
+    
     local config = {
         name = configName,
         authorId = player.UserId,
         authorName = player.Name,
         date = os.date("%m/%d/%Y %I:%M%p"),
-        data = {}
+        dateCreated = os.time(), -- Unix timestamp for sorting
+        data = uiStates
     }
     
     -- Add to configs list
     table.insert(Configs, config)
+    
+    -- Save to file
+    Library:SaveConfigToFile(config)
     
     -- Create config entry
     Library:CreateConfigEntry(config, section)
@@ -2854,8 +2951,67 @@ end
 
 function Library:LoadConfig(config)
     CurrentConfig = config
+    
+    if not config.data then
+        Library:NotifyError("Config has no data to load!", 3)
+        return
+    end
+    
+    -- Restore all UI states
+    for elementPath, state in pairs(config.data) do
+        local element = ScreenGui:FindFirstChild(elementPath, true)
+        if element then
+            if state.type == "toggle" then
+                -- Restore toggle state
+                local toggleFill = element:FindFirstChild("Toggle_Fill")
+                if toggleFill then
+                    if state.enabled then
+                        toggleFill.BackgroundTransparency = 0
+                        local checkIcon = element:FindFirstChild("Check_Icon")
+                        if checkIcon then
+                            checkIcon.ImageTransparency = 0
+                        end
+                    else
+                        toggleFill.BackgroundTransparency = 1
+                        local checkIcon = element:FindFirstChild("Check_Icon")
+                        if checkIcon then
+                            checkIcon.ImageTransparency = 1
+                        end
+                    end
+                end
+            elseif state.type == "slider" then
+                -- Restore slider value
+                local pointer = element:FindFirstChild("Pointer")
+                if pointer then
+                    local newX = 0.05 + (state.value * 0.9) -- Convert back to position
+                    pointer.Position = UDim2.new(newX, 0, 0.5, 0)
+                end
+            elseif state.type == "textbox" then
+                -- Restore text input
+                element.Text = state.text
+            elseif state.type == "dropdown" then
+                -- Restore dropdown selection
+                local container = element
+                for _, item in ipairs(container:GetChildren()) do
+                    if item:IsA("Frame") then
+                        local label = item:FindFirstChild("TextLabel")
+                        local checkIcon = item:FindFirstChild("Check_Icon")
+                        if label and checkIcon then
+                            if label.Text == state.selected then
+                                checkIcon.ImageTransparency = 0
+                                label.TextColor3 = Library.Accent
+                            else
+                                checkIcon.ImageTransparency = 1
+                                label.TextColor3 = Color3.fromRGB(134, 134, 134)
+                            end
+                        end
+                    end
+                end
+            end
+        end
+    end
+    
     Library:NotifySuccess("Config loaded: " .. config.name, 3)
-    -- Here you would load the actual config data
 end
 
 function Library:DeleteConfig(config)
@@ -2867,7 +3023,60 @@ function Library:DeleteConfig(config)
         end
     end
     
+    -- Delete file
+    local success, error = pcall(function()
+        delfile("Config/" .. config.name .. ".json")
+    end)
+    
+    if not success then
+        Library:NotifyError("Failed to delete config file: " .. tostring(error), 3)
+    end
+    
     Library:NotifyWarning("Config deleted: " .. config.name, 3)
+end
+
+function Library:LoadConfigsFromFolder(section)
+    -- Load configs from local Config folder
+    local success, files = pcall(function()
+        return listfiles("Config/")
+    end)
+    
+    if success and files then
+        for _, filePath in ipairs(files) do
+            local filename = filePath:match("Config/(.+)")
+            if filename and filename:match("%.json$") then
+                local config = Library:LoadConfigFromFile(filename)
+                if config then
+                    table.insert(Configs, config)
+                    Library:CreateConfigEntry(config, section)
+                end
+            end
+        end
+    end
+    
+    -- Also try to load from remote config server
+    local remoteSuccess, remoteConfigs = pcall(function()
+        return game:GetService("HttpService"):JSONDecode(game:HttpGet("https://your-config-server.com/configs"))
+    end)
+    
+    if remoteSuccess and remoteConfigs then
+        for _, configData in ipairs(remoteConfigs) do
+            -- Validate config data
+            if configData.name and configData.authorId and configData.authorName and configData.date and configData.data then
+                local config = {
+                    name = configData.name,
+                    authorId = configData.authorId,
+                    authorName = configData.authorName,
+                    date = configData.date,
+                    dateCreated = configData.dateCreated or os.time(),
+                    data = configData.data
+                }
+                
+                table.insert(Configs, config)
+                Library:CreateConfigEntry(config, section)
+            end
+        end
+    end
 end
 
 function Library:LoadSampleConfigs(section)
@@ -2878,11 +3087,22 @@ function Library:LoadSampleConfigs(section)
         authorId = player.UserId,
         authorName = player.Name,
         date = os.date("%m/%d/%Y %I:%M%p"),
+        dateCreated = os.time() - 86400, -- 1 day ago
         data = {}
     }
     
     table.insert(Configs, sampleConfig)
     Library:CreateConfigEntry(sampleConfig, section)
+    
+    -- Also try to load from external config folder
+    Library:LoadConfigsFromFolder(section)
+end
+
+function Library:SortConfigsByDate()
+    -- Sort configs by date created (newest first)
+    table.sort(Configs, function(a, b)
+        return (a.dateCreated or 0) > (b.dateCreated or 0)
+    end)
 end
 
 function Library:RefreshConfigs(section)
@@ -2898,6 +3118,14 @@ function Library:RefreshConfigs(section)
     
     -- Reload sample configs
     Library:LoadSampleConfigs(section)
+    
+    -- Sort configs by date
+    Library:SortConfigsByDate()
+    
+    -- Recreate config entries in sorted order
+    for _, config in ipairs(Configs) do
+        Library:CreateConfigEntry(config, section)
+    end
     
     -- Show notification
     Library:NotifySuccess("Configs refreshed!", 2)
