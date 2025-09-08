@@ -379,6 +379,11 @@ function Library:SetAccentColor(color, alpha)
                     end
                 elseif inst.Name == "Libary_Icon" then
                     inst.ImageColor3 = Library.Accent
+                elseif inst.Name == "Config_ICON" then
+                    -- Skip Config_ICON - it should stay grey
+                    if not inst:GetAttribute("IgnoreAccentColor") then
+                        inst.ImageColor3 = Library.Accent
+                    end
                 end
             elseif inst:IsA("TextLabel") then
                 -- Section headers live under the shadow frame
@@ -2595,7 +2600,7 @@ function Library:CreateConfigEntry(config, section)
     Section.BorderColor3 = Color3.fromRGB(0, 0, 0)
     Section.Size = UDim2.new(0, 609, 0, 70)
     Section.BorderSizePixel = 0
-    Section.BackgroundColor3 = Color3.fromRGB(30, 30, 30) -- Slightly lighter for better visibility
+    Section.BackgroundColor3 = Color3.fromRGB(20, 20, 20) 
     Section.ZIndex = 4 -- Higher than config holder
     Section.Visible = true -- Ensure config entries are visible
     Section.Parent = section.configHolder
@@ -2608,6 +2613,7 @@ function Library:CreateConfigEntry(config, section)
     Config_ICON.ImageColor3 = Color3.fromRGB(81, 81, 81)
     Config_ICON.BorderColor3 = Color3.fromRGB(0, 0, 0)
     Config_ICON.Name = "Config_ICON"
+    Config_ICON:SetAttribute("IgnoreAccentColor", true) -- Prevent accent color updates
     Config_ICON.Image = "rbxassetid://98527607765894"
     Config_ICON.BackgroundTransparency = 1
     Config_ICON.Position = UDim2.new(0.021056829020380974, 0, 0.20778155326843262, 0)
