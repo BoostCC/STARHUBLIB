@@ -1196,7 +1196,7 @@ function Library:CreateSlider(config, section)
     end)
     
     UserInputService.InputChanged:Connect(function(input)
-        if isDragging and input.UserInputType == Enum.UserInputType.MouseMovement then
+        if isDragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
             local mouseX = input.Position.X
             local sliderX = sliderBG.AbsolutePosition.X
             local sliderWidth = sliderBG.AbsoluteSize.X
@@ -1223,7 +1223,7 @@ function Library:CreateSlider(config, section)
     end)
     
     UserInputService.InputEnded:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 and isDragging then
+        if (input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch) and isDragging then
             isDragging = false
         end
     end)
@@ -1520,7 +1520,7 @@ function Library:CreateColorpicker(config, section)
     local draggingHue = false
     
     SVFrame.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
             draggingSV = true
             BlockDragging = true
             local absPos = SVFrame.AbsolutePosition
@@ -1533,7 +1533,8 @@ function Library:CreateColorpicker(config, section)
             updateColor()
         end
     end)
-    Hue.MouseButton1Down:Connect(function(input)
+    Hue.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
         draggingHue = true
         BlockDragging = true
        
@@ -1573,7 +1574,7 @@ function Library:CreateColorpicker(config, section)
     --]]
     
     UserInputService.InputEnded:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
             if draggingSV or draggingHue then
                 draggingSV = false
                 draggingHue = false
@@ -1617,7 +1618,7 @@ function Library:CreateColorpicker(config, section)
     end)
     
     UserInputService.InputChanged:Connect(function(input)
-        if input.UserInputType ~= Enum.UserInputType.MouseMovement then return end
+        if input.UserInputType ~= Enum.UserInputType.MouseMovement and input.UserInputType ~= Enum.UserInputType.Touch then return end
         if draggingSV then
             local absPos = SVFrame.AbsolutePosition
             local absSize = SVFrame.AbsoluteSize
@@ -2817,7 +2818,7 @@ function Library:CreateConfigEntry(config, section)
     Icon_Holder.BorderColor3 = Color3.fromRGB(0, 0, 0)
     Icon_Holder.Size = UDim2.new(0, 35, 0, 35)
     Icon_Holder.BorderSizePixel = 0
-    Icon_Holder.BackgroundColor3 = Color3.fromRGB(22, 22, 22)
+    Icon_Holder.BackgroundTransparency = 1
     Icon_Holder.ZIndex = 6 -- Higher than button
     Icon_Holder.Parent = Load_Config
     
@@ -2870,7 +2871,7 @@ function Library:CreateConfigEntry(config, section)
     Icon_Holder.BorderColor3 = Color3.fromRGB(0, 0, 0)
     Icon_Holder.Size = UDim2.new(0, 35, 0, 35)
     Icon_Holder.BorderSizePixel = 0
-    Icon_Holder.BackgroundColor3 = Color3.fromRGB(22, 22, 22) -- Match Load button Icon_Holder
+    Icon_Holder.BackgroundTransparency = 1 -- Match Load button Icon_Holder
     Icon_Holder.ZIndex = 6 -- Ensure visibility
     Icon_Holder.Parent = Delete_Config
     
