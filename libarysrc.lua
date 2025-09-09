@@ -21,8 +21,6 @@ local PopupOpenCount = 0
 
 Library.Values = Library.Values or {}
 Library.OnLoadCfg = Library.OnLoadCfg or Instance.new("BindableEvent")
-Library.IsMobile = false
-Library.Scale = 1
 
 local function deepCopySerialize(value)
     local t = typeof(value)
@@ -55,26 +53,6 @@ ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Global
 ScreenGui.ResetOnSpawn = false
 ScreenGui.Parent = game:GetService("CoreGui")
 
-local function detectMobileAndScale()
-    local viewportSize = workspace.CurrentCamera.ViewportSize
-    local isMobile = UserInputService.TouchEnabled and not UserInputService.KeyboardEnabled
-    local scale = 1
-    
-    if isMobile then
-        local baseWidth = 1920
-        local currentWidth = viewportSize.X
-        scale = math.max(0.5, math.min(1.2, currentWidth / baseWidth))
-        Library.IsMobile = true
-    else
-        Library.IsMobile = false
-    end
-    
-    Library.Scale = scale
-    return isMobile, scale
-end
-
-local isMobile, scale = detectMobileAndScale()
-
 ModalOverlay = Instance.new("TextButton")
 ModalOverlay.Name = "ModalOverlay"
 ModalOverlay.BackgroundTransparency = 1
@@ -91,58 +69,31 @@ MainFrame.AnchorPoint = Vector2.new(0.5, 0.5)
 MainFrame.Name = "MainFrame"
 MainFrame.Position = UDim2.new(0.5, 0, 0.5, 0)
 MainFrame.BorderColor3 = Color3.fromRGB(0, 0, 0)
-MainFrame.Size = UDim2.new(0, 720 * scale, 0, 550 * scale)
+MainFrame.Size = UDim2.new(0, 720, 0, 550)
 MainFrame.BorderSizePixel = 0
 MainFrame.BackgroundColor3 = Color3.fromRGB(12, 12, 12)
 MainFrame.Parent = ScreenGui
 
-if isMobile then
-    local uiScale = Instance.new("UIScale")
-    uiScale.Scale = scale
-    uiScale.Parent = MainFrame
-    
-    local Open_Interface = Instance.new("Frame")
-    Open_Interface.Name = "Open_Interface"
-    Open_Interface.Position = UDim2.new(0.048076923936605453, 0, 0.1977611929178238, 0)
-    Open_Interface.BorderColor3 = Color3.fromRGB(0, 0, 0)
-    Open_Interface.Size = UDim2.new(0, 50, 0, 50)
-    Open_Interface.BorderSizePixel = 0
-    Open_Interface.BackgroundColor3 = Color3.fromRGB(12, 12, 12)
-    Open_Interface.Parent = ScreenGui
-    
-    local UICorner = Instance.new("UICorner")
-    UICorner.CornerRadius = UDim.new(0, 50)
-    UICorner.Parent = Open_Interface
-    
-    local UIStroke = Instance.new("UIStroke")
-    UIStroke.Thickness = 2
-    UIStroke.Color = Color3.fromRGB(115, 58, 173)
-    UIStroke.Parent = Open_Interface
-    
-    local Libary_Icon = Instance.new("ImageLabel")
-    Libary_Icon.ImageColor3 = Color3.fromRGB(170, 85, 255)
-    Libary_Icon.BorderColor3 = Color3.fromRGB(0, 0, 0)
-    Libary_Icon.Name = "Libary_Icon"
-    Libary_Icon.AnchorPoint = Vector2.new(0.5, 0.5)
-    Libary_Icon.Image = "rbxassetid://132964100967987"
-    Libary_Icon.BackgroundTransparency = 1
-    Libary_Icon.Position = UDim2.new(0.5, 0, 0.5, 0)
-    Libary_Icon.Size = UDim2.new(0, 25, 0, 25)
-    Libary_Icon.BorderSizePixel = 0
-    Libary_Icon.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-    Libary_Icon.Parent = Open_Interface
-    
-    local mobileOpenButton = Instance.new("TextButton")
-    mobileOpenButton.BackgroundTransparency = 1
-    mobileOpenButton.Size = UDim2.new(1, 0, 1, 0)
-    mobileOpenButton.Parent = Open_Interface
-    
-    mobileOpenButton.MouseButton1Click:Connect(function()
-        MainFrame.Visible = not MainFrame.Visible
-    end)
-    
-    MainFrame.Visible = false
+local UIScaleMain = Instance.new("UIScale")
+UIScaleMain.Parent = MainFrame
+local UIScaleWatermark = nil
+local UIScaleNotifications = nil
+local Open_Interface = nil
+
+local function UpdateScale()
+    local cam = workspace.CurrentCamera
+    local vp = cam and cam.ViewportSize or Vector2.new(1920,1080)
+    local isMobile = game:GetService("UserInputService").TouchEnabled and not game:GetService("UserInputService").KeyboardEnabled
+    local s = 1
+    if isMobile then
+        s = math.clamp(math.min(vp.X/1920, vp.Y/1080), 0.5, 1)
+    end
+    if UIScaleMain then UIScaleMain.Scale = s end
+    if UIScaleWatermark then UIScaleWatermark.Scale = s end
+    if UIScaleNotifications then UIScaleNotifications.Scale = s end
 end
+
+game:GetService("RunService").RenderStepped:Connect(UpdateScale)
 
 local UICorner = Instance.new("UICorner")
 UICorner.CornerRadius = UDim.new(0, 4)
@@ -207,7 +158,7 @@ local Build_Date = Instance.new("TextLabel")
 Build_Date.FontFace = Font.new("rbxassetid://12187365364", Enum.FontWeight.SemiBold, Enum.FontStyle.Normal)
 Build_Date.TextColor3 = Color3.fromRGB(64, 64, 63)
 Build_Date.BorderColor3 = Color3.fromRGB(0, 0, 0)
-Build_Date.Text = "Build date: 4 Febuary"
+Build_Date.Text = "Build date: " .. os.date("%d %B")
 Build_Date.Name = "Build_Date"
 Build_Date.AnchorPoint = Vector2.new(0, 0.5)
 Build_Date.Size = UDim2.new(0, 1, 0, 1)
@@ -368,6 +319,48 @@ function Library:CreateWindow(config)
             if input.KeyCode == Enum.KeyCode.Insert then
                 MainFrame.Visible = not MainFrame.Visible
             end
+        end)
+    end
+
+    if UserInputService.TouchEnabled and not UserInputService.KeyboardEnabled then
+        Open_Interface = Instance.new("Frame")
+        Open_Interface.Name = "Open_Interface"
+        Open_Interface.Position = UDim2.new(0.048076923936605453, 0, 0.1977611929178238, 0)
+        Open_Interface.BorderColor3 = Color3.fromRGB(0, 0, 0)
+        Open_Interface.Size = UDim2.new(0, 50, 0, 50)
+        Open_Interface.BorderSizePixel = 0
+        Open_Interface.BackgroundColor3 = Color3.fromRGB(12, 12, 12)
+        Open_Interface.Parent = ScreenGui
+
+        local OpenCorner = Instance.new("UICorner")
+        OpenCorner.CornerRadius = UDim.new(0, 50)
+        OpenCorner.Parent = Open_Interface
+
+        local OpenStroke = Instance.new("UIStroke")
+        OpenStroke.Thickness = 2
+        OpenStroke.Color = Library.Accent
+        OpenStroke.Parent = Open_Interface
+
+        local OpenIcon = Instance.new("ImageLabel")
+        OpenIcon.ImageColor3 = Library.Accent
+        OpenIcon.BorderColor3 = Color3.fromRGB(0, 0, 0)
+        OpenIcon.Name = "Libary_Icon"
+        OpenIcon.AnchorPoint = Vector2.new(0.5, 0.5)
+        OpenIcon.Image = "rbxassetid://132964100967987"
+        OpenIcon.BackgroundTransparency = 1
+        OpenIcon.Position = UDim2.new(0.5, 0, 0.5, 0)
+        OpenIcon.Size = UDim2.new(0, 25, 0, 25)
+        OpenIcon.BorderSizePixel = 0
+        OpenIcon.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+        OpenIcon.Parent = Open_Interface
+
+        local OpenButton = Instance.new("TextButton")
+        OpenButton.BackgroundTransparency = 1
+        OpenButton.Size = UDim2.fromScale(1,1)
+        OpenButton.Text = ""
+        OpenButton.Parent = Open_Interface
+        OpenButton.MouseButton1Click:Connect(function()
+            MainFrame.Visible = not MainFrame.Visible
         end)
     end
     
@@ -2341,7 +2334,7 @@ function Library:CreateWatermark(cheatName)
     
     -- Create watermark frame
     Watermark_Frame = Instance.new("Frame")
-    Watermark_Frame.Size = UDim2.new(0, 150 * Library.Scale, 0, 45 * Library.Scale)
+    Watermark_Frame.Size = UDim2.new(0, 150, 0, 45)
     Watermark_Frame.Name = "Watermark_Frame"
     Watermark_Frame.Position = UDim2.new(0.011217948980629444, 0, 0.014925372786819935, 0)
     Watermark_Frame.BorderColor3 = Color3.fromRGB(0, 0, 0)
@@ -2350,12 +2343,8 @@ function Library:CreateWatermark(cheatName)
     Watermark_Frame.BackgroundColor3 = Color3.fromRGB(12, 12, 12)
     Watermark_Frame.Visible = WatermarkEnabled
     Watermark_Frame.Parent = WatermarkScreenGui
-    
-    if Library.IsMobile then
-        local watermarkScale = Instance.new("UIScale")
-        watermarkScale.Scale = Library.Scale
-        watermarkScale.Parent = Watermark_Frame
-    end
+    UIScaleWatermark = UIScaleWatermark or Instance.new("UIScale")
+    UIScaleWatermark.Parent = Watermark_Frame
     
     -- Add corner radius
     local UICorner = Instance.new("UICorner")
@@ -2648,7 +2637,7 @@ function Library:CreateConfigSection(config, tab)
 	Refresh_Config.BorderSizePixel = 0
 	Refresh_Config.AutomaticSize = Enum.AutomaticSize.XY
 	Refresh_Config.TextSize = 18
-	Refresh_Config.BackgroundColor3 = Library.Accent
+	Refresh_Config.BackgroundColor3 = Color3.fromRGB(24, 24, 24)
 	Refresh_Config.ZIndex = 3
 	Refresh_Config.Parent = Config_Container
 	
@@ -3217,14 +3206,8 @@ function Library:CreateNotification(config)
         NotificationContainer.Position = UDim2.new(0.8169070482254028, 0, 0.014925372786819935, 0)
         NotificationContainer.AutomaticSize = Enum.AutomaticSize.XY
         NotificationContainer.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-        NotificationContainer.Visible = true
+        NotificationContainer.Visible = true -- Always visible, independent of main UI
         NotificationContainer.Parent = NotificationScreenGui
-        
-        if Library.IsMobile then
-            local notificationScale = Instance.new("UIScale")
-            notificationScale.Scale = Library.Scale
-            notificationScale.Parent = NotificationContainer
-        end
         
         local UIListLayout = Instance.new("UIListLayout")
         UIListLayout.Padding = UDim.new(0, 4)
@@ -3266,6 +3249,10 @@ function Library:CreateNotification(config)
     notificationFrame.BorderSizePixel = 0
     notificationFrame.BackgroundColor3 = backgroundColor
     notificationFrame.Parent = NotificationContainer
+    if not UIScaleNotifications then
+        UIScaleNotifications = Instance.new("UIScale")
+        UIScaleNotifications.Parent = NotificationContainer
+    end
     
     local UICorner = Instance.new("UICorner")
     UICorner.CornerRadius = UDim.new(0, 4)
@@ -3542,8 +3529,6 @@ function Library:Reload()
     ActiveNotifications = {}
     
     -- Recreate the main ScreenGui in CoreGui
-    local isMobile, scale = detectMobileAndScale()
-    
     ScreenGui = Instance.new("ScreenGui")
     ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Global
     ScreenGui.ResetOnSpawn = false
@@ -3581,58 +3566,10 @@ function Library:Reload()
     MainFrame.Name = "MainFrame"
     MainFrame.Position = UDim2.new(0.5, 0, 0.5, 0)
     MainFrame.BorderColor3 = Color3.fromRGB(0, 0, 0)
-    MainFrame.Size = UDim2.new(0, 720 * scale, 0, 550 * scale)
+    MainFrame.Size = UDim2.new(0, 720, 0, 550)
     MainFrame.BorderSizePixel = 0
     MainFrame.BackgroundColor3 = Color3.fromRGB(12, 12, 12)
     MainFrame.Parent = ScreenGui
-    
-    if isMobile then
-        local uiScale = Instance.new("UIScale")
-        uiScale.Scale = scale
-        uiScale.Parent = MainFrame
-        
-        local Open_Interface = Instance.new("Frame")
-        Open_Interface.Name = "Open_Interface"
-        Open_Interface.Position = UDim2.new(0.048076923936605453, 0, 0.1977611929178238, 0)
-        Open_Interface.BorderColor3 = Color3.fromRGB(0, 0, 0)
-        Open_Interface.Size = UDim2.new(0, 50, 0, 50)
-        Open_Interface.BorderSizePixel = 0
-        Open_Interface.BackgroundColor3 = Color3.fromRGB(12, 12, 12)
-        Open_Interface.Parent = ScreenGui
-        
-        local UICorner = Instance.new("UICorner")
-        UICorner.CornerRadius = UDim.new(0, 50)
-        UICorner.Parent = Open_Interface
-        
-        local UIStroke = Instance.new("UIStroke")
-        UIStroke.Thickness = 2
-        UIStroke.Color = Color3.fromRGB(115, 58, 173)
-        UIStroke.Parent = Open_Interface
-        
-        local Libary_Icon = Instance.new("ImageLabel")
-        Libary_Icon.ImageColor3 = Color3.fromRGB(170, 85, 255)
-        Libary_Icon.BorderColor3 = Color3.fromRGB(0, 0, 0)
-        Libary_Icon.Name = "Libary_Icon"
-        Libary_Icon.AnchorPoint = Vector2.new(0.5, 0.5)
-        Libary_Icon.Image = "rbxassetid://132964100967987"
-        Libary_Icon.BackgroundTransparency = 1
-        Libary_Icon.Position = UDim2.new(0.5, 0, 0.5, 0)
-        Libary_Icon.Size = UDim2.new(0, 25, 0, 25)
-        Libary_Icon.BorderSizePixel = 0
-        Libary_Icon.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-        Libary_Icon.Parent = Open_Interface
-        
-        local mobileOpenButton = Instance.new("TextButton")
-        mobileOpenButton.BackgroundTransparency = 1
-        mobileOpenButton.Size = UDim2.new(1, 0, 1, 0)
-        mobileOpenButton.Parent = Open_Interface
-        
-        mobileOpenButton.MouseButton1Click:Connect(function()
-            MainFrame.Visible = not MainFrame.Visible
-        end)
-        
-        MainFrame.Visible = false
-    end
 
 local UICorner = Instance.new("UICorner")
 UICorner.CornerRadius = UDim.new(0, 4)
@@ -3700,7 +3637,7 @@ Libary_Icon.Parent = Libary_Name
 Build_Date.FontFace = Font.new("rbxassetid://12187365364", Enum.FontWeight.SemiBold, Enum.FontStyle.Normal)
 Build_Date.TextColor3 = Color3.fromRGB(64, 64, 63)
 Build_Date.BorderColor3 = Color3.fromRGB(0, 0, 0)
-Build_Date.Text = "Build date: 4 Febuary"
+Build_Date.Text = "Build date: " .. os.date("%d %B")
 Build_Date.Name = "Build_Date"
 Build_Date.AnchorPoint = Vector2.new(0, 0.5)
 Build_Date.Size = UDim2.new(0, 1, 0, 1)
@@ -3774,23 +3711,17 @@ Current_Tab_Value.Parent = MainFrame
 MainFrame.Visible = true
 
     -- Recreate notification container in separate ScreenGui
-        NotificationContainer = Instance.new("Frame")
-        NotificationContainer.Name = "NotificationContainer"
-        NotificationContainer.BorderColor3 = Color3.fromRGB(0, 0, 0)
-        NotificationContainer.Size = UDim2.new(0, 1, 0, 1)
-        NotificationContainer.BorderSizePixel = 0
-        NotificationContainer.BackgroundTransparency = 1
-        NotificationContainer.Position = UDim2.new(0.8169070482254028, 0, 0.014925372786819935, 0)
-        NotificationContainer.AutomaticSize = Enum.AutomaticSize.XY
-        NotificationContainer.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-        NotificationContainer.Visible = true
-        NotificationContainer.Parent = NotificationScreenGui
-        
-        if Library.IsMobile then
-            local notificationScale = Instance.new("UIScale")
-            notificationScale.Scale = Library.Scale
-            notificationScale.Parent = NotificationContainer
-        end
+    NotificationContainer = Instance.new("Frame")
+    NotificationContainer.Name = "NotificationContainer"
+    NotificationContainer.BorderColor3 = Color3.fromRGB(0, 0, 0)
+    NotificationContainer.Size = UDim2.new(0, 1, 0, 1)
+    NotificationContainer.BorderSizePixel = 0
+    NotificationContainer.BackgroundTransparency = 1
+    NotificationContainer.Position = UDim2.new(0.8169070482254028, 0, 0.014925372786819935, 0)
+    NotificationContainer.AutomaticSize = Enum.AutomaticSize.XY
+    NotificationContainer.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    NotificationContainer.Visible = true
+    NotificationContainer.Parent = NotificationScreenGui
     
     local UIListLayout = Instance.new("UIListLayout")
     UIListLayout.Padding = UDim.new(0, 4)
