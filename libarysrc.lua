@@ -16,6 +16,14 @@ local DragStart = nil
 local DragStartPosition = nil
 local GlobalTabInlineIndicator = nil
 local BlockDragging = false
+
+-- Global cleanup function to reset BlockDragging if it gets stuck
+local function resetBlockDraggingIfStuck()
+    if BlockDragging then
+        task.wait(0.1)
+        BlockDragging = false
+    end
+end
 local ModalOverlay = nil
 local PopupOpenCount = 0
 
@@ -1284,32 +1292,35 @@ function Library:CreateSlider(config, section)
         handleSliderInput(input, "began")
     end)
     
-    -- Create individual connections for this specific slider
-    local inputChangedConnection
-    local inputEndedConnection
+    -- Use MouseLeave as a fallback to reset dragging state
+    sliderButton.MouseLeave:Connect(function()
+        if isDragging then
+            isDragging = false
+            BlockDragging = false
+        end
+    end)
     
-    sliderButton.MouseButton1Down:Connect(function()
-        -- Connect to input events only when this slider is being dragged
-        inputChangedConnection = UserInputService.InputChanged:Connect(function(input)
-            if isDragging then
-                handleSliderInput(input, "changed")
+    -- Additional fallback: reset BlockDragging after a delay if it's still true
+    task.spawn(function()
+        while true do
+            task.wait(1)
+            if BlockDragging and not isDragging then
+                BlockDragging = false
             end
-        end)
-        
-        inputEndedConnection = UserInputService.InputEnded:Connect(function(input)
-            if isDragging then
-                handleSliderInput(input, "ended")
-                -- Disconnect the connections when dragging ends
-                if inputChangedConnection then
-                    inputChangedConnection:Disconnect()
-                    inputChangedConnection = nil
-                end
-                if inputEndedConnection then
-                    inputEndedConnection:Disconnect()
-                    inputEndedConnection = nil
-                end
-            end
-        end)
+        end
+    end)
+    
+    -- Global input handling with proper state checking
+    UserInputService.InputChanged:Connect(function(input)
+        if isDragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+            handleSliderInput(input, "changed")
+        end
+    end)
+    
+    UserInputService.InputEnded:Connect(function(input)
+        if isDragging and (input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch) then
+            handleSliderInput(input, "ended")
+        end
     end)
     
     local initialPercentage = (slider.value - slider.min) / (slider.max - slider.min)
