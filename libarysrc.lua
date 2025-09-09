@@ -1067,6 +1067,11 @@ function Library:CreateToggle(config, section)
         toggle.callback(toggle.value)
         Library.Values[toggle.flag] = { Toggle = toggle.value }
     end
+    
+    local initialValue = Library.Values[toggle.flag]
+    if initialValue and initialValue.Toggle ~= nil then
+        applyToggle(initialValue)
+    end
     Library.OnLoadCfg.Event:Connect(function()
         local v = Library.Values[toggle.flag]
         if v and v.Toggle ~= nil then 
@@ -1141,8 +1146,14 @@ function Library:CreateSlider(config, section)
         local pct = (val - slider.min) / math.max(1, (slider.max - slider.min))
         progressBar.Size = UDim2.new(pct, 0, 0, 3)
         pointer.Position = UDim2.new(pct, 0, 0.5, 0)
+        sliderValue.Text = string.format("%.2f", slider.value)
         slider.callback(val)
         Library.Values[slider.flag] = { Slider = val }
+    end
+    
+    local initialValue = Library.Values[slider.flag]
+    if initialValue and initialValue.Slider ~= nil then
+        applySlider(initialValue)
     end
     Library.OnLoadCfg.Event:Connect(function()
         local v = Library.Values[slider.flag]
@@ -1665,8 +1676,7 @@ function Library:CreateColorpicker(config, section)
     end
 
     -- Apply on load from registry
-    Library.OnLoadCfg.Event:Connect(function()
-        local v = Library.Values[colorpicker.flag]
+    local function applyColorpickerState(v)
         if v and v.Color and v.Color.R and v.Color.G and v.Color.B then
             local c = Color3.new(v.Color.R, v.Color.G, v.Color.B)
             colorpicker.value = c
@@ -1678,6 +1688,16 @@ function Library:CreateColorpicker(config, section)
             Color_Frame.BackgroundColor3 = c
             colorpicker.callback(c, currentA)
         end
+    end
+    
+    local initialValue = Library.Values[colorpicker.flag]
+    if initialValue then
+        applyColorpickerState(initialValue)
+    end
+    
+    Library.OnLoadCfg.Event:Connect(function()
+        local v = Library.Values[colorpicker.flag]
+        applyColorpickerState(v)
     end)
     
     table.insert(section.components, colorpicker)
