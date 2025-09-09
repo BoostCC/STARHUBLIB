@@ -1069,7 +1069,9 @@ function Library:CreateToggle(config, section)
     end
     Library.OnLoadCfg.Event:Connect(function()
         local v = Library.Values[toggle.flag]
-        if v then applyToggle(v) end
+        if v and v.Toggle ~= nil then 
+            applyToggle(v) 
+        end
     end)
 
     table.insert(section.components, toggle)
@@ -1144,7 +1146,9 @@ function Library:CreateSlider(config, section)
     end
     Library.OnLoadCfg.Event:Connect(function()
         local v = Library.Values[slider.flag]
-        if v then applySlider(v) end
+        if v and v.Slider ~= nil then 
+            applySlider(v) 
+        end
     end)
 
     pointer.AnchorPoint = Vector2.new(1, 0.5)
@@ -1663,7 +1667,7 @@ function Library:CreateColorpicker(config, section)
     -- Apply on load from registry
     Library.OnLoadCfg.Event:Connect(function()
         local v = Library.Values[colorpicker.flag]
-        if v and v.Color then
+        if v and v.Color and v.Color.R and v.Color.G and v.Color.B then
             local c = Color3.new(v.Color.R, v.Color.G, v.Color.B)
             colorpicker.value = c
             local h, s, vsv = c:ToHSV()
@@ -3048,7 +3052,9 @@ function Library:LoadConfig(config)
     -- Replace registry and notify controls
     if config.data then
         Library.Values = deepDeserialize(config.data)
-        Library.OnLoadCfg:Fire()
+        task.defer(function()
+            Library.OnLoadCfg:Fire()
+        end)
     end
     
     -- Apply accent color if present
