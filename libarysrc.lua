@@ -16,19 +16,57 @@ local DragStart = nil
 local DragStartPosition = nil
 local GlobalTabInlineIndicator = nil
 local BlockDragging = false
-
--- Global cleanup function to reset BlockDragging if it gets stuck
-local function resetBlockDraggingIfStuck()
-    if BlockDragging then
-        task.wait(0.1)
-        BlockDragging = false
-    end
-end
+local ActiveSliders = {} -- Track all active sliders
 local ModalOverlay = nil
 local PopupOpenCount = 0
 
 Library.Values = Library.Values or {}
 Library.OnLoadCfg = Library.OnLoadCfg or Instance.new("BindableEvent")
+
+-- Global input handling for sliders
+UserInputService.InputChanged:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+        for _, sliderData in pairs(ActiveSliders) do
+            if sliderData.isDragging() then
+                local inputX = input.Position.X
+                local sliderX = sliderData.background.AbsolutePosition.X
+                local sliderWidth = sliderData.background.AbsoluteSize.X
+                
+                local relativeX = math.clamp(inputX - sliderX, 0, sliderWidth)
+                local percentage = relativeX / sliderWidth
+                
+                sliderData.slider.value = math.clamp(sliderData.slider.min + (sliderData.slider.max - sliderData.slider.min) * percentage, sliderData.slider.min, sliderData.slider.max)
+                
+                local progressWidth = sliderWidth * percentage
+                sliderData.progressBar.Size = UDim2.new(0, progressWidth, 0, 3)
+                sliderData.valueLabel.Text = string.format("%.2f", sliderData.slider.value)
+                
+                local pulseTween = createTween(sliderData.valueLabel, {TextColor3 = Color3.fromRGB(255, 255, 255)}, 0.1)
+                pulseTween:Play()
+                
+                pulseTween.Completed:Connect(function()
+                    local reverseTween = createTween(sliderData.valueLabel, {TextColor3 = Color3.fromRGB(52, 52, 52)}, 0.1)
+                    reverseTween:Play()
+                end)
+                
+                sliderData.slider.callback(sliderData.slider.value)
+                break
+            end
+        end
+    end
+end)
+
+UserInputService.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        for _, sliderData in pairs(ActiveSliders) do
+            if sliderData.isDragging() then
+                sliderData.setDragging(false)
+                BlockDragging = false
+                break
+            end
+        end
+    end
+end)
 
 local function deepCopySerialize(value)
     local t = typeof(value)
@@ -1254,72 +1292,31 @@ function Library:CreateSlider(config, section)
     
     local isDragging = false
     
-    local function handleSliderInput(input, inputType)
-        if inputType == "began" and (input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch) then
+    -- Register this slider with the global system
+    local sliderData = {
+        button = sliderButton,
+        background = sliderBG,
+        progressBar = progressBar,
+        valueLabel = sliderValue,
+        slider = slider,
+        isDragging = function() return isDragging end,
+        setDragging = function(value) isDragging = value end
+    }
+    table.insert(ActiveSliders, sliderData)
+    
+    -- Handle slider input
+    sliderButton.MouseButton1Down:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
             isDragging = true
             BlockDragging = true
-        elseif inputType == "changed" and isDragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
-            local inputX = input.Position.X
-            local sliderX = sliderBG.AbsolutePosition.X
-            local sliderWidth = sliderBG.AbsoluteSize.X
-            
-            local relativeX = math.clamp(inputX - sliderX, 0, sliderWidth)
-            local percentage = relativeX / sliderWidth
-            
-            slider.value = math.clamp(slider.min + (slider.max - slider.min) * percentage, slider.min, slider.max)
-            
-            local progressWidth = sliderWidth * percentage
-            progressBar.Size = UDim2.new(0, progressWidth, 0, 3)
-            sliderValue.Text = string.format("%.2f", slider.value)
-            
-            local pulseTween = createTween(sliderValue, {TextColor3 = Color3.fromRGB(255, 255, 255)}, 0.1)
-            pulseTween:Play()
-            
-            pulseTween.Completed:Connect(function()
-                local reverseTween = createTween(sliderValue, {TextColor3 = Color3.fromRGB(52, 52, 52)}, 0.1)
-                reverseTween:Play()
-            end)
-            
-            slider.callback(slider.value)
-        elseif inputType == "ended" and (input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch) and isDragging then
-            isDragging = false
-            BlockDragging = false
         end
-    end
-    
-    -- Only respond to input when clicking directly on the slider button
-    sliderButton.MouseButton1Down:Connect(function(input)
-        handleSliderInput(input, "began")
     end)
     
-    -- Use MouseLeave as a fallback to reset dragging state
+    -- Mouse leave fallback
     sliderButton.MouseLeave:Connect(function()
         if isDragging then
             isDragging = false
             BlockDragging = false
-        end
-    end)
-    
-    -- Additional fallback: reset BlockDragging after a delay if it's still true
-    task.spawn(function()
-        while true do
-            task.wait(1)
-            if BlockDragging and not isDragging then
-                BlockDragging = false
-            end
-        end
-    end)
-    
-    -- Global input handling with proper state checking
-    UserInputService.InputChanged:Connect(function(input)
-        if isDragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
-            handleSliderInput(input, "changed")
-        end
-    end)
-    
-    UserInputService.InputEnded:Connect(function(input)
-        if isDragging and (input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch) then
-            handleSliderInput(input, "ended")
         end
     end)
     
