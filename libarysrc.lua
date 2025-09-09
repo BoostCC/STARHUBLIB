@@ -2518,6 +2518,12 @@ local CurrentConfig = nil
 -- Ensure each directory segment in a path exists (mirrors example's folder creation style)
 local function ensureDirectoryPathExists(targetPath)
 	if not targetPath or targetPath == "" then return end
+	
+	-- Check if file system functions are available
+	if not isfolder or not makefolder then
+		return -- Skip folder creation if functions aren't available
+	end
+	
 	local cumulative = ""
 	for segment in string.gmatch(targetPath, "[^/\\]+") do
 		cumulative = (cumulative == "" and segment) or (cumulative .. "/" .. segment)
@@ -2531,6 +2537,11 @@ end
 
 -- Compute config directory using Cheat_Name as the folder name
 local function getConfigDir()
+	-- Check if file system functions are available
+	if not getgenv and not isfolder then
+		return "STARHUB/Configs" -- Fallback path
+	end
+	
 	local base = (getgenv and getgenv().WORKSPACE or (isfolder("workspace") and "workspace" or ""))
 	local cheatFolder = (Library.CheatName and tostring(Library.CheatName) ~= "" and Library.CheatName) or "STARHUB"
 	local dir = (base ~= "" and (base .. "/" .. cheatFolder .. "/Configs")) or (cheatFolder .. "/Configs")
@@ -2980,6 +2991,12 @@ function Library:CaptureAllUIStates()
 end
 
 function Library:SaveConfigToFile(config)
+    -- Check if file system functions are available
+    if not writefile then
+        Library:NotifyError("File system not available - cannot save config", 3)
+        return
+    end
+    
     -- Save config to file system
     local success, error = pcall(function()
         local jsonString = game:GetService("HttpService"):JSONEncode(config)
@@ -2995,6 +3012,12 @@ function Library:SaveConfigToFile(config)
 end
 
 function Library:LoadConfigFromFile(filename)
+    -- Check if file system functions are available
+    if not readfile then
+        Library:NotifyError("File system not available - cannot load config", 3)
+        return nil
+    end
+    
     -- Load config from file system
     local success, config = pcall(function()
         local dir = getConfigDir()
@@ -3064,6 +3087,12 @@ function Library:LoadConfig(config)
 end
 
 function Library:DeleteConfig(config)
+    -- Check if file system functions are available
+    if not delfile then
+        Library:NotifyError("File system not available - cannot delete config", 3)
+        return
+    end
+    
     -- Remove from configs list
     for i, cfg in ipairs(Configs) do
         if cfg == config then
@@ -3087,6 +3116,12 @@ function Library:DeleteConfig(config)
 end
 
 function Library:LoadConfigsFromFolder(section)
+    -- Check if file system functions are available
+    if not listfiles then
+        Library:NotifyError("File system not available - cannot load configs", 3)
+        return
+    end
+    
     -- Load configs from local Config folder
     local success, files = pcall(function()
         local dir = getConfigDir()
