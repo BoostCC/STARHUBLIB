@@ -86,7 +86,7 @@ local function UpdateScale()
     local isMobile = game:GetService("UserInputService").TouchEnabled and not game:GetService("UserInputService").KeyboardEnabled
     local s = 1
     if isMobile then
-        s = math.clamp(math.min(vp.X/1920, vp.Y/1080), 0.5, 1)
+        s = math.clamp(math.min(vp.X/1920, vp.Y/1080), 0.6, 1)
     end
     if UIScaleMain then UIScaleMain.Scale = s end
     if UIScaleWatermark then UIScaleWatermark.Scale = s end
@@ -1191,17 +1191,15 @@ function Library:CreateSlider(config, section)
     
     local isDragging = false
     
-    sliderButton.MouseButton1Down:Connect(function()
-        isDragging = true
-    end)
-    
-    UserInputService.InputChanged:Connect(function(input)
-        if isDragging and input.UserInputType == Enum.UserInputType.MouseMovement then
-            local mouseX = input.Position.X
+    local function handleSliderInput(input, inputType)
+        if inputType == "began" and (input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch) then
+            isDragging = true
+        elseif inputType == "changed" and isDragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+            local inputX = input.Position.X
             local sliderX = sliderBG.AbsolutePosition.X
             local sliderWidth = sliderBG.AbsoluteSize.X
             
-            local relativeX = math.clamp(mouseX - sliderX, 0, sliderWidth)
+            local relativeX = math.clamp(inputX - sliderX, 0, sliderWidth)
             local percentage = relativeX / sliderWidth
             
             slider.value = math.clamp(slider.min + (slider.max - slider.min) * percentage, slider.min, slider.max)
@@ -1219,13 +1217,27 @@ function Library:CreateSlider(config, section)
             end)
             
             slider.callback(slider.value)
+        elseif inputType == "ended" and (input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch) and isDragging then
+            isDragging = false
+        end
+    end
+    
+    sliderButton.MouseButton1Down:Connect(function(input)
+        handleSliderInput(input, "began")
+    end)
+    
+    UserInputService.InputBegan:Connect(function(input, gameProcessed)
+        if not gameProcessed then
+            handleSliderInput(input, "began")
         end
     end)
     
+    UserInputService.InputChanged:Connect(function(input)
+        handleSliderInput(input, "changed")
+    end)
+    
     UserInputService.InputEnded:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 and isDragging then
-            isDragging = false
-        end
+        handleSliderInput(input, "ended")
     end)
     
     local initialPercentage = (slider.value - slider.min) / (slider.max - slider.min)
@@ -1287,16 +1299,37 @@ local UIPadding = Instance.new("UIPadding")
 UIPadding.PaddingLeft = UDim.new(0, 12)
 UIPadding.Parent = Text_Input
 
-    Text_Input.FocusLost:Connect(function(enterPressed)
+    local function handleTextInputFocus()
+        createTween(Text_Input, {TextColor3 = Library.Accent}, 0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.Out):Play()
+        Text_Input:SetAttribute("ActiveInput", true)
+    end
+    
+    local function handleTextInputBlur()
         textInput.value = Text_Input.Text
         textInput.callback(Text_Input.Text)
         createTween(Text_Input, {TextColor3 = Color3.fromRGB(109, 109, 109)}, 0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.Out):Play()
         Text_Input:SetAttribute("ActiveInput", false)
+    end
+    
+    Text_Input.FocusLost:Connect(handleTextInputBlur)
+    Text_Input.Focused:Connect(handleTextInputFocus)
+    
+    local textInputButton = Instance.new("TextButton")
+    textInputButton.BackgroundTransparency = 1
+    textInputButton.Size = UDim2.fromScale(1, 1)
+    textInputButton.Text = ""
+    textInputButton.Parent = TextInput_Component
+    
+    textInputButton.MouseButton1Click:Connect(function()
+        Text_Input:CaptureFocus()
     end)
     
-    Text_Input.Focused:Connect(function()
-        createTween(Text_Input, {TextColor3 = Library.Accent}, 0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.Out):Play()
-        Text_Input:SetAttribute("ActiveInput", true)
+    UserInputService.InputBegan:Connect(function(input, gameProcessed)
+        if not gameProcessed and (input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1) then
+            if textInputButton:IsMouseOver() then
+                Text_Input:CaptureFocus()
+            end
+        end
     end)
     
     table.insert(section.components, textInput)
@@ -1519,31 +1552,83 @@ function Library:CreateColorpicker(config, section)
     local draggingSV = false
     local draggingHue = false
     
-    SVFrame.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 then
-            draggingSV = true
+    local function handleColorPickerInput(input, inputType, target)
+        if inputType == "began" and (input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch) then
+            if target == "sv" then
+                draggingSV = true
+            elseif target == "hue" then
+                draggingHue = true
+            end
             BlockDragging = true
-            local absPos = SVFrame.AbsolutePosition
-            local absSize = SVFrame.AbsoluteSize
-            local rx = math.clamp((input.Position.X - absPos.X) / absSize.X, 0, 1)
-            local ry = math.clamp((input.Position.Y - absPos.Y) / absSize.Y, 0, 1)
-            currentS = 1 - rx
-            currentV = 1 - ry
-            SVPicker.Position = UDim2.new(rx, 0, ry, 0)
+            
+            local absPos = (target == "sv" and SVFrame or Hue).AbsolutePosition
+            local absSize = (target == "sv" and SVFrame or Hue).AbsoluteSize
+            
+            if target == "sv" then
+                local rx = math.clamp((input.Position.X - absPos.X) / absSize.X, 0, 1)
+                local ry = math.clamp((input.Position.Y - absPos.Y) / absSize.Y, 0, 1)
+                currentS = 1 - rx
+                currentV = 1 - ry
+                SVPicker.Position = UDim2.new(rx, 0, ry, 0)
+            else
+                local ry = math.clamp((input.Position.Y - absPos.Y) / absSize.Y, 0, 1)
+                currentHue = ry
+                HueDragger.Position = UDim2.new(0.5, 0, ry, 0)
+                updateSVFrame()
+            end
             updateColor()
+        elseif inputType == "changed" and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+            if draggingSV then
+                local absPos = SVFrame.AbsolutePosition
+                local absSize = SVFrame.AbsoluteSize
+                local rx = math.clamp((input.Position.X - absPos.X) / absSize.X, 0, 1)
+                local ry = math.clamp((input.Position.Y - absPos.Y) / absSize.Y, 0, 1)
+                currentS = 1 - rx
+                currentV = 1 - ry
+                SVPicker.Position = UDim2.new(rx, 0, ry, 0)
+                updateColor()
+            elseif draggingHue then
+                local absPos = Hue.AbsolutePosition
+                local absSize = Hue.AbsoluteSize
+                local ry = math.clamp((input.Position.Y - absPos.Y) / absSize.Y, 0, 1)
+                currentHue = ry
+                HueDragger.Position = UDim2.new(0.5, 0, ry, 0)
+                updateSVFrame()
+                updateColor()
+            end
+        elseif inputType == "ended" and (input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch) then
+            if draggingSV or draggingHue then
+                draggingSV = false
+                draggingHue = false
+                BlockDragging = false
+            end
+        end
+    end
+    
+    SVFrame.InputBegan:Connect(function(input)
+        handleColorPickerInput(input, "began", "sv")
+    end)
+    
+    Hue.InputBegan:Connect(function(input)
+        handleColorPickerInput(input, "began", "hue")
+    end)
+    
+    UserInputService.InputBegan:Connect(function(input, gameProcessed)
+        if not gameProcessed then
+            if SVFrame:IsMouseOver() then
+                handleColorPickerInput(input, "began", "sv")
+            elseif Hue:IsMouseOver() then
+                handleColorPickerInput(input, "began", "hue")
+            end
         end
     end)
-    Hue.MouseButton1Down:Connect(function(input)
-        draggingHue = true
-        BlockDragging = true
-       
-        local absPos = Hue.AbsolutePosition
-        local absSize = Hue.AbsoluteSize
-        local ry = math.clamp((input.Position.Y - absPos.Y) / absSize.Y, 0, 1)
-        currentHue = ry
-        HueDragger.Position = UDim2.new(0.5, 0, ry, 0)
-        updateSVFrame()
-        updateColor()
+    
+    UserInputService.InputChanged:Connect(function(input)
+        handleColorPickerInput(input, "changed")
+    end)
+    
+    UserInputService.InputEnded:Connect(function(input)
+        handleColorPickerInput(input, "ended")
     end)
     
     --[[
@@ -1572,15 +1657,6 @@ function Library:CreateColorpicker(config, section)
     end)
     --]]
     
-    UserInputService.InputEnded:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 then
-            if draggingSV or draggingHue then
-                draggingSV = false
-                draggingHue = false
-                BlockDragging = false
-            end
-        end
-    end)
     
     -- Fallback to reset BlockDragging after a short delay
     local function resetBlockDragging()
@@ -1616,38 +1692,6 @@ function Library:CreateColorpicker(config, section)
         end
     end)
     
-    UserInputService.InputChanged:Connect(function(input)
-        if input.UserInputType ~= Enum.UserInputType.MouseMovement then return end
-        if draggingSV then
-            local absPos = SVFrame.AbsolutePosition
-            local absSize = SVFrame.AbsoluteSize
-            local rx = math.clamp((input.Position.X - absPos.X) / absSize.X, 0, 1)
-            local ry = math.clamp((input.Position.Y - absPos.Y) / absSize.Y, 0, 1)
-            currentS = 1 - rx
-            currentV = 1 - ry
-            SVPicker.Position = UDim2.new(rx, 0, ry, 0)
-            updateColor()
-        end
-        if draggingHue then
-            local absPos = Hue.AbsolutePosition
-            local absSize = Hue.AbsoluteSize
-            local ry = math.clamp((input.Position.Y - absPos.Y) / absSize.Y, 0, 1)
-            currentHue = ry
-            HueDragger.Position = UDim2.new(0.5, 0, ry, 0)
-            updateSVFrame()
-            updateColor()
-        end
-        --[[
-        if draggingAlpha then
-            local absPos = Checkers.AbsolutePosition
-            local absSize = Checkers.AbsoluteSize
-            local ry = math.clamp((input.Position.Y - absPos.Y) / absSize.Y, 0, 1)
-            currentA = 1 - ry
-            AlphaDragger.Position = UDim2.new(0.5, 0, ry, 0)
-            updateColor()
-        end
-        --]]
-    end)
     
     -- Initialize
     do
@@ -1850,7 +1894,7 @@ UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
         optionButton.ZIndex = 1003
         optionButton.Parent = Frame
         
-        optionButton.MouseButton1Click:Connect(function()
+        local function selectOption()
             if dropdown.multiSelect then
                 -- Multi-select logic
                 local isSelected = table.find(dropdown.selectedValues, option)
@@ -1951,6 +1995,16 @@ UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
                 
                 dropdown.callback(option)
             end
+        end
+        
+        optionButton.MouseButton1Click:Connect(selectOption)
+        
+        UserInputService.InputBegan:Connect(function(input, gameProcessed)
+            if not gameProcessed and (input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1) then
+                if optionButton:IsMouseOver() then
+                    selectOption()
+                end
+            end
         end)
         
         table.insert(optionFrames, Frame)
@@ -1992,7 +2046,7 @@ UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
     dropdownButton.Text = ""
     dropdownButton.Parent = Dropdown_Component
     
-    dropdownButton.MouseButton1Click:Connect(function()
+    local function toggleDropdown()
         dropdown.isOpen = not dropdown.isOpen
         
         if dropdown.isOpen then
@@ -2071,6 +2125,16 @@ UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
             arrowTween:Play()
             if dropdown._overlayConn then dropdown._overlayConn:Disconnect() dropdown._overlayConn = nil end
         end
+    end
+    
+    dropdownButton.MouseButton1Click:Connect(toggleDropdown)
+    
+    UserInputService.InputBegan:Connect(function(input, gameProcessed)
+        if not gameProcessed and (input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1) then
+            if dropdownButton:IsMouseOver() then
+                toggleDropdown()
+            end
+        end
     end)
     
     table.insert(section.components, dropdown)
@@ -2138,7 +2202,7 @@ function Library:CreateKeybind(config, section)
     
     local isListening = false
     
-    keybindButton.MouseButton1Click:Connect(function()
+    local function startKeybindListening()
         if not isListening then
             isListening = true
             keybindButton.Text = "..."
@@ -2309,6 +2373,16 @@ function Library:CreateKeybind(config, section)
                     connection:Disconnect()
                 end
             end)
+        end
+    end
+    
+    keybindButton.MouseButton1Click:Connect(startKeybindListening)
+    
+    UserInputService.InputBegan:Connect(function(input, gameProcessed)
+        if not gameProcessed and (input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1) then
+            if keybindButton:IsMouseOver() then
+                startKeybindListening()
+            end
         end
     end)
     
