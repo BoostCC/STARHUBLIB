@@ -257,7 +257,18 @@ local function makeDraggable(frame)
     
     local function updateInput(input)
         local delta = input.Position - dragStart
-        local position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+        local newX = startPos.X.Offset + delta.X
+        local newY = startPos.Y.Offset + delta.Y
+        
+        -- Get screen bounds
+        local viewportSize = workspace.CurrentCamera.ViewportSize
+        local frameSize = frame.AbsoluteSize
+        
+        -- Clamp position to screen bounds
+        newX = math.clamp(newX, 0, viewportSize.X - frameSize.X)
+        newY = math.clamp(newY, 0, viewportSize.Y - frameSize.Y)
+        
+        local position = UDim2.new(startPos.X.Scale, newX, startPos.Y.Scale, newY)
         local tween = createTween(frame, {Position = position}, 0.1)
         tween:Play()
     end
@@ -282,7 +293,51 @@ local function makeDraggable(frame)
     end)
 end
 
-makeDraggable(MainFrame)
+-- Create drag handle for the top bar instead of the entire frame
+local function makeTopBarDraggable(topBar, mainFrame)
+    local dragToggle = nil
+    local dragStart = nil
+    local startPos = nil
+    
+    local function updateInput(input)
+        local delta = input.Position - dragStart
+        local newX = startPos.X.Offset + delta.X
+        local newY = startPos.Y.Offset + delta.Y
+        
+        -- Get screen bounds
+        local viewportSize = workspace.CurrentCamera.ViewportSize
+        local frameSize = mainFrame.AbsoluteSize
+        
+        -- Clamp position to screen bounds
+        newX = math.clamp(newX, 0, viewportSize.X - frameSize.X)
+        newY = math.clamp(newY, 0, viewportSize.Y - frameSize.Y)
+        
+        local position = UDim2.new(startPos.X.Scale, newX, startPos.Y.Scale, newY)
+        local tween = createTween(mainFrame, {Position = position}, 0.1)
+        tween:Play()
+    end
+    
+    topBar.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 and not BlockDragging then
+            dragToggle = true
+            dragStart = input.Position
+            startPos = mainFrame.Position
+            input.Changed:Connect(function()
+                if input.UserInputState == Enum.UserInputState.End then
+                    dragToggle = false
+                end
+            end)
+        end
+    end)
+    
+    UserInputService.InputChanged:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseMovement and dragToggle then
+            updateInput(input)
+        end
+    end)
+end
+
+makeTopBarDraggable(Top_Bar, MainFrame)
 
 function Library:CreateWindow(config)
     local window = {
@@ -1194,6 +1249,7 @@ function Library:CreateSlider(config, section)
     local function handleSliderInput(input, inputType)
         if inputType == "began" and (input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch) then
             isDragging = true
+            BlockDragging = true
         elseif inputType == "changed" and isDragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
             local inputX = input.Position.X
             local sliderX = sliderBG.AbsolutePosition.X
@@ -1219,6 +1275,7 @@ function Library:CreateSlider(config, section)
             slider.callback(slider.value)
         elseif inputType == "ended" and (input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch) and isDragging then
             isDragging = false
+            BlockDragging = false
         end
     end
     
@@ -1226,18 +1283,16 @@ function Library:CreateSlider(config, section)
         handleSliderInput(input, "began")
     end)
     
-    UserInputService.InputBegan:Connect(function(input, gameProcessed)
-        if not gameProcessed then
-            handleSliderInput(input, "began")
+    UserInputService.InputChanged:Connect(function(input)
+        if isDragging then
+            handleSliderInput(input, "changed")
         end
     end)
     
-    UserInputService.InputChanged:Connect(function(input)
-        handleSliderInput(input, "changed")
-    end)
-    
     UserInputService.InputEnded:Connect(function(input)
-        handleSliderInput(input, "ended")
+        if isDragging then
+            handleSliderInput(input, "ended")
+        end
     end)
     
     local initialPercentage = (slider.value - slider.min) / (slider.max - slider.min)
@@ -1326,7 +1381,12 @@ UIPadding.Parent = Text_Input
     
     UserInputService.InputBegan:Connect(function(input, gameProcessed)
         if not gameProcessed and (input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1) then
-            if textInputButton:IsMouseOver() then
+            local mousePos = input.Position
+            local buttonPos = textInputButton.AbsolutePosition
+            local buttonSize = textInputButton.AbsoluteSize
+            
+            if mousePos.X >= buttonPos.X and mousePos.X <= buttonPos.X + buttonSize.X and 
+               mousePos.Y >= buttonPos.Y and mousePos.Y <= buttonPos.Y + buttonSize.Y then
                 Text_Input:CaptureFocus()
             end
         end
@@ -1615,9 +1675,17 @@ function Library:CreateColorpicker(config, section)
     
     UserInputService.InputBegan:Connect(function(input, gameProcessed)
         if not gameProcessed then
-            if SVFrame:IsMouseOver() then
+            local mousePos = input.Position
+            local svPos = SVFrame.AbsolutePosition
+            local svSize = SVFrame.AbsoluteSize
+            local huePos = Hue.AbsolutePosition
+            local hueSize = Hue.AbsoluteSize
+            
+            if mousePos.X >= svPos.X and mousePos.X <= svPos.X + svSize.X and 
+               mousePos.Y >= svPos.Y and mousePos.Y <= svPos.Y + svSize.Y then
                 handleColorPickerInput(input, "began", "sv")
-            elseif Hue:IsMouseOver() then
+            elseif mousePos.X >= huePos.X and mousePos.X <= huePos.X + hueSize.X and 
+                   mousePos.Y >= huePos.Y and mousePos.Y <= huePos.Y + hueSize.Y then
                 handleColorPickerInput(input, "began", "hue")
             end
         end
@@ -2001,7 +2069,12 @@ UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
         
         UserInputService.InputBegan:Connect(function(input, gameProcessed)
             if not gameProcessed and (input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1) then
-                if optionButton:IsMouseOver() then
+                local mousePos = input.Position
+                local buttonPos = optionButton.AbsolutePosition
+                local buttonSize = optionButton.AbsoluteSize
+                
+                if mousePos.X >= buttonPos.X and mousePos.X <= buttonPos.X + buttonSize.X and 
+                   mousePos.Y >= buttonPos.Y and mousePos.Y <= buttonPos.Y + buttonSize.Y then
                     selectOption()
                 end
             end
@@ -2131,7 +2204,12 @@ UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
     
     UserInputService.InputBegan:Connect(function(input, gameProcessed)
         if not gameProcessed and (input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1) then
-            if dropdownButton:IsMouseOver() then
+            local mousePos = input.Position
+            local buttonPos = dropdownButton.AbsolutePosition
+            local buttonSize = dropdownButton.AbsoluteSize
+            
+            if mousePos.X >= buttonPos.X and mousePos.X <= buttonPos.X + buttonSize.X and 
+               mousePos.Y >= buttonPos.Y and mousePos.Y <= buttonPos.Y + buttonSize.Y then
                 toggleDropdown()
             end
         end
@@ -2380,7 +2458,12 @@ function Library:CreateKeybind(config, section)
     
     UserInputService.InputBegan:Connect(function(input, gameProcessed)
         if not gameProcessed and (input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1) then
-            if keybindButton:IsMouseOver() then
+            local mousePos = input.Position
+            local buttonPos = keybindButton.AbsolutePosition
+            local buttonSize = keybindButton.AbsoluteSize
+            
+            if mousePos.X >= buttonPos.X and mousePos.X <= buttonPos.X + buttonSize.X and 
+               mousePos.Y >= buttonPos.Y and mousePos.Y <= buttonPos.Y + buttonSize.Y then
                 startKeybindListening()
             end
         end
@@ -3808,7 +3891,7 @@ MainFrame.Visible = true
     -- Ensure watermark uses current accent color
     Library:UpdateWatermarkAccent()
 
-    makeDraggable(MainFrame)
+    makeTopBarDraggable(Top_Bar, MainFrame)
 
     
     end
