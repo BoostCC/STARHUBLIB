@@ -1279,20 +1279,37 @@ function Library:CreateSlider(config, section)
         end
     end
     
+    -- Only respond to input when clicking directly on the slider button
     sliderButton.MouseButton1Down:Connect(function(input)
         handleSliderInput(input, "began")
     end)
     
-    UserInputService.InputChanged:Connect(function(input)
-        if isDragging then
-            handleSliderInput(input, "changed")
-        end
-    end)
+    -- Create individual connections for this specific slider
+    local inputChangedConnection
+    local inputEndedConnection
     
-    UserInputService.InputEnded:Connect(function(input)
-        if isDragging then
-            handleSliderInput(input, "ended")
-        end
+    sliderButton.MouseButton1Down:Connect(function()
+        -- Connect to input events only when this slider is being dragged
+        inputChangedConnection = UserInputService.InputChanged:Connect(function(input)
+            if isDragging then
+                handleSliderInput(input, "changed")
+            end
+        end)
+        
+        inputEndedConnection = UserInputService.InputEnded:Connect(function(input)
+            if isDragging then
+                handleSliderInput(input, "ended")
+                -- Disconnect the connections when dragging ends
+                if inputChangedConnection then
+                    inputChangedConnection:Disconnect()
+                    inputChangedConnection = nil
+                end
+                if inputEndedConnection then
+                    inputEndedConnection:Disconnect()
+                    inputEndedConnection = nil
+                end
+            end
+        end)
     end)
     
     local initialPercentage = (slider.value - slider.min) / (slider.max - slider.min)
