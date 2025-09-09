@@ -16,19 +16,13 @@ local DragStart = nil
 local DragStartPosition = nil
 local GlobalTabInlineIndicator = nil
 local BlockDragging = false
-
--- Global cleanup function to reset BlockDragging if it gets stuck
-local function resetBlockDraggingIfStuck()
-    if BlockDragging then
-        task.wait(0.1)
-        BlockDragging = false
-    end
-end
 local ModalOverlay = nil
 local PopupOpenCount = 0
 
 Library.Values = Library.Values or {}
 Library.OnLoadCfg = Library.OnLoadCfg or Instance.new("BindableEvent")
+Library.IsMobile = false
+Library.Scale = 1
 
 local function deepCopySerialize(value)
     local t = typeof(value)
@@ -61,6 +55,26 @@ ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Global
 ScreenGui.ResetOnSpawn = false
 ScreenGui.Parent = game:GetService("CoreGui")
 
+local function detectMobileAndScale()
+    local viewportSize = workspace.CurrentCamera.ViewportSize
+    local isMobile = UserInputService.TouchEnabled and not UserInputService.KeyboardEnabled
+    local scale = 1
+    
+    if isMobile then
+        local baseWidth = 1920
+        local currentWidth = viewportSize.X
+        scale = math.max(0.5, math.min(1.2, currentWidth / baseWidth))
+        Library.IsMobile = true
+    else
+        Library.IsMobile = false
+    end
+    
+    Library.Scale = scale
+    return isMobile, scale
+end
+
+local isMobile, scale = detectMobileAndScale()
+
 ModalOverlay = Instance.new("TextButton")
 ModalOverlay.Name = "ModalOverlay"
 ModalOverlay.BackgroundTransparency = 1
@@ -77,31 +91,58 @@ MainFrame.AnchorPoint = Vector2.new(0.5, 0.5)
 MainFrame.Name = "MainFrame"
 MainFrame.Position = UDim2.new(0.5, 0, 0.5, 0)
 MainFrame.BorderColor3 = Color3.fromRGB(0, 0, 0)
-MainFrame.Size = UDim2.new(0, 720, 0, 550)
+MainFrame.Size = UDim2.new(0, 720 * scale, 0, 550 * scale)
 MainFrame.BorderSizePixel = 0
 MainFrame.BackgroundColor3 = Color3.fromRGB(12, 12, 12)
 MainFrame.Parent = ScreenGui
 
-local UIScaleMain = Instance.new("UIScale")
-UIScaleMain.Parent = MainFrame
-local UIScaleWatermark = nil
-local UIScaleNotifications = nil
-local Open_Interface = nil
-
-local function UpdateScale()
-    local cam = workspace.CurrentCamera
-    local vp = cam and cam.ViewportSize or Vector2.new(1920,1080)
-    local isMobile = game:GetService("UserInputService").TouchEnabled and not game:GetService("UserInputService").KeyboardEnabled
-    local s = 1
-    if isMobile then
-        s = math.clamp(math.min(vp.X/1920, vp.Y/1080), 0.6, 1)
-    end
-    if UIScaleMain then UIScaleMain.Scale = s end
-    if UIScaleWatermark then UIScaleWatermark.Scale = s end
-    if UIScaleNotifications then UIScaleNotifications.Scale = s end
+if isMobile then
+    local uiScale = Instance.new("UIScale")
+    uiScale.Scale = scale
+    uiScale.Parent = MainFrame
+    
+    local Open_Interface = Instance.new("Frame")
+    Open_Interface.Name = "Open_Interface"
+    Open_Interface.Position = UDim2.new(0.048076923936605453, 0, 0.1977611929178238, 0)
+    Open_Interface.BorderColor3 = Color3.fromRGB(0, 0, 0)
+    Open_Interface.Size = UDim2.new(0, 50, 0, 50)
+    Open_Interface.BorderSizePixel = 0
+    Open_Interface.BackgroundColor3 = Color3.fromRGB(12, 12, 12)
+    Open_Interface.Parent = ScreenGui
+    
+    local UICorner = Instance.new("UICorner")
+    UICorner.CornerRadius = UDim.new(0, 50)
+    UICorner.Parent = Open_Interface
+    
+    local UIStroke = Instance.new("UIStroke")
+    UIStroke.Thickness = 2
+    UIStroke.Color = Color3.fromRGB(115, 58, 173)
+    UIStroke.Parent = Open_Interface
+    
+    local Libary_Icon = Instance.new("ImageLabel")
+    Libary_Icon.ImageColor3 = Color3.fromRGB(170, 85, 255)
+    Libary_Icon.BorderColor3 = Color3.fromRGB(0, 0, 0)
+    Libary_Icon.Name = "Libary_Icon"
+    Libary_Icon.AnchorPoint = Vector2.new(0.5, 0.5)
+    Libary_Icon.Image = "rbxassetid://132964100967987"
+    Libary_Icon.BackgroundTransparency = 1
+    Libary_Icon.Position = UDim2.new(0.5, 0, 0.5, 0)
+    Libary_Icon.Size = UDim2.new(0, 25, 0, 25)
+    Libary_Icon.BorderSizePixel = 0
+    Libary_Icon.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    Libary_Icon.Parent = Open_Interface
+    
+    local mobileOpenButton = Instance.new("TextButton")
+    mobileOpenButton.BackgroundTransparency = 1
+    mobileOpenButton.Size = UDim2.new(1, 0, 1, 0)
+    mobileOpenButton.Parent = Open_Interface
+    
+    mobileOpenButton.MouseButton1Click:Connect(function()
+        MainFrame.Visible = not MainFrame.Visible
+    end)
+    
+    MainFrame.Visible = false
 end
-
-game:GetService("RunService").RenderStepped:Connect(UpdateScale)
 
 local UICorner = Instance.new("UICorner")
 UICorner.CornerRadius = UDim.new(0, 4)
@@ -265,18 +306,7 @@ local function makeDraggable(frame)
     
     local function updateInput(input)
         local delta = input.Position - dragStart
-        local newX = startPos.X.Offset + delta.X
-        local newY = startPos.Y.Offset + delta.Y
-        
-        -- Get screen bounds
-        local viewportSize = workspace.CurrentCamera.ViewportSize
-        local frameSize = frame.AbsoluteSize
-        
-        -- Clamp position to screen bounds
-        newX = math.clamp(newX, 0, viewportSize.X - frameSize.X)
-        newY = math.clamp(newY, 0, viewportSize.Y - frameSize.Y)
-        
-        local position = UDim2.new(startPos.X.Scale, newX, startPos.Y.Scale, newY)
+        local position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
         local tween = createTween(frame, {Position = position}, 0.1)
         tween:Play()
     end
@@ -301,51 +331,7 @@ local function makeDraggable(frame)
     end)
 end
 
--- Create drag handle for the top bar instead of the entire frame
-local function makeTopBarDraggable(topBar, mainFrame)
-    local dragToggle = nil
-    local dragStart = nil
-    local startPos = nil
-    
-    local function updateInput(input)
-        local delta = input.Position - dragStart
-        local newX = startPos.X.Offset + delta.X
-        local newY = startPos.Y.Offset + delta.Y
-        
-        -- Get screen bounds
-        local viewportSize = workspace.CurrentCamera.ViewportSize
-        local frameSize = mainFrame.AbsoluteSize
-        
-        -- Clamp position to screen bounds
-        newX = math.clamp(newX, 0, viewportSize.X - frameSize.X)
-        newY = math.clamp(newY, 0, viewportSize.Y - frameSize.Y)
-        
-        local position = UDim2.new(startPos.X.Scale, newX, startPos.Y.Scale, newY)
-        local tween = createTween(mainFrame, {Position = position}, 0.1)
-        tween:Play()
-    end
-    
-    topBar.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 and not BlockDragging then
-            dragToggle = true
-            dragStart = input.Position
-            startPos = mainFrame.Position
-            input.Changed:Connect(function()
-                if input.UserInputState == Enum.UserInputState.End then
-                    dragToggle = false
-                end
-            end)
-        end
-    end)
-    
-    UserInputService.InputChanged:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseMovement and dragToggle then
-            updateInput(input)
-        end
-    end)
-end
-
-makeTopBarDraggable(Top_Bar, MainFrame)
+makeDraggable(MainFrame)
 
 function Library:CreateWindow(config)
     local window = {
@@ -382,48 +368,6 @@ function Library:CreateWindow(config)
             if input.KeyCode == Enum.KeyCode.Insert then
                 MainFrame.Visible = not MainFrame.Visible
             end
-        end)
-    end
-
-    if UserInputService.TouchEnabled and not UserInputService.KeyboardEnabled then
-        Open_Interface = Instance.new("Frame")
-        Open_Interface.Name = "Open_Interface"
-        Open_Interface.Position = UDim2.new(0.048076923936605453, 0, 0.1977611929178238, 0)
-        Open_Interface.BorderColor3 = Color3.fromRGB(0, 0, 0)
-        Open_Interface.Size = UDim2.new(0, 50, 0, 50)
-        Open_Interface.BorderSizePixel = 0
-        Open_Interface.BackgroundColor3 = Color3.fromRGB(12, 12, 12)
-        Open_Interface.Parent = ScreenGui
-
-        local OpenCorner = Instance.new("UICorner")
-        OpenCorner.CornerRadius = UDim.new(0, 50)
-        OpenCorner.Parent = Open_Interface
-
-        local OpenStroke = Instance.new("UIStroke")
-        OpenStroke.Thickness = 2
-        OpenStroke.Color = Library.Accent
-        OpenStroke.Parent = Open_Interface
-
-        local OpenIcon = Instance.new("ImageLabel")
-        OpenIcon.ImageColor3 = Library.Accent
-        OpenIcon.BorderColor3 = Color3.fromRGB(0, 0, 0)
-        OpenIcon.Name = "Libary_Icon"
-        OpenIcon.AnchorPoint = Vector2.new(0.5, 0.5)
-        OpenIcon.Image = "rbxassetid://132964100967987"
-        OpenIcon.BackgroundTransparency = 1
-        OpenIcon.Position = UDim2.new(0.5, 0, 0.5, 0)
-        OpenIcon.Size = UDim2.new(0, 25, 0, 25)
-        OpenIcon.BorderSizePixel = 0
-        OpenIcon.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-        OpenIcon.Parent = Open_Interface
-
-        local OpenButton = Instance.new("TextButton")
-        OpenButton.BackgroundTransparency = 1
-        OpenButton.Size = UDim2.fromScale(1,1)
-        OpenButton.Text = ""
-        OpenButton.Parent = Open_Interface
-        OpenButton.MouseButton1Click:Connect(function()
-            MainFrame.Visible = not MainFrame.Visible
         end)
     end
     
@@ -1254,16 +1198,17 @@ function Library:CreateSlider(config, section)
     
     local isDragging = false
     
-    local function handleSliderInput(input, inputType)
-        if inputType == "began" and (input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch) then
-            isDragging = true
-            BlockDragging = true
-        elseif inputType == "changed" and isDragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
-            local inputX = input.Position.X
+    sliderButton.MouseButton1Down:Connect(function()
+        isDragging = true
+    end)
+    
+    UserInputService.InputChanged:Connect(function(input)
+        if isDragging and input.UserInputType == Enum.UserInputType.MouseMovement then
+            local mouseX = input.Position.X
             local sliderX = sliderBG.AbsolutePosition.X
             local sliderWidth = sliderBG.AbsoluteSize.X
             
-            local relativeX = math.clamp(inputX - sliderX, 0, sliderWidth)
+            local relativeX = math.clamp(mouseX - sliderX, 0, sliderWidth)
             local percentage = relativeX / sliderWidth
             
             slider.value = math.clamp(slider.min + (slider.max - slider.min) * percentage, slider.min, slider.max)
@@ -1281,45 +1226,12 @@ function Library:CreateSlider(config, section)
             end)
             
             slider.callback(slider.value)
-        elseif inputType == "ended" and (input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch) and isDragging then
-            isDragging = false
-            BlockDragging = false
-        end
-    end
-    
-    -- Only respond to input when clicking directly on the slider button
-    sliderButton.MouseButton1Down:Connect(function(input)
-        handleSliderInput(input, "began")
-    end)
-    
-    -- Use MouseLeave as a fallback to reset dragging state
-    sliderButton.MouseLeave:Connect(function()
-        if isDragging then
-            isDragging = false
-            BlockDragging = false
-        end
-    end)
-    
-    -- Additional fallback: reset BlockDragging after a delay if it's still true
-    task.spawn(function()
-        while true do
-            task.wait(1)
-            if BlockDragging and not isDragging then
-                BlockDragging = false
-            end
-        end
-    end)
-    
-    -- Global input handling with proper state checking
-    UserInputService.InputChanged:Connect(function(input)
-        if isDragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
-            handleSliderInput(input, "changed")
         end
     end)
     
     UserInputService.InputEnded:Connect(function(input)
-        if isDragging and (input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch) then
-            handleSliderInput(input, "ended")
+        if input.UserInputType == Enum.UserInputType.MouseButton1 and isDragging then
+            isDragging = false
         end
     end)
     
@@ -1382,42 +1294,16 @@ local UIPadding = Instance.new("UIPadding")
 UIPadding.PaddingLeft = UDim.new(0, 12)
 UIPadding.Parent = Text_Input
 
-    local function handleTextInputFocus()
-        createTween(Text_Input, {TextColor3 = Library.Accent}, 0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.Out):Play()
-        Text_Input:SetAttribute("ActiveInput", true)
-    end
-    
-    local function handleTextInputBlur()
+    Text_Input.FocusLost:Connect(function(enterPressed)
         textInput.value = Text_Input.Text
         textInput.callback(Text_Input.Text)
         createTween(Text_Input, {TextColor3 = Color3.fromRGB(109, 109, 109)}, 0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.Out):Play()
         Text_Input:SetAttribute("ActiveInput", false)
-    end
-    
-    Text_Input.FocusLost:Connect(handleTextInputBlur)
-    Text_Input.Focused:Connect(handleTextInputFocus)
-    
-    local textInputButton = Instance.new("TextButton")
-    textInputButton.BackgroundTransparency = 1
-    textInputButton.Size = UDim2.fromScale(1, 1)
-    textInputButton.Text = ""
-    textInputButton.Parent = TextInput_Component
-    
-    textInputButton.MouseButton1Click:Connect(function()
-        Text_Input:CaptureFocus()
     end)
     
-    UserInputService.InputBegan:Connect(function(input, gameProcessed)
-        if not gameProcessed and (input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1) then
-            local mousePos = input.Position
-            local buttonPos = textInputButton.AbsolutePosition
-            local buttonSize = textInputButton.AbsoluteSize
-            
-            if mousePos.X >= buttonPos.X and mousePos.X <= buttonPos.X + buttonSize.X and 
-               mousePos.Y >= buttonPos.Y and mousePos.Y <= buttonPos.Y + buttonSize.Y then
-                Text_Input:CaptureFocus()
-            end
-        end
+    Text_Input.Focused:Connect(function()
+        createTween(Text_Input, {TextColor3 = Library.Accent}, 0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.Out):Play()
+        Text_Input:SetAttribute("ActiveInput", true)
     end)
     
     table.insert(section.components, textInput)
@@ -1640,91 +1526,31 @@ function Library:CreateColorpicker(config, section)
     local draggingSV = false
     local draggingHue = false
     
-    local function handleColorPickerInput(input, inputType, target)
-        if inputType == "began" and (input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch) then
-            if target == "sv" then
-                draggingSV = true
-            elseif target == "hue" then
-                draggingHue = true
-            end
-            BlockDragging = true
-            
-            local absPos = (target == "sv" and SVFrame or Hue).AbsolutePosition
-            local absSize = (target == "sv" and SVFrame or Hue).AbsoluteSize
-            
-            if target == "sv" then
-                local rx = math.clamp((input.Position.X - absPos.X) / absSize.X, 0, 1)
-                local ry = math.clamp((input.Position.Y - absPos.Y) / absSize.Y, 0, 1)
-                currentS = 1 - rx
-                currentV = 1 - ry
-                SVPicker.Position = UDim2.new(rx, 0, ry, 0)
-            else
-                local ry = math.clamp((input.Position.Y - absPos.Y) / absSize.Y, 0, 1)
-                currentHue = ry
-                HueDragger.Position = UDim2.new(0.5, 0, ry, 0)
-                updateSVFrame()
-            end
-            updateColor()
-        elseif inputType == "changed" and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
-            if draggingSV then
-                local absPos = SVFrame.AbsolutePosition
-                local absSize = SVFrame.AbsoluteSize
-                local rx = math.clamp((input.Position.X - absPos.X) / absSize.X, 0, 1)
-                local ry = math.clamp((input.Position.Y - absPos.Y) / absSize.Y, 0, 1)
-                currentS = 1 - rx
-                currentV = 1 - ry
-                SVPicker.Position = UDim2.new(rx, 0, ry, 0)
-                updateColor()
-            elseif draggingHue then
-                local absPos = Hue.AbsolutePosition
-                local absSize = Hue.AbsoluteSize
-                local ry = math.clamp((input.Position.Y - absPos.Y) / absSize.Y, 0, 1)
-                currentHue = ry
-                HueDragger.Position = UDim2.new(0.5, 0, ry, 0)
-                updateSVFrame()
-                updateColor()
-            end
-        elseif inputType == "ended" and (input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch) then
-            if draggingSV or draggingHue then
-                draggingSV = false
-                draggingHue = false
-                BlockDragging = false
-            end
-        end
-    end
-    
     SVFrame.InputBegan:Connect(function(input)
-        handleColorPickerInput(input, "began", "sv")
-    end)
-    
-    Hue.InputBegan:Connect(function(input)
-        handleColorPickerInput(input, "began", "hue")
-    end)
-    
-    UserInputService.InputBegan:Connect(function(input, gameProcessed)
-        if not gameProcessed then
-            local mousePos = input.Position
-            local svPos = SVFrame.AbsolutePosition
-            local svSize = SVFrame.AbsoluteSize
-            local huePos = Hue.AbsolutePosition
-            local hueSize = Hue.AbsoluteSize
-            
-            if mousePos.X >= svPos.X and mousePos.X <= svPos.X + svSize.X and 
-               mousePos.Y >= svPos.Y and mousePos.Y <= svPos.Y + svSize.Y then
-                handleColorPickerInput(input, "began", "sv")
-            elseif mousePos.X >= huePos.X and mousePos.X <= huePos.X + hueSize.X and 
-                   mousePos.Y >= huePos.Y and mousePos.Y <= huePos.Y + hueSize.Y then
-                handleColorPickerInput(input, "began", "hue")
-            end
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+            draggingSV = true
+            BlockDragging = true
+            local absPos = SVFrame.AbsolutePosition
+            local absSize = SVFrame.AbsoluteSize
+            local rx = math.clamp((input.Position.X - absPos.X) / absSize.X, 0, 1)
+            local ry = math.clamp((input.Position.Y - absPos.Y) / absSize.Y, 0, 1)
+            currentS = 1 - rx
+            currentV = 1 - ry
+            SVPicker.Position = UDim2.new(rx, 0, ry, 0)
+            updateColor()
         end
     end)
-    
-    UserInputService.InputChanged:Connect(function(input)
-        handleColorPickerInput(input, "changed")
-    end)
-    
-    UserInputService.InputEnded:Connect(function(input)
-        handleColorPickerInput(input, "ended")
+    Hue.MouseButton1Down:Connect(function(input)
+        draggingHue = true
+        BlockDragging = true
+       
+        local absPos = Hue.AbsolutePosition
+        local absSize = Hue.AbsoluteSize
+        local ry = math.clamp((input.Position.Y - absPos.Y) / absSize.Y, 0, 1)
+        currentHue = ry
+        HueDragger.Position = UDim2.new(0.5, 0, ry, 0)
+        updateSVFrame()
+        updateColor()
     end)
     
     --[[
@@ -1753,6 +1579,15 @@ function Library:CreateColorpicker(config, section)
     end)
     --]]
     
+    UserInputService.InputEnded:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+            if draggingSV or draggingHue then
+                draggingSV = false
+                draggingHue = false
+                BlockDragging = false
+            end
+        end
+    end)
     
     -- Fallback to reset BlockDragging after a short delay
     local function resetBlockDragging()
@@ -1788,6 +1623,38 @@ function Library:CreateColorpicker(config, section)
         end
     end)
     
+    UserInputService.InputChanged:Connect(function(input)
+        if input.UserInputType ~= Enum.UserInputType.MouseMovement then return end
+        if draggingSV then
+            local absPos = SVFrame.AbsolutePosition
+            local absSize = SVFrame.AbsoluteSize
+            local rx = math.clamp((input.Position.X - absPos.X) / absSize.X, 0, 1)
+            local ry = math.clamp((input.Position.Y - absPos.Y) / absSize.Y, 0, 1)
+            currentS = 1 - rx
+            currentV = 1 - ry
+            SVPicker.Position = UDim2.new(rx, 0, ry, 0)
+            updateColor()
+        end
+        if draggingHue then
+            local absPos = Hue.AbsolutePosition
+            local absSize = Hue.AbsoluteSize
+            local ry = math.clamp((input.Position.Y - absPos.Y) / absSize.Y, 0, 1)
+            currentHue = ry
+            HueDragger.Position = UDim2.new(0.5, 0, ry, 0)
+            updateSVFrame()
+            updateColor()
+        end
+        --[[
+        if draggingAlpha then
+            local absPos = Checkers.AbsolutePosition
+            local absSize = Checkers.AbsoluteSize
+            local ry = math.clamp((input.Position.Y - absPos.Y) / absSize.Y, 0, 1)
+            currentA = 1 - ry
+            AlphaDragger.Position = UDim2.new(0.5, 0, ry, 0)
+            updateColor()
+        end
+        --]]
+    end)
     
     -- Initialize
     do
@@ -1990,7 +1857,7 @@ UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
         optionButton.ZIndex = 1003
         optionButton.Parent = Frame
         
-        local function selectOption()
+        optionButton.MouseButton1Click:Connect(function()
             if dropdown.multiSelect then
                 -- Multi-select logic
                 local isSelected = table.find(dropdown.selectedValues, option)
@@ -2091,21 +1958,6 @@ UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
                 
                 dropdown.callback(option)
             end
-        end
-        
-        optionButton.MouseButton1Click:Connect(selectOption)
-        
-        UserInputService.InputBegan:Connect(function(input, gameProcessed)
-            if not gameProcessed and (input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1) then
-                local mousePos = input.Position
-                local buttonPos = optionButton.AbsolutePosition
-                local buttonSize = optionButton.AbsoluteSize
-                
-                if mousePos.X >= buttonPos.X and mousePos.X <= buttonPos.X + buttonSize.X and 
-                   mousePos.Y >= buttonPos.Y and mousePos.Y <= buttonPos.Y + buttonSize.Y then
-                    selectOption()
-                end
-            end
         end)
         
         table.insert(optionFrames, Frame)
@@ -2147,7 +1999,7 @@ UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
     dropdownButton.Text = ""
     dropdownButton.Parent = Dropdown_Component
     
-    local function toggleDropdown()
+    dropdownButton.MouseButton1Click:Connect(function()
         dropdown.isOpen = not dropdown.isOpen
         
         if dropdown.isOpen then
@@ -2226,21 +2078,6 @@ UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
             arrowTween:Play()
             if dropdown._overlayConn then dropdown._overlayConn:Disconnect() dropdown._overlayConn = nil end
         end
-    end
-    
-    dropdownButton.MouseButton1Click:Connect(toggleDropdown)
-    
-    UserInputService.InputBegan:Connect(function(input, gameProcessed)
-        if not gameProcessed and (input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1) then
-            local mousePos = input.Position
-            local buttonPos = dropdownButton.AbsolutePosition
-            local buttonSize = dropdownButton.AbsoluteSize
-            
-            if mousePos.X >= buttonPos.X and mousePos.X <= buttonPos.X + buttonSize.X and 
-               mousePos.Y >= buttonPos.Y and mousePos.Y <= buttonPos.Y + buttonSize.Y then
-                toggleDropdown()
-            end
-        end
     end)
     
     table.insert(section.components, dropdown)
@@ -2308,7 +2145,7 @@ function Library:CreateKeybind(config, section)
     
     local isListening = false
     
-    local function startKeybindListening()
+    keybindButton.MouseButton1Click:Connect(function()
         if not isListening then
             isListening = true
             keybindButton.Text = "..."
@@ -2480,21 +2317,6 @@ function Library:CreateKeybind(config, section)
                 end
             end)
         end
-    end
-    
-    keybindButton.MouseButton1Click:Connect(startKeybindListening)
-    
-    UserInputService.InputBegan:Connect(function(input, gameProcessed)
-        if not gameProcessed and (input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1) then
-            local mousePos = input.Position
-            local buttonPos = keybindButton.AbsolutePosition
-            local buttonSize = keybindButton.AbsoluteSize
-            
-            if mousePos.X >= buttonPos.X and mousePos.X <= buttonPos.X + buttonSize.X and 
-               mousePos.Y >= buttonPos.Y and mousePos.Y <= buttonPos.Y + buttonSize.Y then
-                startKeybindListening()
-            end
-        end
     end)
     
     table.insert(section.components, keybind)
@@ -2519,7 +2341,7 @@ function Library:CreateWatermark(cheatName)
     
     -- Create watermark frame
     Watermark_Frame = Instance.new("Frame")
-    Watermark_Frame.Size = UDim2.new(0, 150, 0, 45)
+    Watermark_Frame.Size = UDim2.new(0, 150 * Library.Scale, 0, 45 * Library.Scale)
     Watermark_Frame.Name = "Watermark_Frame"
     Watermark_Frame.Position = UDim2.new(0.011217948980629444, 0, 0.014925372786819935, 0)
     Watermark_Frame.BorderColor3 = Color3.fromRGB(0, 0, 0)
@@ -2528,8 +2350,12 @@ function Library:CreateWatermark(cheatName)
     Watermark_Frame.BackgroundColor3 = Color3.fromRGB(12, 12, 12)
     Watermark_Frame.Visible = WatermarkEnabled
     Watermark_Frame.Parent = WatermarkScreenGui
-    UIScaleWatermark = UIScaleWatermark or Instance.new("UIScale")
-    UIScaleWatermark.Parent = Watermark_Frame
+    
+    if Library.IsMobile then
+        local watermarkScale = Instance.new("UIScale")
+        watermarkScale.Scale = Library.Scale
+        watermarkScale.Parent = Watermark_Frame
+    end
     
     -- Add corner radius
     local UICorner = Instance.new("UICorner")
@@ -2822,7 +2648,7 @@ function Library:CreateConfigSection(config, tab)
 	Refresh_Config.BorderSizePixel = 0
 	Refresh_Config.AutomaticSize = Enum.AutomaticSize.XY
 	Refresh_Config.TextSize = 18
-	Refresh_Config.BackgroundColor3 = Color3.fromRGB(24, 24, 24)
+	Refresh_Config.BackgroundColor3 = Library.Accent
 	Refresh_Config.ZIndex = 3
 	Refresh_Config.Parent = Config_Container
 	
@@ -3391,8 +3217,14 @@ function Library:CreateNotification(config)
         NotificationContainer.Position = UDim2.new(0.8169070482254028, 0, 0.014925372786819935, 0)
         NotificationContainer.AutomaticSize = Enum.AutomaticSize.XY
         NotificationContainer.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-        NotificationContainer.Visible = true -- Always visible, independent of main UI
+        NotificationContainer.Visible = true
         NotificationContainer.Parent = NotificationScreenGui
+        
+        if Library.IsMobile then
+            local notificationScale = Instance.new("UIScale")
+            notificationScale.Scale = Library.Scale
+            notificationScale.Parent = NotificationContainer
+        end
         
         local UIListLayout = Instance.new("UIListLayout")
         UIListLayout.Padding = UDim.new(0, 4)
@@ -3434,10 +3266,6 @@ function Library:CreateNotification(config)
     notificationFrame.BorderSizePixel = 0
     notificationFrame.BackgroundColor3 = backgroundColor
     notificationFrame.Parent = NotificationContainer
-    if not UIScaleNotifications then
-        UIScaleNotifications = Instance.new("UIScale")
-        UIScaleNotifications.Parent = NotificationContainer
-    end
     
     local UICorner = Instance.new("UICorner")
     UICorner.CornerRadius = UDim.new(0, 4)
@@ -3714,6 +3542,8 @@ function Library:Reload()
     ActiveNotifications = {}
     
     -- Recreate the main ScreenGui in CoreGui
+    local isMobile, scale = detectMobileAndScale()
+    
     ScreenGui = Instance.new("ScreenGui")
     ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Global
     ScreenGui.ResetOnSpawn = false
@@ -3751,10 +3581,58 @@ function Library:Reload()
     MainFrame.Name = "MainFrame"
     MainFrame.Position = UDim2.new(0.5, 0, 0.5, 0)
     MainFrame.BorderColor3 = Color3.fromRGB(0, 0, 0)
-    MainFrame.Size = UDim2.new(0, 720, 0, 550)
+    MainFrame.Size = UDim2.new(0, 720 * scale, 0, 550 * scale)
     MainFrame.BorderSizePixel = 0
     MainFrame.BackgroundColor3 = Color3.fromRGB(12, 12, 12)
     MainFrame.Parent = ScreenGui
+    
+    if isMobile then
+        local uiScale = Instance.new("UIScale")
+        uiScale.Scale = scale
+        uiScale.Parent = MainFrame
+        
+        local Open_Interface = Instance.new("Frame")
+        Open_Interface.Name = "Open_Interface"
+        Open_Interface.Position = UDim2.new(0.048076923936605453, 0, 0.1977611929178238, 0)
+        Open_Interface.BorderColor3 = Color3.fromRGB(0, 0, 0)
+        Open_Interface.Size = UDim2.new(0, 50, 0, 50)
+        Open_Interface.BorderSizePixel = 0
+        Open_Interface.BackgroundColor3 = Color3.fromRGB(12, 12, 12)
+        Open_Interface.Parent = ScreenGui
+        
+        local UICorner = Instance.new("UICorner")
+        UICorner.CornerRadius = UDim.new(0, 50)
+        UICorner.Parent = Open_Interface
+        
+        local UIStroke = Instance.new("UIStroke")
+        UIStroke.Thickness = 2
+        UIStroke.Color = Color3.fromRGB(115, 58, 173)
+        UIStroke.Parent = Open_Interface
+        
+        local Libary_Icon = Instance.new("ImageLabel")
+        Libary_Icon.ImageColor3 = Color3.fromRGB(170, 85, 255)
+        Libary_Icon.BorderColor3 = Color3.fromRGB(0, 0, 0)
+        Libary_Icon.Name = "Libary_Icon"
+        Libary_Icon.AnchorPoint = Vector2.new(0.5, 0.5)
+        Libary_Icon.Image = "rbxassetid://132964100967987"
+        Libary_Icon.BackgroundTransparency = 1
+        Libary_Icon.Position = UDim2.new(0.5, 0, 0.5, 0)
+        Libary_Icon.Size = UDim2.new(0, 25, 0, 25)
+        Libary_Icon.BorderSizePixel = 0
+        Libary_Icon.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+        Libary_Icon.Parent = Open_Interface
+        
+        local mobileOpenButton = Instance.new("TextButton")
+        mobileOpenButton.BackgroundTransparency = 1
+        mobileOpenButton.Size = UDim2.new(1, 0, 1, 0)
+        mobileOpenButton.Parent = Open_Interface
+        
+        mobileOpenButton.MouseButton1Click:Connect(function()
+            MainFrame.Visible = not MainFrame.Visible
+        end)
+        
+        MainFrame.Visible = false
+    end
 
 local UICorner = Instance.new("UICorner")
 UICorner.CornerRadius = UDim.new(0, 4)
@@ -3896,17 +3774,23 @@ Current_Tab_Value.Parent = MainFrame
 MainFrame.Visible = true
 
     -- Recreate notification container in separate ScreenGui
-    NotificationContainer = Instance.new("Frame")
-    NotificationContainer.Name = "NotificationContainer"
-    NotificationContainer.BorderColor3 = Color3.fromRGB(0, 0, 0)
-    NotificationContainer.Size = UDim2.new(0, 1, 0, 1)
-    NotificationContainer.BorderSizePixel = 0
-    NotificationContainer.BackgroundTransparency = 1
-    NotificationContainer.Position = UDim2.new(0.8169070482254028, 0, 0.014925372786819935, 0)
-    NotificationContainer.AutomaticSize = Enum.AutomaticSize.XY
-    NotificationContainer.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-    NotificationContainer.Visible = true
-    NotificationContainer.Parent = NotificationScreenGui
+        NotificationContainer = Instance.new("Frame")
+        NotificationContainer.Name = "NotificationContainer"
+        NotificationContainer.BorderColor3 = Color3.fromRGB(0, 0, 0)
+        NotificationContainer.Size = UDim2.new(0, 1, 0, 1)
+        NotificationContainer.BorderSizePixel = 0
+        NotificationContainer.BackgroundTransparency = 1
+        NotificationContainer.Position = UDim2.new(0.8169070482254028, 0, 0.014925372786819935, 0)
+        NotificationContainer.AutomaticSize = Enum.AutomaticSize.XY
+        NotificationContainer.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+        NotificationContainer.Visible = true
+        NotificationContainer.Parent = NotificationScreenGui
+        
+        if Library.IsMobile then
+            local notificationScale = Instance.new("UIScale")
+            notificationScale.Scale = Library.Scale
+            notificationScale.Parent = NotificationContainer
+        end
     
     local UIListLayout = Instance.new("UIListLayout")
     UIListLayout.Padding = UDim.new(0, 4)
@@ -3919,7 +3803,7 @@ MainFrame.Visible = true
     -- Ensure watermark uses current accent color
     Library:UpdateWatermarkAccent()
 
-    makeTopBarDraggable(Top_Bar, MainFrame)
+    makeDraggable(MainFrame)
 
     
     end
