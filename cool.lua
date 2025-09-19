@@ -346,7 +346,7 @@ function Library.new(config)
 	ImageButton.BorderSizePixel = 0
 	ImageButton.Position = UDim2.new(0.992500007, 0, 0.00999999978, 0)
 	ImageButton.Size = UDim2.new(0.06, 0, 0.06, 0)
-	ImageButton.SizeConstraint = Enum.SizeConstraint.RelativeYY
+	ImageButton.SizeConstraint = Enum.SizeConstraint.RelativeXY
 	ImageButton.ZIndex = 50
 	ImageButton.Image = "rbxassetid://10002398990"
 	ImageButton.ImageTransparency = 1
