@@ -376,7 +376,7 @@ function Library.new(config)
 	MainFrame.Name = "MainFrame"
 	MainFrame.Parent = ScreenGui
 	MainFrame.AnchorPoint = Vector2.new(0.5, 0.5)
-	MainFrame.BackgroundColor3 = Color3.fromRGB(8, 8, 8)
+	MainFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
 	MainFrame.BackgroundTransparency = 1
 	MainFrame.BorderColor3 = Color3.fromRGB(0, 0, 0)
 	MainFrame.BorderSizePixel = 0
@@ -408,7 +408,7 @@ function Library.new(config)
 
 	Headers.Name = "Headers"
 	Headers.Parent = MainFrame
-	Headers.BackgroundColor3 = Color3.fromRGB(12, 12, 12)
+	Headers.BackgroundColor3 = Color3.fromRGB(18, 18, 18)
 	Headers.BackgroundTransparency = 1
 	Headers.BorderColor3 = Color3.fromRGB(0, 0, 0)
 	Headers.BorderSizePixel = 0
@@ -543,7 +543,7 @@ function Library.new(config)
 	TabButtonFrame.Name = "TabButtonFrame"
 	TabButtonFrame.Parent = MainFrame
 	TabButtonFrame.AnchorPoint = Vector2.new(0.5, 0)
-	TabButtonFrame.BackgroundColor3 = Color3.fromRGB(12, 12, 12)
+	TabButtonFrame.BackgroundColor3 = Color3.fromRGB(18, 18, 18)
 	TabButtonFrame.BackgroundTransparency = 1
 	TabButtonFrame.BorderColor3 = Color3.fromRGB(0, 0, 0)
 	TabButtonFrame.BorderSizePixel = 0
@@ -578,7 +578,7 @@ function Library.new(config)
 	MainTabFrame.Name = "MainTabFrame"
 	MainTabFrame.Parent = MainFrame
 	MainTabFrame.AnchorPoint = Vector2.new(0.5, 0)
-	MainTabFrame.BackgroundColor3 = Color3.fromRGB(12, 12, 12)
+	MainTabFrame.BackgroundColor3 = Color3.fromRGB(18, 18, 18)
 	MainTabFrame.BackgroundTransparency = 1
 	MainTabFrame.BorderColor3 = Color3.fromRGB(0, 0, 0)
 	MainTabFrame.BorderSizePixel = 0
