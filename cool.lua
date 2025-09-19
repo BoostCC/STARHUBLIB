@@ -892,6 +892,7 @@ function Library.new(config)
 					end;
 					ValueId.Text = tostring(v);
 					callback(v);
+					WindowTable.Dropdown:Close();
 				end)
 
 				table.insert(list,{v,butt})
