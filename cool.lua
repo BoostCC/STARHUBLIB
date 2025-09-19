@@ -345,7 +345,7 @@ function Library.new(config)
 	ImageButton.BorderColor3 = Color3.fromRGB(0, 0, 0)
 	ImageButton.BorderSizePixel = 0
 	ImageButton.Position = UDim2.new(0.992500007, 0, 0.00999999978, 0)
-	ImageButton.Size = UDim2.new(0.0850000009, 0, 0.0850000009, 0)
+	ImageButton.Size = UDim2.new(0.0600000009, 0, 0.0600000009, 0)
 	ImageButton.SizeConstraint = Enum.SizeConstraint.RelativeYY
 	ImageButton.ZIndex = 50
 	ImageButton.Image = "rbxassetid://10002398990"
@@ -376,7 +376,7 @@ function Library.new(config)
 	MainFrame.Name = "MainFrame"
 	MainFrame.Parent = ScreenGui
 	MainFrame.AnchorPoint = Vector2.new(0.5, 0.5)
-	MainFrame.BackgroundColor3 = Color3.fromRGB(17, 17, 17)
+	MainFrame.BackgroundColor3 = Color3.fromRGB(8, 8, 8)
 	MainFrame.BackgroundTransparency = 1
 	MainFrame.BorderColor3 = Color3.fromRGB(0, 0, 0)
 	MainFrame.BorderSizePixel = 0
@@ -408,7 +408,7 @@ function Library.new(config)
 
 	Headers.Name = "Headers"
 	Headers.Parent = MainFrame
-	Headers.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+	Headers.BackgroundColor3 = Color3.fromRGB(12, 12, 12)
 	Headers.BackgroundTransparency = 1
 	Headers.BorderColor3 = Color3.fromRGB(0, 0, 0)
 	Headers.BorderSizePixel = 0
@@ -543,7 +543,7 @@ function Library.new(config)
 	TabButtonFrame.Name = "TabButtonFrame"
 	TabButtonFrame.Parent = MainFrame
 	TabButtonFrame.AnchorPoint = Vector2.new(0.5, 0)
-	TabButtonFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+	TabButtonFrame.BackgroundColor3 = Color3.fromRGB(12, 12, 12)
 	TabButtonFrame.BackgroundTransparency = 1
 	TabButtonFrame.BorderColor3 = Color3.fromRGB(0, 0, 0)
 	TabButtonFrame.BorderSizePixel = 0
@@ -578,7 +578,7 @@ function Library.new(config)
 	MainTabFrame.Name = "MainTabFrame"
 	MainTabFrame.Parent = MainFrame
 	MainTabFrame.AnchorPoint = Vector2.new(0.5, 0)
-	MainTabFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+	MainTabFrame.BackgroundColor3 = Color3.fromRGB(12, 12, 12)
 	MainTabFrame.BackgroundTransparency = 1
 	MainTabFrame.BorderColor3 = Color3.fromRGB(0, 0, 0)
 	MainTabFrame.BorderSizePixel = 0
@@ -619,7 +619,7 @@ function Library.new(config)
 
 		DropdownFrame.Name = "DropdownFrame"
 		DropdownFrame.Parent = ScreenGui
-		DropdownFrame.BackgroundColor3 = Color3.fromRGB(17, 17, 17)
+		DropdownFrame.BackgroundColor3 = Color3.fromRGB(8, 8, 8)
 		DropdownFrame.BackgroundTransparency = 0.500
 		DropdownFrame.BorderColor3 = Color3.fromRGB(0, 0, 0)
 		DropdownFrame.BorderSizePixel = 0
@@ -1202,20 +1202,20 @@ function Library.new(config)
 
 			Section.Name = "Section"
 			Section.Parent = (c_o_n_f_i_g.Position == "Left" and LeftFrame) or RightFrame;
-			Section.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+			Section.BackgroundColor3 = Color3.fromRGB(5, 5, 5)
 			Section.BackgroundTransparency = 1
 			Section.BorderColor3 = Color3.fromRGB(0, 0, 0)
 			Section.BorderSizePixel = 0
 			Section.Size = UDim2.new(0.980000019, 0, 0, 200)
 			Section.ClipsDescendants = true;
-			Twen:Create(Section,TweenInfo1,{BackgroundTransparency = 0.75}):Play();
+			Twen:Create(Section,TweenInfo1,{BackgroundTransparency = 0.65}):Play();
 
 			UICorner.CornerRadius = UDim.new(0, 3)
 			UICorner.Parent = Section
 
 			Header.Name = "Header"
 			Header.Parent = Section
-			Header.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+			Header.BackgroundColor3 = Color3.fromRGB(3, 3, 3)
 			Header.BackgroundTransparency = 0.900
 			Header.BorderColor3 = Color3.fromRGB(0, 0, 0)
 			Header.BorderSizePixel = 0
@@ -1313,13 +1313,13 @@ function Library.new(config)
 
 				FunctionToggle.Name = "FunctionToggle"
 				FunctionToggle.Parent = Section
-				FunctionToggle.BackgroundColor3 = Color3.fromRGB(17, 17, 17)
+				FunctionToggle.BackgroundColor3 = Color3.fromRGB(8, 8, 8)
 				FunctionToggle.BackgroundTransparency = 1
 				FunctionToggle.BorderColor3 = Color3.fromRGB(0, 0, 0)
 				FunctionToggle.BorderSizePixel = 0
 				FunctionToggle.Size = UDim2.new(0.949999988, 0, 0.5, 0)
 				FunctionToggle.ZIndex = 17
-				Twen:Create(FunctionToggle,TweenInfo1,{BackgroundTransparency = 0.8}):Play();
+				Twen:Create(FunctionToggle,TweenInfo1,{BackgroundTransparency = 0.7}):Play();
 
 				UIAspectRatioConstraint.Parent = FunctionToggle
 				UIAspectRatioConstraint.AspectRatio = 8.000
@@ -1455,7 +1455,7 @@ function Library.new(config)
 
 				FunctionTitle.Name = "FunctionTitle"
 				FunctionTitle.Parent = Section
-				FunctionTitle.BackgroundColor3 = Color3.fromRGB(17, 17, 17)
+				FunctionTitle.BackgroundColor3 = Color3.fromRGB(8, 8, 8)
 				FunctionTitle.BackgroundTransparency = 0.800
 				FunctionTitle.BorderColor3 = Color3.fromRGB(0, 0, 0)
 				FunctionTitle.BorderSizePixel = 0
@@ -1517,14 +1517,14 @@ function Library.new(config)
 
 				FunctionButton.Name = "FunctionButton"
 				FunctionButton.Parent = Section
-				FunctionButton.BackgroundColor3 = Color3.fromRGB(71, 71, 71)
+				FunctionButton.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
 				FunctionButton.BackgroundTransparency = 1
 				FunctionButton.BorderColor3 = Color3.fromRGB(0, 0, 0)
 				FunctionButton.BorderSizePixel = 0
 				FunctionButton.Size = UDim2.new(0.949999988, 0, 0.5, 0)
 				FunctionButton.ZIndex = 17
 				Twen:Create(FunctionButton,TweenInfo1,{
-					BackgroundTransparency = 0.750,
+					BackgroundTransparency = 0.650,
 					Size = UDim2.new(0.949999988, 0, 0.5, 0)
 				}):Play();
 
@@ -1649,7 +1649,7 @@ function Library.new(config)
 				BindEvent.Name = tostring(ctfx.Title)
 				FunctionKeybind.Name = "FunctionKeybind"
 				FunctionKeybind.Parent = Section
-				FunctionKeybind.BackgroundColor3 = Color3.fromRGB(17, 17, 17)
+				FunctionKeybind.BackgroundColor3 = Color3.fromRGB(8, 8, 8)
 				FunctionKeybind.BackgroundTransparency = 0.800
 				FunctionKeybind.BorderColor3 = Color3.fromRGB(0, 0, 0)
 				FunctionKeybind.BorderSizePixel = 0
@@ -1824,7 +1824,7 @@ function Library.new(config)
 
 				FunctionSlider.Name = "FunctionSlider"
 				FunctionSlider.Parent = Section
-				FunctionSlider.BackgroundColor3 = Color3.fromRGB(17, 17, 17)
+				FunctionSlider.BackgroundColor3 = Color3.fromRGB(8, 8, 8)
 				FunctionSlider.BackgroundTransparency = 0.800
 				FunctionSlider.BorderColor3 = Color3.fromRGB(0, 0, 0)
 				FunctionSlider.BorderSizePixel = 0
@@ -1994,7 +1994,7 @@ function Library.new(config)
 
 				FunctionDropdown.Name = "FunctionDropdown"
 				FunctionDropdown.Parent = Section
-				FunctionDropdown.BackgroundColor3 = Color3.fromRGB(17, 17, 17)
+				FunctionDropdown.BackgroundColor3 = Color3.fromRGB(8, 8, 8)
 				FunctionDropdown.BackgroundTransparency = 0.800
 				FunctionDropdown.BorderColor3 = Color3.fromRGB(0, 0, 0)
 				FunctionDropdown.BorderSizePixel = 0
@@ -2240,7 +2240,7 @@ Library.NewAuth = function(conf)
 	Auth.Parent = ScreenGui
 	Auth.Active = true
 	Auth.AnchorPoint = Vector2.new(0.5, 0.5)
-	Auth.BackgroundColor3 = Color3.fromRGB(17, 17, 17)
+			Auth.BackgroundColor3 = Color3.fromRGB(8, 8, 8)
 	Auth.BackgroundTransparency = 1.000
 	Auth.BorderColor3 = Color3.fromRGB(0, 0, 0)
 	Auth.BorderSizePixel = 0
@@ -2252,7 +2252,7 @@ Library.NewAuth = function(conf)
 	MainFrame.Parent = Auth
 	MainFrame.Active = true
 	MainFrame.AnchorPoint = Vector2.new(0.5, 0.5)
-	MainFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+		MainFrame.BackgroundColor3 = Color3.fromRGB(5, 5, 5)
 	MainFrame.BackgroundTransparency = 0.500
 	MainFrame.BorderColor3 = Color3.fromRGB(0, 0, 0)
 	MainFrame.BorderSizePixel = 0
