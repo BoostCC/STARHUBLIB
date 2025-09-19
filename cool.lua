@@ -345,7 +345,7 @@ function Library.new(config)
 	ImageButton.BorderColor3 = Color3.fromRGB(0, 0, 0)
 	ImageButton.BorderSizePixel = 0
 	ImageButton.Position = UDim2.new(0.992500007, 0, 0.00999999978, 0)
-	ImageButton.Size = UDim2.new(0, 6, 0, 6)
+	ImageButton.Size = UDim2.new(0, 5, 0, 5)
 	ImageButton.SizeConstraint = Enum.SizeConstraint.RelativeXY
 	ImageButton.ZIndex = 50
 	ImageButton.Image = "rbxassetid://10002398990"
