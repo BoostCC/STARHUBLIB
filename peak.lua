@@ -1,115 +1,7 @@
--- CharlieWare UI Library
-local Library = {}
-Library.__index = Library
 
--- Services
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
-local Players = game:GetService("Players")
-local LocalPlayer = Players.LocalPlayer
-
--- CreateNewText function for creating text elements
-function Library:CreateNewText(text)
-    return text -- Return the text string as is
-end
-
--- CreateWindow function
-function Library:CreateWindow(options)
-    local config = options.libary_config or {}
-    local windowName = config.Libary_Name or "CharlieWare"
-    
-    local Window = {}
-    Window.__index = Window
-    Window.Tabs = {}
-    Window.CurrentTab = nil
-    Window.Config = config
-    
-    -- Create ScreenGui for the UI
-    local ScreenGui = Instance.new("ScreenGui")
-    ScreenGui.Name = "CharliewareUI"
-    ScreenGui.ResetOnSpawn = false
-    ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
-    
-    -- Create main UI elements (simplified for now)
-    local BG_BLUR = Instance.new("Frame")
-    BG_BLUR.BackgroundTransparency = 0.2
-    BG_BLUR.Name = "BG_BLUR"
-    BG_BLUR.BorderColor3 = Color3.fromRGB(0, 0, 0)
-    BG_BLUR.Size = UDim2.new(1, 0, 1, 0)
-    BG_BLUR.Position = UDim2.new(0, 0, 0, 0)
-    BG_BLUR.AnchorPoint = Vector2.new(0, 0)
-    BG_BLUR.BorderSizePixel = 0
-    BG_BLUR.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-    BG_BLUR.ZIndex = 0
-    BG_BLUR.Parent = ScreenGui
-    
-    local MainFrame = Instance.new("Frame")
-    MainFrame.ClipsDescendants = true
-    MainFrame.BorderColor3 = Color3.fromRGB(0, 0, 0)
-    MainFrame.AnchorPoint = Vector2.new(0.5, 0.5)
-    MainFrame.Name = "MainFrame"
-    MainFrame.Position = UDim2.new(0.5, 0, 0.5, 0)
-    MainFrame.Size = UDim2.new(0, 563, 0, 400)
-    MainFrame.BorderSizePixel = 0
-    MainFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
-    MainFrame.ZIndex = 1
-    MainFrame.Parent = BG_BLUR
-    
-    -- Store references
-    Window.ScreenGui = ScreenGui
-    Window.MainFrame = MainFrame
-    Window.BG_BLUR = BG_BLUR
-    
-    -- CreateTab function
-    function Window:CreateTab(options)
-        local Tab = {}
-        Tab.__index = Tab
-        Tab.Sections = {}
-        Tab.Name = options.TabText or "Tab"
-        Tab.Window = Window
-        Tab.Visible = false
-        
-        -- Add placeholder component creation methods
-        function Tab:CreateSection(options)
-            local Section = {}
-            Section.__index = Section
-            Section.Name = options.SectionText or "Section"
-            Section.Position = options.position or "left"
-            Section.Components = {}
-            
-            -- Add placeholder component creation methods
-            function Section:CreateToggle(options) return {Enabled = false} end
-            function Section:CreateSlider(options) return {Value = options.Value or 0} end
-            function Section:CreateDropdown(options) return {Selected = ""} end
-            function Section:CreateButton(options) return {} end
-            function Section:CreateKeybind(options) return {Key = ""} end
-            function Section:CreateColorpicker(options) return {Color = Color3.new(1,1,1)} end
-            function Section:CreateTextInput(options) return {Text = ""} end
-            function Section:CreateLabel(options) return {} end
-            function Section:CreateConfig(options) return {} end
-            function Section:CreateToggleWithKeybind(options) return {Enabled = false, Key = ""} end
-            function Section:AddColorToggle(options) return {Enabled = false, Color = Color3.new(1,1,1)} end
-            
-            table.insert(Tab.Sections, Section)
-            return Section
-        end
-        
-        table.insert(Window.Tabs, Tab)
-        return Tab
-    end
-    
-    -- Window CreateSection method (for backwards compatibility)
-    function Window:CreateSection(options)
-        if Window.CurrentTab then
-            return Window.CurrentTab:CreateSection(options)
-        else
-            error("No active tab. Create a tab first.")
-        end
-    end
-    
-    return Window
-end
 
 local libary = {}
 local Windows = {}
@@ -150,18 +42,6 @@ ScreenGui.Name = "CharliewareUI"
 ScreenGui.ResetOnSpawn = false
 ScreenGui.Parent = game.CoreGui
 
-local BG_BLUR = Instance.new("Frame")
-BG_BLUR.BackgroundTransparency = 0.2
-BG_BLUR.Name = "BG_BLUR"
-BG_BLUR.BorderColor3 = Color3.fromRGB(0, 0, 0)
-BG_BLUR.Size = UDim2.new(1, 0, 1, 0)
-BG_BLUR.Position = UDim2.new(0, 0, 0, 0)
-BG_BLUR.AnchorPoint = Vector2.new(0, 0)
-BG_BLUR.BorderSizePixel = 0
-BG_BLUR.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-BG_BLUR.ZIndex = 0
-BG_BLUR.Parent = ScreenGui
-
 local MainFrame = Instance.new("Frame")
 MainFrame.ClipsDescendants = true
 MainFrame.BorderColor3 = Color3.fromRGB(0, 0, 0)
@@ -171,8 +51,7 @@ MainFrame.Position = UDim2.new(0.5, 0, 0.5, 0)
 MainFrame.Size = UDim2.new(0, 563, 0, 400)
 MainFrame.BorderSizePixel = 0
 MainFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
-MainFrame.ZIndex = 1
-MainFrame.Parent = BG_BLUR
+MainFrame.Parent = ScreenGui
 
 local Header = Instance.new("Frame")
 Header.AnchorPoint = Vector2.new(0.5, 0)
@@ -308,6 +187,78 @@ local UIPadding = Instance.new("UIPadding")
 UIPadding.PaddingRight = UDim.new(0, 12)
 UIPadding.Parent = Container
 
+local Footer = Instance.new("Frame")
+Footer.AnchorPoint = Vector2.new(0.5, 1)
+Footer.Name = "Footer"
+Footer.Position = UDim2.new(0.5, 0, 0.9999998211860657, 0)
+Footer.BorderColor3 = Color3.fromRGB(0, 0, 0)
+Footer.Size = UDim2.new(0, 563, 0, 28)
+Footer.BorderSizePixel = 0
+Footer.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+Footer.Parent = MainFrame
+
+local footer_left_label = Instance.new("TextLabel")
+footer_left_label.FontFace = Font.new("rbxassetid://12187365364", Enum.FontWeight.Regular, Enum.FontStyle.Normal)
+footer_left_label.TextStrokeTransparency = 0.800000011920929
+footer_left_label.AnchorPoint = Vector2.new(0, 0.5)
+footer_left_label.TextSize = 15
+footer_left_label.Size = UDim2.new(0, 1, 0, 1)
+footer_left_label.RichText = true
+footer_left_label.TextColor3 = Color3.fromRGB(255, 255, 255)
+footer_left_label.BorderColor3 = Color3.fromRGB(0, 0, 0)
+footer_left_label.Text = "gamename"
+footer_left_label.Name = "footer_left_label"
+footer_left_label.BackgroundTransparency = 1
+footer_left_label.Position = UDim2.new(0, 12, 0.5, 0)
+footer_left_label.TextWrapped = true
+footer_left_label.BorderSizePixel = 0
+footer_left_label.AutomaticSize = Enum.AutomaticSize.XY
+footer_left_label.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+footer_left_label.Parent = Footer
+
+local Container = Instance.new("Frame")
+Container.BorderColor3 = Color3.fromRGB(0, 0, 0)
+Container.AnchorPoint = Vector2.new(1, 0.5)
+Container.Name = "Container"
+Container.BackgroundTransparency = 12
+Container.Position = UDim2.new(1, 0, 0.5000065565109253, 0)
+Container.Size = UDim2.new(0, 105, 0, 28)
+Container.BorderSizePixel = 0
+Container.AutomaticSize = Enum.AutomaticSize.XY
+Container.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+Container.Parent = Footer
+
+local UIListLayout = Instance.new("UIListLayout")
+UIListLayout.FillDirection = Enum.FillDirection.Horizontal
+UIListLayout.HorizontalAlignment = Enum.HorizontalAlignment.Right
+UIListLayout.Padding = UDim.new(0, 12)
+UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+UIListLayout.Parent = Container
+
+local UIPadding = Instance.new("UIPadding")
+UIPadding.PaddingTop = UDim.new(0, 6)
+UIPadding.PaddingRight = UDim.new(0, 12)
+UIPadding.Parent = Container
+
+local footer_text = Instance.new("TextLabel")
+footer_text.FontFace = Font.new("rbxassetid://12187365364", Enum.FontWeight.Regular, Enum.FontStyle.Normal)
+footer_text.TextStrokeTransparency = 0.800000011920929
+footer_text.AnchorPoint = Vector2.new(1, 0.5)
+footer_text.TextSize = 15
+footer_text.Size = UDim2.new(0, 1, 0, 1)
+footer_text.RichText = true
+footer_text.TextColor3 = Color3.fromRGB(255, 255, 255)
+footer_text.BorderColor3 = Color3.fromRGB(0, 0, 0)
+footer_text.Text = "uptime:0:00"
+footer_text.Name = "footer_text"
+footer_text.BackgroundTransparency = 1
+footer_text.Position = UDim2.new(0.3552631437778473, -90, -3.299999952316284, 0)
+footer_text.TextWrapped = true
+footer_text.BorderSizePixel = 0
+footer_text.AutomaticSize = Enum.AutomaticSize.XY
+footer_text.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+footer_text.Parent = Container
+
 local Page = Instance.new("Frame")
 Page.BorderColor3 = Color3.fromRGB(0, 0, 0)
 Page.AnchorPoint = Vector2.new(0.5, 1)
@@ -408,298 +359,10 @@ local UIListLayout = Instance.new("UIListLayout")
 UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
 UIListLayout.Parent = Holder
 
-local Toggle_Componenet = Instance.new("Frame")
-Toggle_Componenet.BorderColor3 = Color3.fromRGB(0, 0, 0)
-Toggle_Componenet.AnchorPoint = Vector2.new(0.5, 0)
-Toggle_Componenet.BackgroundTransparency = 1
-Toggle_Componenet.Position = UDim2.new(0.501682698726654, 0, 0, 0)
-Toggle_Componenet.Name = "Toggle_Componenet"
-Toggle_Componenet.Size = UDim2.new(0, 260, 0, 30)
-Toggle_Componenet.BorderSizePixel = 0
-Toggle_Componenet.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-Toggle_Componenet.Parent = Holder
-
-local Toggle = Instance.new("Frame")
-Toggle.AnchorPoint = Vector2.new(0, 0.5)
-Toggle.Name = "Toggle"
-Toggle.Position = UDim2.new(0, 12, 0.5, 0)
-Toggle.BorderColor3 = Color3.fromRGB(0, 0, 0)
-Toggle.Size = UDim2.new(0, 16, 0, 16)
-Toggle.BorderSizePixel = 0
-Toggle.BackgroundColor3 = Color3.fromRGB(125, 69, 220)
-Toggle.Parent = Toggle_Componenet
-
-local UICorner = Instance.new("UICorner")
-UICorner.CornerRadius = UDim.new(0, 2)
-UICorner.Parent = Toggle
-
-local UIStroke = Instance.new("UIStroke")
-UIStroke.Color = Color3.fromRGB(26, 26, 26)
-UIStroke.Parent = Toggle
-
-local Check = Instance.new("ImageLabel")
-Check.BorderColor3 = Color3.fromRGB(0, 0, 0)
-Check.Name = "Check"
-Check.AnchorPoint = Vector2.new(0.5, 0.5)
-Check.Image = "rbxassetid://103083009202465"
-Check.BackgroundTransparency = 1
-Check.Position = UDim2.new(0.5, 0, 0.5, 0)
-
-Check.Size = UDim2.new(0, 10, 0, 12)
-Check.BorderSizePixel = 0
-Check.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-Check.Parent = Toggle
-
-local Color_Frame = Instance.new("Frame")
-Color_Frame.AnchorPoint = Vector2.new(0.5, 0.5)
-Color_Frame.Name = "Color_Frame"
-Color_Frame.Position = UDim2.new(0.5, 225, 0.5, 0)
-Color_Frame.BorderColor3 = Color3.fromRGB(0, 0, 0)
-Color_Frame.Size = UDim2.new(0, 15, 0, 15)
-Color_Frame.BorderSizePixel = 0
-Color_Frame.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-Color_Frame.Parent = Toggle
-
-local UICorner = Instance.new("UICorner")
-UICorner.CornerRadius = UDim.new(0, 4)
-UICorner.Parent = Color_Frame
-
-local Toggle_Text = Instance.new("TextLabel")
-Toggle_Text.FontFace = Font.new("rbxassetid://12187365364", Enum.FontWeight.Regular, Enum.FontStyle.Normal)
-Toggle_Text.TextColor3 = Color3.fromRGB(255, 255, 255)
-Toggle_Text.BorderColor3 = Color3.fromRGB(0, 0, 0)
-Toggle_Text.Text = "ExampleToggle"
-Toggle_Text.Name = "Toggle_Text"
-Toggle_Text.AnchorPoint = Vector2.new(0, 0.5)
-Toggle_Text.Size = UDim2.new(0, 1, 0, 1)
-Toggle_Text.BackgroundTransparency = 1
-Toggle_Text.Position = UDim2.new(0, 35, 0.5, 0)
-Toggle_Text.BorderSizePixel = 0
-Toggle_Text.AutomaticSize = Enum.AutomaticSize.XY
-Toggle_Text.TextSize = 14
-Toggle_Text.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-Toggle_Text.Parent = Toggle_Componenet
-
 local UIPadding = Instance.new("UIPadding")
 UIPadding.PaddingBottom = UDim.new(0, 35)
 UIPadding.PaddingTop = UDim.new(0, 4)
 UIPadding.Parent = Holder
-
-local Toggle_Componenet = Instance.new("Frame")
-Toggle_Componenet.BorderColor3 = Color3.fromRGB(0, 0, 0)
-Toggle_Componenet.AnchorPoint = Vector2.new(0.5, 0)
-Toggle_Componenet.BackgroundTransparency = 1
-Toggle_Componenet.Position = UDim2.new(0.501682698726654, 0, 0, 0)
-Toggle_Componenet.Name = "Toggle_Componenet"
-Toggle_Componenet.Size = UDim2.new(0, 260, 0, 30)
-Toggle_Componenet.BorderSizePixel = 0
-Toggle_Componenet.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-Toggle_Componenet.Parent = Holder
-
-local Toggle = Instance.new("Frame")
-Toggle.BorderColor3 = Color3.fromRGB(0, 0, 0)
-Toggle.AnchorPoint = Vector2.new(0, 0.5)
-Toggle.BackgroundTransparency = 1
-Toggle.Position = UDim2.new(0, 12, 0.5, 0)
-Toggle.Name = "Toggle"
-Toggle.Size = UDim2.new(0, 16, 0, 16)
-Toggle.BorderSizePixel = 0
-Toggle.BackgroundColor3 = Color3.fromRGB(125, 69, 220)
-Toggle.Parent = Toggle_Componenet
-
-local UICorner = Instance.new("UICorner")
-UICorner.CornerRadius = UDim.new(0, 2)
-UICorner.Parent = Toggle
-
-local UIStroke = Instance.new("UIStroke")
-UIStroke.Color = Color3.fromRGB(26, 26, 26)
-UIStroke.Parent = Toggle
-
-local Toggle_Text = Instance.new("TextLabel")
-Toggle_Text.FontFace = Font.new("rbxassetid://12187365364", Enum.FontWeight.Regular, Enum.FontStyle.Normal)
-Toggle_Text.TextColor3 = Color3.fromRGB(169, 169, 169)
-Toggle_Text.BorderColor3 = Color3.fromRGB(0, 0, 0)
-Toggle_Text.Text = "ExampleToggle"
-Toggle_Text.Name = "Toggle_Text"
-Toggle_Text.AnchorPoint = Vector2.new(0, 0.5)
-Toggle_Text.Size = UDim2.new(0, 1, 0, 1)
-Toggle_Text.BackgroundTransparency = 1
-Toggle_Text.Position = UDim2.new(0, 35, 0.5, 0)
-Toggle_Text.BorderSizePixel = 0
-Toggle_Text.AutomaticSize = Enum.AutomaticSize.XY
-Toggle_Text.TextSize = 14
-Toggle_Text.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-Toggle_Text.Parent = Toggle_Componenet
-
-local Keybind_Holder = Instance.new("Frame")
-Keybind_Holder.BorderColor3 = Color3.fromRGB(0, 0, 0)
-Keybind_Holder.AnchorPoint = Vector2.new(1, 0.5)
-Keybind_Holder.Name = "Keybind_Holder"
-Keybind_Holder.BackgroundTransparency = 1
-Keybind_Holder.Position = UDim2.new(1, -8, 0.5, 0)
-Keybind_Holder.Size = UDim2.new(0, 20, 0, 20)
-Keybind_Holder.BorderSizePixel = 0
-Keybind_Holder.AutomaticSize = Enum.AutomaticSize.X
-Keybind_Holder.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-Keybind_Holder.Parent = Toggle_Componenet
-
-local UIStroke = Instance.new("UIStroke")
-UIStroke.Color = Color3.fromRGB(26, 26, 26)
-UIStroke.Parent = Keybind_Holder
-
-local Keybind = Instance.new("TextLabel")
-Keybind.FontFace = Font.new("rbxassetid://12187365364", Enum.FontWeight.Regular, Enum.FontStyle.Normal)
-Keybind.TextColor3 = Color3.fromRGB(169, 169, 169)
-Keybind.BorderColor3 = Color3.fromRGB(0, 0, 0)
-Keybind.Text = "none"
-Keybind.Name = "Keybind"
-Keybind.Size = UDim2.new(0, 1, 0, 1)
-Keybind.AnchorPoint = Vector2.new(0.30000001192092896, 0.5)
-Keybind.BorderSizePixel = 0
-Keybind.BackgroundTransparency = 1
-Keybind.Position = UDim2.new(0.4000000059604645, 0, 0.5, 0)
-Keybind.AutomaticSize = Enum.AutomaticSize.XY
-Keybind.TextYAlignment = Enum.TextYAlignment.Bottom
-Keybind.TextSize = 14
-Keybind.BackgroundColor3 = Color3.fromRGB(31, 31, 31)
-Keybind.Parent = Keybind_Holder
-
-local UICorner = Instance.new("UICorner")
-UICorner.CornerRadius = UDim.new(0, 2)
-UICorner.Parent = Keybind
-
-local UIPadding = Instance.new("UIPadding")
-UIPadding.PaddingTop = UDim.new(0, 3)
-UIPadding.PaddingBottom = UDim.new(0, 3)
-UIPadding.PaddingRight = UDim.new(0, 12)
-UIPadding.PaddingLeft = UDim.new(0, 12)
-UIPadding.Parent = Keybind
-
-local Dropdown_Componenet = Instance.new("Frame")
-Dropdown_Componenet.BorderColor3 = Color3.fromRGB(0, 0, 0)
-Dropdown_Componenet.AnchorPoint = Vector2.new(0.5, 0)
-Dropdown_Componenet.BackgroundTransparency = 1
-Dropdown_Componenet.Position = UDim2.new(0.5, 0, 0.6206896305084229, 0)
-Dropdown_Componenet.Name = "Dropdown_Componenet"
-Dropdown_Componenet.Size = UDim2.new(0, 260, 0, 55)
-Dropdown_Componenet.BorderSizePixel = 0
-Dropdown_Componenet.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-Dropdown_Componenet.Parent = Holder
-
-local Dropdown_Holder = Instance.new("Frame")
-Dropdown_Holder.BorderColor3 = Color3.fromRGB(0, 0, 0)
-Dropdown_Holder.AnchorPoint = Vector2.new(1, 0.5)
-Dropdown_Holder.Name = "Dropdown_Holder"
-Dropdown_Holder.Position = UDim2.new(1, -8, 0.699999988079071, 0)
-Dropdown_Holder.Size = UDim2.new(0, 240, 0, 25)
-Dropdown_Holder.BorderSizePixel = 0
-Dropdown_Holder.AutomaticSize = Enum.AutomaticSize.X
-Dropdown_Holder.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
-Dropdown_Holder.Parent = Dropdown_Componenet
-
-local UIStroke = Instance.new("UIStroke")
-UIStroke.Color = Color3.fromRGB(35, 35, 35)
-UIStroke.Parent = Dropdown_Holder
-
-local Options = Instance.new("TextLabel")
-Options.FontFace = Font.new("rbxassetid://12187365364", Enum.FontWeight.Regular, Enum.FontStyle.Normal)
-Options.TextColor3 = Color3.fromRGB(169, 169, 169)
-Options.BorderColor3 = Color3.fromRGB(0, 0, 0)
-Options.Text = "none"
-Options.Name = "Options"
-Options.Size = UDim2.new(0, 1, 0, 1)
-Options.AnchorPoint = Vector2.new(0.30000001192092896, 0.5)
-Options.BorderSizePixel = 0
-Options.BackgroundTransparency = 1
-Options.Position = UDim2.new(0.10000000149011612, -12, 0.5, 0)
-Options.AutomaticSize = Enum.AutomaticSize.XY
-Options.TextYAlignment = Enum.TextYAlignment.Bottom
-Options.TextSize = 14
-Options.BackgroundColor3 = Color3.fromRGB(31, 31, 31)
-Options.Parent = Dropdown_Holder
-
-local UICorner = Instance.new("UICorner")
-UICorner.CornerRadius = UDim.new(0, 2)
-UICorner.Parent = Options
-
-local UIPadding = Instance.new("UIPadding")
-UIPadding.PaddingTop = UDim.new(0, 3)
-UIPadding.PaddingBottom = UDim.new(0, 3)
-UIPadding.PaddingRight = UDim.new(0, 12)
-UIPadding.PaddingLeft = UDim.new(0, 12)
-UIPadding.Parent = Options
-
-local Icon = Instance.new("ImageLabel")
-Icon.ImageColor3 = Color3.fromRGB(70, 70, 70)
-Icon.ScaleType = Enum.ScaleType.Fit
-Icon.BorderColor3 = Color3.fromRGB(0, 0, 0)
-Icon.Name = "Icon"
-Icon.AnchorPoint = Vector2.new(1, 0.5)
-Icon.Image = "rbxassetid://120617795376272"
-Icon.BackgroundTransparency = 1
-Icon.Position = UDim2.new(0.9539749026298523, 0, 0.5, 0)
-
-Icon.Size = UDim2.new(0, 8, 0, 8)
-Icon.BorderSizePixel = 0
-Icon.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-Icon.Parent = Dropdown_Holder
-
-local Dropdown_Label = Instance.new("TextLabel")
-Dropdown_Label.FontFace = Font.new("rbxassetid://12187365364", Enum.FontWeight.Regular, Enum.FontStyle.Normal)
-Dropdown_Label.TextColor3 = Color3.fromRGB(255, 255, 255)
-Dropdown_Label.BorderColor3 = Color3.fromRGB(0, 0, 0)
-Dropdown_Label.Text = "Example Dropdown"
-Dropdown_Label.Name = "Dropdown_Label"
-Dropdown_Label.AnchorPoint = Vector2.new(0, 0.5)
-Dropdown_Label.Size = UDim2.new(0, 1, 0, 1)
-Dropdown_Label.BackgroundTransparency = 1
-Dropdown_Label.Position = UDim2.new(0, 12, 0.20000000298023224, 0)
-Dropdown_Label.BorderSizePixel = 0
-Dropdown_Label.AutomaticSize = Enum.AutomaticSize.XY
-Dropdown_Label.TextSize = 14
-Dropdown_Label.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-Dropdown_Label.Parent = Dropdown_Componenet
-
-local Toggle_Componenet = Instance.new("Frame")
-Toggle_Componenet.BorderColor3 = Color3.fromRGB(0, 0, 0)
-Toggle_Componenet.AnchorPoint = Vector2.new(0.5, 0)
-Toggle_Componenet.BackgroundTransparency = 1
-Toggle_Componenet.Position = UDim2.new(0.501682698726654, 0, 0, 0)
-Toggle_Componenet.Name = "Toggle_Componenet"
-Toggle_Componenet.Size = UDim2.new(0, 260, 0, 30)
-Toggle_Componenet.BorderSizePixel = 0
-Toggle_Componenet.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-Toggle_Componenet.Parent = Holder
-
-local Toggle_Text = Instance.new("TextLabel")
-Toggle_Text.FontFace = Font.new("rbxassetid://12187365364", Enum.FontWeight.Regular, Enum.FontStyle.Normal)
-Toggle_Text.TextColor3 = Color3.fromRGB(255, 255, 255)
-Toggle_Text.BorderColor3 = Color3.fromRGB(0, 0, 0)
-Toggle_Text.Text = "ExampleToggle"
-Toggle_Text.Name = "Toggle_Text"
-Toggle_Text.AnchorPoint = Vector2.new(0, 0.5)
-Toggle_Text.Size = UDim2.new(0, 1, 0, 1)
-Toggle_Text.BackgroundTransparency = 1
-Toggle_Text.Position = UDim2.new(0, 12, 0.5, 0)
-Toggle_Text.BorderSizePixel = 0
-Toggle_Text.AutomaticSize = Enum.AutomaticSize.XY
-Toggle_Text.TextSize = 14
-Toggle_Text.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-Toggle_Text.Parent = Toggle_Componenet
-
-local Color_Frame = Instance.new("Frame")
-Color_Frame.AnchorPoint = Vector2.new(0.5, 0.5)
-Color_Frame.Name = "Color_Frame"
-Color_Frame.Position = UDim2.new(0.5, 115, 0.5, 0)
-Color_Frame.BorderColor3 = Color3.fromRGB(0, 0, 0)
-Color_Frame.Size = UDim2.new(0, 15, 0, 15)
-Color_Frame.BorderSizePixel = 0
-Color_Frame.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-Color_Frame.Parent = Toggle_Componenet
-
-local UICorner = Instance.new("UICorner")
-UICorner.CornerRadius = UDim.new(0, 4)
-UICorner.Parent = Color_Frame
 
 local Section_Name = Instance.new("TextLabel")
 Section_Name.FontFace = Font.new("rbxassetid://12187365364", Enum.FontWeight.Regular, Enum.FontStyle.Normal)
@@ -787,393 +450,6 @@ UIPadding.PaddingBottom = UDim.new(0, 35)
 UIPadding.PaddingTop = UDim.new(0, 4)
 UIPadding.Parent = Holder
 
-local Config_Componenet = Instance.new("Frame")
-Config_Componenet.BorderColor3 = Color3.fromRGB(0, 0, 0)
-Config_Componenet.AnchorPoint = Vector2.new(0.5, 0)
-Config_Componenet.BackgroundTransparency = 1
-Config_Componenet.Position = UDim2.new(0.5, 0, 0.1435406655073166, 0)
-Config_Componenet.Name = "Config_Componenet"
-Config_Componenet.Size = UDim2.new(0, 260, 0, 120)
-Config_Componenet.BorderSizePixel = 0
-Config_Componenet.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-Config_Componenet.Parent = Holder
-
-local Config_Path = Instance.new("TextLabel")
-Config_Path.FontFace = Font.new("rbxassetid://12187365364", Enum.FontWeight.Regular, Enum.FontStyle.Normal)
-Config_Path.TextColor3 = Color3.fromRGB(169, 169, 169)
-Config_Path.BorderColor3 = Color3.fromRGB(0, 0, 0)
-Config_Path.Text = "Config Path"
-Config_Path.Name = "Config_Path"
-Config_Path.AnchorPoint = Vector2.new(0, 0.5)
-Config_Path.Size = UDim2.new(0, 1, 0, 1)
-Config_Path.BackgroundTransparency = 1
-Config_Path.Position = UDim2.new(0, 12, 0.10000000149011612, 0)
-Config_Path.BorderSizePixel = 0
-Config_Path.AutomaticSize = Enum.AutomaticSize.XY
-Config_Path.TextSize = 14
-Config_Path.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-Config_Path.Parent = Config_Componenet
-
-local Keybind_Holder = Instance.new("Frame")
-Keybind_Holder.BorderColor3 = Color3.fromRGB(0, 0, 0)
-Keybind_Holder.AnchorPoint = Vector2.new(0, 1)
-Keybind_Holder.Name = "Keybind_Holder"
-Keybind_Holder.Position = UDim2.new(0, 12, 1, -35)
-Keybind_Holder.Size = UDim2.new(0, 121, 0, 25)
-Keybind_Holder.BorderSizePixel = 0
-Keybind_Holder.AutomaticSize = Enum.AutomaticSize.X
-Keybind_Holder.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
-Keybind_Holder.Parent = Config_Componenet
-
-local UIStroke = Instance.new("UIStroke")
-UIStroke.Color = Color3.fromRGB(35, 35, 35)
-UIStroke.Parent = Keybind_Holder
-
-local Save_Button = Instance.new("TextLabel")
-Save_Button.FontFace = Font.new("rbxassetid://12187365364", Enum.FontWeight.Regular, Enum.FontStyle.Normal)
-Save_Button.TextColor3 = Color3.fromRGB(169, 169, 169)
-Save_Button.BorderColor3 = Color3.fromRGB(0, 0, 0)
-Save_Button.Text = "Save"
-Save_Button.Name = "Save_Button"
-Save_Button.Size = UDim2.new(0, 1, 0, 1)
-Save_Button.AnchorPoint = Vector2.new(0.5, 0.5)
-Save_Button.BorderSizePixel = 0
-Save_Button.BackgroundTransparency = 1
-Save_Button.Position = UDim2.new(0.5, 0, 0.5, 0)
-Save_Button.AutomaticSize = Enum.AutomaticSize.XY
-Save_Button.TextYAlignment = Enum.TextYAlignment.Bottom
-Save_Button.TextSize = 14
-Save_Button.BackgroundColor3 = Color3.fromRGB(31, 31, 31)
-Save_Button.Parent = Keybind_Holder
-
-local UICorner = Instance.new("UICorner")
-UICorner.CornerRadius = UDim.new(0, 2)
-UICorner.Parent = Save_Button
-
-local UIPadding = Instance.new("UIPadding")
-UIPadding.PaddingTop = UDim.new(0, 3)
-UIPadding.PaddingBottom = UDim.new(0, 3)
-UIPadding.PaddingRight = UDim.new(0, 12)
-UIPadding.PaddingLeft = UDim.new(0, 12)
-UIPadding.Parent = Save_Button
-
-local Dropdown_Holder = Instance.new("Frame")
-Dropdown_Holder.BorderColor3 = Color3.fromRGB(0, 0, 0)
-Dropdown_Holder.AnchorPoint = Vector2.new(1, 0.5)
-Dropdown_Holder.Name = "Dropdown_Holder"
-Dropdown_Holder.Position = UDim2.new(1, -8, 0.3499999940395355, 0)
-Dropdown_Holder.Size = UDim2.new(0, 240, 0, 25)
-Dropdown_Holder.BorderSizePixel = 0
-Dropdown_Holder.AutomaticSize = Enum.AutomaticSize.X
-Dropdown_Holder.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
-Dropdown_Holder.Parent = Config_Componenet
-
-local UIStroke = Instance.new("UIStroke")
-UIStroke.Color = Color3.fromRGB(35, 35, 35)
-UIStroke.Parent = Dropdown_Holder
-
-local Options = Instance.new("TextLabel")
-Options.FontFace = Font.new("rbxassetid://12187365364", Enum.FontWeight.Regular, Enum.FontStyle.Normal)
-Options.TextColor3 = Color3.fromRGB(169, 169, 169)
-Options.BorderColor3 = Color3.fromRGB(0, 0, 0)
-Options.Text = "none"
-Options.Name = "Options"
-Options.Size = UDim2.new(0, 1, 0, 1)
-Options.AnchorPoint = Vector2.new(0.30000001192092896, 0.5)
-Options.BorderSizePixel = 0
-Options.BackgroundTransparency = 1
-Options.Position = UDim2.new(0.10000000149011612, -12, 0.5, 0)
-Options.AutomaticSize = Enum.AutomaticSize.XY
-Options.TextYAlignment = Enum.TextYAlignment.Bottom
-Options.TextSize = 14
-Options.BackgroundColor3 = Color3.fromRGB(31, 31, 31)
-Options.Parent = Dropdown_Holder
-
-local UICorner = Instance.new("UICorner")
-UICorner.CornerRadius = UDim.new(0, 2)
-UICorner.Parent = Options
-
-local UIPadding = Instance.new("UIPadding")
-UIPadding.PaddingTop = UDim.new(0, 3)
-UIPadding.PaddingBottom = UDim.new(0, 3)
-UIPadding.PaddingRight = UDim.new(0, 12)
-UIPadding.PaddingLeft = UDim.new(0, 12)
-UIPadding.Parent = Options
-
-local Icon = Instance.new("ImageLabel")
-Icon.ImageColor3 = Color3.fromRGB(70, 70, 70)
-Icon.ScaleType = Enum.ScaleType.Fit
-Icon.BorderColor3 = Color3.fromRGB(0, 0, 0)
-Icon.Name = "Icon"
-Icon.AnchorPoint = Vector2.new(1, 0.5)
-Icon.Image = "rbxassetid://120617795376272"
-Icon.BackgroundTransparency = 1
-Icon.Position = UDim2.new(0.9539749026298523, 0, 0.5, 0)
-
-Icon.Size = UDim2.new(0, 8, 0, 8)
-Icon.BorderSizePixel = 0
-Icon.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-Icon.Parent = Dropdown_Holder
-
-local Keybind_Holder = Instance.new("Frame")
-Keybind_Holder.BorderColor3 = Color3.fromRGB(0, 0, 0)
-Keybind_Holder.AnchorPoint = Vector2.new(1, 1)
-Keybind_Holder.Name = "Keybind_Holder"
-Keybind_Holder.Position = UDim2.new(0.968999981880188, 0, 1, -35)
-Keybind_Holder.Size = UDim2.new(0, 113, 0, 25)
-Keybind_Holder.BorderSizePixel = 0
-Keybind_Holder.AutomaticSize = Enum.AutomaticSize.X
-Keybind_Holder.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
-Keybind_Holder.Parent = Config_Componenet
-
-local UIStroke = Instance.new("UIStroke")
-UIStroke.Color = Color3.fromRGB(35, 35, 35)
-UIStroke.Parent = Keybind_Holder
-
-local Load_Button = Instance.new("TextLabel")
-Load_Button.FontFace = Font.new("rbxassetid://12187365364", Enum.FontWeight.Regular, Enum.FontStyle.Normal)
-Load_Button.TextColor3 = Color3.fromRGB(169, 169, 169)
-Load_Button.BorderColor3 = Color3.fromRGB(0, 0, 0)
-Load_Button.Text = "Load"
-Load_Button.Name = "Load_Button"
-Load_Button.Size = UDim2.new(0, 1, 0, 1)
-Load_Button.AnchorPoint = Vector2.new(0.5, 0.5)
-Load_Button.BorderSizePixel = 0
-Load_Button.BackgroundTransparency = 1
-Load_Button.Position = UDim2.new(0.5, 0, 0.5, 0)
-Load_Button.AutomaticSize = Enum.AutomaticSize.XY
-Load_Button.TextYAlignment = Enum.TextYAlignment.Bottom
-Load_Button.TextSize = 14
-Load_Button.BackgroundColor3 = Color3.fromRGB(31, 31, 31)
-Load_Button.Parent = Keybind_Holder
-
-local UICorner = Instance.new("UICorner")
-UICorner.CornerRadius = UDim.new(0, 2)
-UICorner.Parent = Load_Button
-
-local UIPadding = Instance.new("UIPadding")
-UIPadding.PaddingTop = UDim.new(0, 3)
-UIPadding.PaddingBottom = UDim.new(0, 3)
-UIPadding.PaddingRight = UDim.new(0, 12)
-UIPadding.PaddingLeft = UDim.new(0, 12)
-UIPadding.Parent = Load_Button
-
-local Keybind_Holder = Instance.new("Frame")
-Keybind_Holder.BorderColor3 = Color3.fromRGB(0, 0, 0)
-Keybind_Holder.AnchorPoint = Vector2.new(0, 1)
-Keybind_Holder.Name = "Keybind_Holder"
-Keybind_Holder.Position = UDim2.new(0, 12, 1, -5)
-Keybind_Holder.Size = UDim2.new(0, 240, 0, 25)
-Keybind_Holder.BorderSizePixel = 0
-Keybind_Holder.AutomaticSize = Enum.AutomaticSize.X
-Keybind_Holder.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
-Keybind_Holder.Parent = Config_Componenet
-
-local UIStroke = Instance.new("UIStroke")
-UIStroke.Color = Color3.fromRGB(35, 35, 35)
-UIStroke.Parent = Keybind_Holder
-
-local Save_Button = Instance.new("TextLabel")
-Save_Button.FontFace = Font.new("rbxassetid://12187365364", Enum.FontWeight.Regular, Enum.FontStyle.Normal)
-Save_Button.TextColor3 = Color3.fromRGB(169, 169, 169)
-Save_Button.BorderColor3 = Color3.fromRGB(0, 0, 0)
-Save_Button.Text = "Delete"
-Save_Button.Name = "Save_Button"
-Save_Button.Size = UDim2.new(0, 1, 0, 1)
-Save_Button.AnchorPoint = Vector2.new(0.5, 0.5)
-Save_Button.BorderSizePixel = 0
-Save_Button.BackgroundTransparency = 1
-Save_Button.Position = UDim2.new(0.5, 0, 0.5, 0)
-Save_Button.AutomaticSize = Enum.AutomaticSize.XY
-Save_Button.TextYAlignment = Enum.TextYAlignment.Bottom
-Save_Button.TextSize = 14
-Save_Button.BackgroundColor3 = Color3.fromRGB(31, 31, 31)
-Save_Button.Parent = Keybind_Holder
-
-local UICorner = Instance.new("UICorner")
-UICorner.CornerRadius = UDim.new(0, 2)
-UICorner.Parent = Save_Button
-
-local UIPadding = Instance.new("UIPadding")
-UIPadding.PaddingTop = UDim.new(0, 3)
-UIPadding.PaddingBottom = UDim.new(0, 3)
-UIPadding.PaddingRight = UDim.new(0, 12)
-UIPadding.PaddingLeft = UDim.new(0, 12)
-UIPadding.Parent = Save_Button
-
-local Toggle_Componenet = Instance.new("Frame")
-Toggle_Componenet.BorderColor3 = Color3.fromRGB(0, 0, 0)
-Toggle_Componenet.AnchorPoint = Vector2.new(0.5, 0)
-Toggle_Componenet.BackgroundTransparency = 1
-Toggle_Componenet.Position = UDim2.new(0.501682698726654, 0, 0, 0)
-Toggle_Componenet.Name = "Toggle_Componenet"
-Toggle_Componenet.Size = UDim2.new(0, 260, 0, 30)
-Toggle_Componenet.BorderSizePixel = 0
-Toggle_Componenet.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-Toggle_Componenet.Parent = Holder
-
-local Toggle = Instance.new("Frame")
-Toggle.BorderColor3 = Color3.fromRGB(0, 0, 0)
-Toggle.AnchorPoint = Vector2.new(0, 0.5)
-Toggle.BackgroundTransparency = 1
-Toggle.Position = UDim2.new(0, 12, 0.5, 0)
-Toggle.Name = "Toggle"
-Toggle.Size = UDim2.new(0, 16, 0, 16)
-Toggle.BorderSizePixel = 0
-Toggle.BackgroundColor3 = Color3.fromRGB(125, 69, 220)
-Toggle.Parent = Toggle_Componenet
-
-local UICorner = Instance.new("UICorner")
-UICorner.CornerRadius = UDim.new(0, 2)
-UICorner.Parent = Toggle
-
-local UIStroke = Instance.new("UIStroke")
-UIStroke.Color = Color3.fromRGB(26, 26, 26)
-UIStroke.Parent = Toggle
-
-local Toggle_Text = Instance.new("TextLabel")
-Toggle_Text.FontFace = Font.new("rbxassetid://12187365364", Enum.FontWeight.Regular, Enum.FontStyle.Normal)
-Toggle_Text.TextColor3 = Color3.fromRGB(169, 169, 169)
-Toggle_Text.BorderColor3 = Color3.fromRGB(0, 0, 0)
-Toggle_Text.Text = "ExampleToggle"
-Toggle_Text.Name = "Toggle_Text"
-Toggle_Text.AnchorPoint = Vector2.new(0, 0.5)
-Toggle_Text.Size = UDim2.new(0, 1, 0, 1)
-Toggle_Text.BackgroundTransparency = 1
-Toggle_Text.Position = UDim2.new(0, 35, 0.5, 0)
-Toggle_Text.BorderSizePixel = 0
-Toggle_Text.AutomaticSize = Enum.AutomaticSize.XY
-Toggle_Text.TextSize = 14
-Toggle_Text.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-Toggle_Text.Parent = Toggle_Componenet
-
-local Keybind_Holder = Instance.new("Frame")
-Keybind_Holder.BorderColor3 = Color3.fromRGB(0, 0, 0)
-Keybind_Holder.AnchorPoint = Vector2.new(1, 0.5)
-Keybind_Holder.Name = "Keybind_Holder"
-Keybind_Holder.BackgroundTransparency = 1
-Keybind_Holder.Position = UDim2.new(1, -8, 0.5, 0)
-Keybind_Holder.Size = UDim2.new(0, 20, 0, 20)
-Keybind_Holder.BorderSizePixel = 0
-Keybind_Holder.AutomaticSize = Enum.AutomaticSize.X
-Keybind_Holder.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-Keybind_Holder.Parent = Toggle_Componenet
-
-local UIStroke = Instance.new("UIStroke")
-UIStroke.Color = Color3.fromRGB(26, 26, 26)
-UIStroke.Parent = Keybind_Holder
-
-local Keybind = Instance.new("TextLabel")
-Keybind.FontFace = Font.new("rbxassetid://12187365364", Enum.FontWeight.Regular, Enum.FontStyle.Normal)
-Keybind.TextColor3 = Color3.fromRGB(169, 169, 169)
-Keybind.BorderColor3 = Color3.fromRGB(0, 0, 0)
-Keybind.Text = "none"
-Keybind.Name = "Keybind"
-Keybind.Size = UDim2.new(0, 1, 0, 1)
-Keybind.AnchorPoint = Vector2.new(0.30000001192092896, 0.5)
-Keybind.BorderSizePixel = 0
-Keybind.BackgroundTransparency = 1
-Keybind.Position = UDim2.new(0.4000000059604645, 0, 0.5, 0)
-Keybind.AutomaticSize = Enum.AutomaticSize.XY
-Keybind.TextYAlignment = Enum.TextYAlignment.Bottom
-Keybind.TextSize = 14
-Keybind.BackgroundColor3 = Color3.fromRGB(31, 31, 31)
-Keybind.Parent = Keybind_Holder
-
-local UICorner = Instance.new("UICorner")
-UICorner.CornerRadius = UDim.new(0, 2)
-UICorner.Parent = Keybind
-
-local UIPadding = Instance.new("UIPadding")
-UIPadding.PaddingTop = UDim.new(0, 3)
-UIPadding.PaddingBottom = UDim.new(0, 3)
-UIPadding.PaddingRight = UDim.new(0, 12)
-UIPadding.PaddingLeft = UDim.new(0, 12)
-UIPadding.Parent = Keybind
-
-local Slider_Componenet = Instance.new("Frame")
-Slider_Componenet.BorderColor3 = Color3.fromRGB(0, 0, 0)
-Slider_Componenet.AnchorPoint = Vector2.new(0.5, 0)
-Slider_Componenet.BackgroundTransparency = 1
-Slider_Componenet.Position = UDim2.new(0.48557689785957336, 0, 0.8571428656578064, 0)
-Slider_Componenet.Name = "Slider_Componenet"
-Slider_Componenet.Size = UDim2.new(0, 252, 0, 35)
-Slider_Componenet.BorderSizePixel = 0
-Slider_Componenet.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-Slider_Componenet.Parent = Holder
-
-local Slider_Label = Instance.new("TextLabel")
-Slider_Label.FontFace = Font.new("rbxassetid://12187365364", Enum.FontWeight.Regular, Enum.FontStyle.Normal)
-Slider_Label.TextColor3 = Color3.fromRGB(169, 169, 169)
-Slider_Label.BorderColor3 = Color3.fromRGB(0, 0, 0)
-Slider_Label.Text = "Slider"
-Slider_Label.Name = "Slider_Label"
-Slider_Label.Size = UDim2.new(0, 1, 0, 1)
-Slider_Label.BackgroundTransparency = 1
-Slider_Label.Position = UDim2.new(0, 12, 0, 0)
-Slider_Label.BorderSizePixel = 0
-Slider_Label.AutomaticSize = Enum.AutomaticSize.XY
-Slider_Label.TextSize = 14
-Slider_Label.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-Slider_Label.Parent = Slider_Componenet
-
-local Slider_BG = Instance.new("Frame")
-Slider_BG.AnchorPoint = Vector2.new(0.5, 1)
-Slider_BG.Name = "Slider_BG"
-Slider_BG.Position = UDim2.new(0.52182537317276, 0, 1, -10)
-Slider_BG.BorderColor3 = Color3.fromRGB(0, 0, 0)
-Slider_BG.Size = UDim2.new(0, 239, 0, 2)
-Slider_BG.BorderSizePixel = 0
-Slider_BG.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
-Slider_BG.Parent = Slider_Componenet
-
-local UICorner = Instance.new("UICorner")
-UICorner.CornerRadius = UDim.new(0, 50)
-UICorner.Parent = Slider_BG
-
-local Slider_Progress = Instance.new("Frame")
-Slider_Progress.AnchorPoint = Vector2.new(0, 0.5)
-Slider_Progress.Name = "Slider_Progress"
-Slider_Progress.Position = UDim2.new(0, 0, 0.5, 0)
-Slider_Progress.BorderColor3 = Color3.fromRGB(0, 0, 0)
-Slider_Progress.Size = UDim2.new(0, 116, 0, 2)
-Slider_Progress.BorderSizePixel = 0
-Slider_Progress.BackgroundColor3 = Color3.fromRGB(125, 69, 220)
-Slider_Progress.Parent = Slider_BG
-
-local UICorner = Instance.new("UICorner")
-UICorner.CornerRadius = UDim.new(0, 50)
-UICorner.Parent = Slider_Progress
-
-local Pointer = Instance.new("Frame")
-Pointer.AnchorPoint = Vector2.new(1, 0.5)
-Pointer.Name = "Pointer"
-Pointer.Position = UDim2.new(1, 0, 0.5, 0)
-Pointer.BorderColor3 = Color3.fromRGB(0, 0, 0)
-Pointer.Size = UDim2.new(0, 12, 0, 12)
-Pointer.BorderSizePixel = 0
-Pointer.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-Pointer.Parent = Slider_Progress
-
-local UICorner = Instance.new("UICorner")
-UICorner.Parent = Pointer
-
-local Slider_Value = Instance.new("TextLabel")
-Slider_Value.FontFace = Font.new("rbxassetid://12187365364", Enum.FontWeight.Regular, Enum.FontStyle.Normal)
-Slider_Value.TextColor3 = Color3.fromRGB(169, 169, 169)
-Slider_Value.BorderColor3 = Color3.fromRGB(0, 0, 0)
-Slider_Value.Text = "100"
-Slider_Value.Name = "Slider_Value"
-Slider_Value.AnchorPoint = Vector2.new(1, 0)
-Slider_Value.Size = UDim2.new(0, 1, 0, 1)
-Slider_Value.BackgroundTransparency = 1
-Slider_Value.Position = UDim2.new(1, -2, 0, 0)
-Slider_Value.BorderSizePixel = 0
-Slider_Value.AutomaticSize = Enum.AutomaticSize.XY
-Slider_Value.TextSize = 14
-Slider_Value.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-Slider_Value.Parent = Slider_Componenet
-
 local Section_Name = Instance.new("TextLabel")
 Section_Name.FontFace = Font.new("rbxassetid://12187365364", Enum.FontWeight.Regular, Enum.FontStyle.Normal)
 Section_Name.TextColor3 = Color3.fromRGB(125, 69, 220)
@@ -1227,7 +503,6 @@ Inline.Size = UDim2.new(1, 1, 0.06818459182977676, 1)
 Inline.BorderSizePixel = 0
 Inline.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
 Inline.Parent = Shadow
-Inline.ZIndex = 50
 
 local UIGradient = Instance.new("UIGradient")
 UIGradient.Rotation = -90
@@ -1243,122 +518,7 @@ UIGradient.Color = ColorSequence.new{
 }
 UIGradient.Parent = Inline
 
-local Footer = Instance.new("Frame")
-Footer.AnchorPoint = Vector2.new(0.5, 1)
-Footer.Name = "Footer"
-Footer.Position = UDim2.new(0.5, 0, 0.9999998211860657, 0)
-Footer.BorderColor3 = Color3.fromRGB(0, 0, 0)
-Footer.Size = UDim2.new(0, 563, 0, 28)
-Footer.BorderSizePixel = 0
-Footer.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
-Footer.Parent = MainFrame
 
-local footer_left_label = Instance.new("TextLabel")
-footer_left_label.FontFace = Font.new("rbxassetid://12187365364", Enum.FontWeight.Regular, Enum.FontStyle.Normal)
-footer_left_label.TextStrokeTransparency = 0.800000011920929
-footer_left_label.AnchorPoint = Vector2.new(0, 0.5)
-footer_left_label.TextSize = 15
-footer_left_label.Size = UDim2.new(0, 1, 0, 1)
-footer_left_label.RichText = true
-footer_left_label.TextColor3 = Color3.fromRGB(255, 255, 255)
-footer_left_label.BorderColor3 = Color3.fromRGB(0, 0, 0)
-footer_left_label.Text = "gamename"
-footer_left_label.Name = "footer_left_label"
-footer_left_label.BackgroundTransparency = 1
-footer_left_label.Position = UDim2.new(0, 12, 0.5, 0)
-footer_left_label.TextWrapped = true
-footer_left_label.BorderSizePixel = 0
-footer_left_label.AutomaticSize = Enum.AutomaticSize.XY
-footer_left_label.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-footer_left_label.Parent = Footer
-
-local Container = Instance.new("Frame")
-Container.BorderColor3 = Color3.fromRGB(0, 0, 0)
-Container.AnchorPoint = Vector2.new(1, 0.5)
-Container.Name = "Container"
-Container.BackgroundTransparency = 12
-Container.Position = UDim2.new(1, 0, 0.5000065565109253, 0)
-Container.Size = UDim2.new(0, 105, 0, 28)
-Container.BorderSizePixel = 0
-Container.AutomaticSize = Enum.AutomaticSize.XY
-Container.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-Container.Parent = Footer
-
-local UIListLayout = Instance.new("UIListLayout")
-UIListLayout.FillDirection = Enum.FillDirection.Horizontal
-UIListLayout.HorizontalAlignment = Enum.HorizontalAlignment.Right
-UIListLayout.Padding = UDim.new(0, 12)
-UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
-UIListLayout.Parent = Container
-
-local UIPadding = Instance.new("UIPadding")
-UIPadding.PaddingTop = UDim.new(0, 6)
-UIPadding.PaddingRight = UDim.new(0, 12)
-UIPadding.Parent = Container
-
-local footer_text = Instance.new("TextLabel")
-footer_text.FontFace = Font.new("rbxassetid://12187365364", Enum.FontWeight.Regular, Enum.FontStyle.Normal)
-footer_text.TextStrokeTransparency = 0.800000011920929
-footer_text.AnchorPoint = Vector2.new(1, 0.5)
-footer_text.TextSize = 15
-footer_text.Size = UDim2.new(0, 1, 0, 1)
-footer_text.RichText = true
-footer_text.TextColor3 = Color3.fromRGB(255, 255, 255)
-footer_text.BorderColor3 = Color3.fromRGB(0, 0, 0)
-footer_text.Text = "uptime:0:00"
-footer_text.Name = "footer_text"
-footer_text.BackgroundTransparency = 1
-footer_text.Position = UDim2.new(0.3552631437778473, -90, -3.299999952316284, 0)
-footer_text.TextWrapped = true
-footer_text.BorderSizePixel = 0
-footer_text.AutomaticSize = Enum.AutomaticSize.XY
-footer_text.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-footer_text.Parent = Container
-
-local Libary_Bottom_Text = Instance.new("Frame")
-Libary_Bottom_Text.BorderColor3 = Color3.fromRGB(0, 0, 0)
-Libary_Bottom_Text.AnchorPoint = Vector2.new(0, 1)
-Libary_Bottom_Text.Name = "Libary_Bottom_Text"
-Libary_Bottom_Text.BackgroundTransparency = 12
-Libary_Bottom_Text.Position = UDim2.new(0, 15, 1, -10)
-Libary_Bottom_Text.Size = UDim2.new(0, 105, 0, 28)
-Libary_Bottom_Text.BorderSizePixel = 0
-Libary_Bottom_Text.AutomaticSize = Enum.AutomaticSize.XY
-Libary_Bottom_Text.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-Libary_Bottom_Text.Parent = BG_BLUR
-
-local UIListLayout = Instance.new("UIListLayout")
-UIListLayout.FillDirection = Enum.FillDirection.Horizontal
-UIListLayout.HorizontalAlignment = Enum.HorizontalAlignment.Right
-UIListLayout.Padding = UDim.new(0, 12)
-UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
-UIListLayout.Parent = Libary_Bottom_Text
-
-local UIPadding = Instance.new("UIPadding")
-UIPadding.PaddingTop = UDim.new(0, 6)
-UIPadding.PaddingRight = UDim.new(0, 12)
-UIPadding.Parent = Libary_Bottom_Text
-
-local example_text = Instance.new("TextLabel")
-example_text.FontFace = Font.new("rbxassetid://12187365364", Enum.FontWeight.Regular, Enum.FontStyle.Normal)
-example_text.TextStrokeTransparency = 0.800000011920929
-example_text.AnchorPoint = Vector2.new(1, 0.5)
-example_text.TextSize = 15
-example_text.Size = UDim2.new(0, 1, 0, 1)
-example_text.RichText = true
-example_text.TextColor3 = Color3.fromRGB(255, 255, 255)
-example_text.BorderColor3 = Color3.fromRGB(0, 0, 0)
-example_text.Text = "Menu:Insert"
-example_text.Name = "example_text"
-example_text.BackgroundTransparency = 1
-example_text.Position = UDim2.new(0.9928951859474182, -8, -1, 0)
-example_text.TextWrapped = true
-example_text.BorderSizePixel = 0
-example_text.AutomaticSize = Enum.AutomaticSize.XY
-example_text.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-example_text.Parent = Libary_Bottom_Text
-
--- Make UI toggleable with Insert key
 local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
 
@@ -1376,20 +536,7 @@ local function toggleUI()
         BackgroundTransparency = targetTransparency
     })
     
-    local tween2 = TweenService:Create(BG_BLUR, tweenInfo, {
-        BackgroundTransparency = isVisible and 0.2 or 1
-    })
-    
-    -- Hide/show the Libary_Bottom_Text frame
-    Libary_Bottom_Text.Visible = isVisible
-    
-    local tween3 = TweenService:Create(example_text, tweenInfo, {
-        TextTransparency = isVisible and 0 or 1
-    })
-    
     tween1:Play()
-    tween2:Play()
-    tween3:Play()
 end
 
 UserInputService.InputBegan:Connect(function(input, gameProcessed)
@@ -1400,5 +547,135 @@ UserInputService.InputBegan:Connect(function(input, gameProcessed)
     end
 end)
 
--- Return the Library
-return Library
+-- Window Creation Function
+function libary:CreateWindow(config)
+    local window = {}
+    setmetatable(window, Window)
+    
+    -- Store window configuration
+    window.config = config or {}
+    window.tabs = {}
+    window.sections = {left = {}, right = {}}
+    
+    -- Add window to global windows table
+    table.insert(Windows, window)
+    
+    return window
+end
+
+-- Tab Creation Function
+function Window:CreateTab(options)
+    local tab = {}
+    setmetatable(tab, Tab)
+    
+    tab.text = options.TabText or "Tab"
+    tab.sections = {left = {}, right = {}}
+    tab.window = self
+    
+    -- Add tab to window's tabs
+    table.insert(self.tabs, tab)
+    
+    return tab
+end
+
+-- Section Creation Function
+function Window:CreateSection(options)
+    local section = {}
+    setmetatable(section, Section)
+    
+    section.text = options.SectionText or "Section"
+    section.position = options.position or "left"
+    section.window = self
+    
+    -- Add section to appropriate position
+    table.insert(self.sections[section.position], section)
+    
+    return section
+end
+
+-- Section Creation for Tabs
+function Tab:CreateSection(options)
+    local section = {}
+    setmetatable(section, Section)
+    
+    section.text = options.SectionText or "Section"
+    section.position = options.position or "left"
+    section.tab = self
+    section.window = self.window
+    
+    -- Add section to tab's sections
+    table.insert(self.sections[section.position], section)
+    
+    return section
+end
+
+-- Placeholder functions for UI elements (no implementation yet)
+function Section:CreateToggle(options)
+    print("CreateToggle called with:", options.ToggleText)
+    -- TODO: Implement toggle creation
+    return {}
+end
+
+function Section:CreateSlider(options)
+    print("CreateSlider called with:", options.SliderText)
+    -- TODO: Implement slider creation
+    return {}
+end
+
+function Section:CreateLabel(options)
+    print("CreateLabel called with:", options.LabelText)
+    -- TODO: Implement label creation
+    return {}
+end
+
+function Section:CreateTextInput(options)
+    print("CreateTextInput called with:", options.TextInputText)
+    -- TODO: Implement text input creation
+    return {}
+end
+
+function Section:CreateDropdown(options)
+    print("CreateDropdown called with:", options.DropdownText)
+    -- TODO: Implement dropdown creation
+    return {}
+end
+
+function Section:CreateButton(options)
+    print("CreateButton called with:", options.ButtonText)
+    -- TODO: Implement button creation
+    return {}
+end
+
+function Section:CreateKeybind(options)
+    print("CreateKeybind called with:", options.KeybindText)
+    -- TODO: Implement keybind creation
+    return {}
+end
+
+function Section:CreateColorpicker(options)
+    print("CreateColorpicker called with:", options.ColorpickerText)
+    -- TODO: Implement colorpicker creation
+    return {}
+end
+
+function Section:CreateToggleWithKeybind(options)
+    print("CreateToggleWithKeybind called with:", options.ToggleText)
+    -- TODO: Implement toggle with keybind creation
+    return {}
+end
+
+function Section:AddColorToggle(options)
+    print("AddColorToggle called with:", options.Text)
+    -- TODO: Implement color toggle creation
+    return {}
+end
+
+function Section:CreateConfig(options)
+    print("CreateConfig called with:", options.Text)
+    -- TODO: Implement config creation
+    return {}
+end
+
+-- Return the library
+return libary
+
