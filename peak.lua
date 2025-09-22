@@ -25,21 +25,6 @@ local libary_config = {
     ColorPickerValue = {},
 }
 
-
-local Window = {}
-Window.__index = Window
-
-local Tab = {}
-Tab.__index = Tab
-
-
-local Section = {}
-Section.__index = Section
-
-local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "CharlieWareUI"
-ScreenGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
-
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "CharlieWareUI"
 ScreenGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
@@ -523,293 +508,327 @@ UIGradient.Parent = Inline
 
 
 
--- Function implementations
-function Tab:CreateSection(config)
-    local section = setmetatable({}, Section)
-    section.config = config or {}
-    section.position = config.position or "left"
-    section.sectionText = config.SectionText or "Section"
-    
-    -- Create section UI elements
-    local SectionFrame = Instance.new("Frame")
-    SectionFrame.Name = "Section_" .. section.sectionText
-    SectionFrame.Size = UDim2.new(0, 260, 0, 60)
-    SectionFrame.BackgroundTransparency = 1
-    SectionFrame.Parent = Container
-    
-    local Header = Instance.new("Frame")
-    Header.Name = "Header"
-    Header.Size = UDim2.new(0, 260, 0, 32)
-    Header.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
-    Header.Parent = SectionFrame
-    
-    local SectionName = Instance.new("TextLabel")
-    SectionName.Text = section.sectionText
-    SectionName.TextColor3 = Color3.fromRGB(125, 69, 220)
-    SectionName.TextSize = 14
-    SectionName.BackgroundTransparency = 1
-    SectionName.Size = UDim2.new(1, 0, 1, 0)
-    SectionName.Parent = Header
-    
-    local Holder = Instance.new("Frame")
-    Holder.Name = "Holder"
-    Holder.Size = UDim2.new(1, 0, 0, 1)
-    Holder.BackgroundTransparency = 1
-    Holder.Position = UDim2.new(0, 0, 1, 0)
-    Holder.Parent = Header
-    
-    local UIListLayout = Instance.new("UIListLayout")
-    UIListLayout.Parent = Holder
-    
-    section.frame = SectionFrame
-    section.holder = Holder
-    
-    print("Created section:", section.sectionText, "at position:", section.position)
-    
-    return section
+
+local Players = game:GetService("Players")
+
+local ACCENT = Color3.fromRGB(125, 69, 220)
+
+function libary:SetAccentColor(color)
+	ACCENT = color or ACCENT
 end
 
-function Window:CreateTab(config)
-    local tab = setmetatable({}, Tab)
-    tab.config = config or {}
-    tab.tabText = config.TabText or "Tab"
-    tab.sections = {left = {}, right = {}}
-    
-    -- Create tab UI elements
-    local TabFrame = Instance.new("Frame")
-    TabFrame.Name = "Tab_" .. tab.tabText
-    TabFrame.Size = UDim2.new(0, 47, 0, 40)
-    TabFrame.BackgroundTransparency = 1
-    TabFrame.Parent = Container
-    
-    local TabName = Instance.new("TextLabel")
-    TabName.Text = tab.tabText
-    TabName.TextColor3 = Color3.fromRGB(169, 169, 169)
-    TabName.TextSize = 15
-    TabName.BackgroundTransparency = 1
-    TabName.Size = UDim2.new(1, 0, 1, 0)
-    TabName.Parent = TabFrame
-    
-    tab.frame = TabFrame
-    
-    print("Created tab:", tab.tabText)
-    
-    return tab
+function libary:CreateNotification()
+	return nil
 end
 
-function Window:CreateSection(config)
-    local section = setmetatable({}, Section)
-    section.config = config or {}
-    section.position = config.position or "left"
-    section.sectionText = config.SectionText or "Section"
-    
-    -- Create section UI elements
-    local SectionFrame = Instance.new("Frame")
-    SectionFrame.Name = "Section_" .. section.sectionText
-    SectionFrame.Size = UDim2.new(0, 260, 0, 60)
-    SectionFrame.BackgroundTransparency = 1
-    SectionFrame.Parent = Container
-    
-    local Header = Instance.new("Frame")
-    Header.Name = "Header"
-    Header.Size = UDim2.new(0, 260, 0, 32)
-    Header.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
-    Header.Parent = SectionFrame
-    
-    local SectionName = Instance.new("TextLabel")
-    SectionName.Text = section.sectionText
-    SectionName.TextColor3 = Color3.fromRGB(125, 69, 220)
-    SectionName.TextSize = 14
-    SectionName.BackgroundTransparency = 1
-    SectionName.Size = UDim2.new(1, 0, 1, 0)
-    SectionName.Parent = Header
-    
-    local Holder = Instance.new("Frame")
-    Holder.Name = "Holder"
-    Holder.Size = UDim2.new(1, 0, 0, 1)
-    Holder.BackgroundTransparency = 1
-    Holder.Position = UDim2.new(0, 0, 1, 0)
-    Holder.Parent = Header
-    
-    local UIListLayout = Instance.new("UIListLayout")
-    UIListLayout.Parent = Holder
-    
-    section.frame = SectionFrame
-    section.holder = Holder
-    
-    print("Created window section:", section.sectionText, "at position:", section.position)
-    
-    return section
+local function colorSequenceFrom(color)
+	return ColorSequence.new({
+		ColorSequenceKeypoint.new(0, color),
+		ColorSequenceKeypoint.new(1, color)
+	})
 end
 
-function libary:CreateWindow(config)
-    local window = setmetatable({}, Window)
-    window.config = config or {}
-    window.libaryName = config.Libary_Name or "Window"
-    window.footerLeftText = config.Footer_Left_Text or "Game"
-    window.interfaceKeybind = config.interface_keybind or "Insert"
-    window.tabs = {}
-    window.sections = {left = {}, right = {}}
-    
-    -- Update library name
-    if Libary_Name then
-        Libary_Name.Text = window.libaryName .. '<font color="#7D45DC">.rbx</font>'
-    end
-    
-    -- Update footer text
-    if footer_left_label then
-        footer_left_label.Text = window.footerLeftText
-    end
-    
-    print("Created window:", window.libaryName)
-    
-    return window
+local function createSectionFrame(parent, headerText)
+	local section = Instance.new("Frame")
+	section.Name = "Section"
+	section.BackgroundTransparency = 1
+	section.AutomaticSize = Enum.AutomaticSize.Y
+	section.Size = UDim2.new(0, 260, 0, 60)
+	section.Parent = parent
+
+	local header = Instance.new("Frame")
+	header.Name = "Header"
+	header.AnchorPoint = Vector2.new(0.5, 0)
+	header.Position = UDim2.new(0.5, 0, 0, 0)
+	header.Size = UDim2.new(0, 260, 0, 32)
+	header.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+	header.BorderSizePixel = 0
+	header.Parent = section
+
+	local inline = Instance.new("Frame")
+	inline.Name = "Inline"
+	inline.AnchorPoint = Vector2.new(0, 1)
+	inline.Position = UDim2.new(0, 0, 1, 0)
+	inline.Size = UDim2.new(1, 1, 0, 4)
+	inline.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+	inline.BorderSizePixel = 0
+	inline.Parent = header
+
+	local g = Instance.new("UIGradient")
+	g.Rotation = 90
+	g.Transparency = NumberSequence.new({
+		NumberSequenceKeypoint.new(0, 1),
+		NumberSequenceKeypoint.new(0.436, 0.6625),
+		NumberSequenceKeypoint.new(1, 0)
+	})
+	g.Color = colorSequenceFrom(ACCENT)
+	g.Parent = inline
+
+	local title = Instance.new("TextLabel")
+	title.Name = "Section_Name"
+	title.BackgroundTransparency = 1
+	title.AnchorPoint = Vector2.new(0.5, 0.5)
+	title.Position = UDim2.new(0.5, 0, 0.5, 0)
+	title.Text = headerText or "Section"
+	title.TextColor3 = ACCENT
+	title.TextSize = 14
+	title.FontFace = Font.new("rbxassetid://12187365364", Enum.FontWeight.Regular, Enum.FontStyle.Normal)
+	title.Parent = header
+
+	local holder = Instance.new("Frame")
+	holder.Name = "Holder"
+	holder.BackgroundTransparency = 1
+	holder.AutomaticSize = Enum.AutomaticSize.Y
+	holder.Size = UDim2.new(0, 1, 0, 1)
+	holder.Position = UDim2.new(0.5, 0, 1, 0)
+	holder.AnchorPoint = Vector2.new(0.5, 0)
+	holder.Parent = header
+
+	local holderList = Instance.new("UIListLayout")
+	holderList.SortOrder = Enum.SortOrder.LayoutOrder
+	holderList.Parent = holder
+
+	local pad = Instance.new("UIPadding")
+	pad.PaddingTop = UDim.new(0, 4)
+	pad.PaddingBottom = UDim.new(0, 35)
+	pad.Parent = holder
+
+	local stroke = Instance.new("UIStroke")
+	stroke.Color = Color3.fromRGB(35, 35, 35)
+	stroke.Parent = section
+
+	return section
 end
 
--- Hide other components by making them return placeholder objects
-function Tab:CreateToggle(config)
-    local toggle = {}
-    toggle.config = config or {}
-    toggle.toggleText = config.ToggleText or "Toggle"
-    toggle.callback = config.Callback or function() end
-    toggle.value = false
-    
-    print("Toggle component hidden:", toggle.toggleText)
-    
-    return toggle
-end
+function libary:CreateWindow(cfg)
+	local opts = cfg or {}
+	local window = {}
 
-function Tab:CreateSlider(config)
-    local slider = {}
-    slider.config = config or {}
-    slider.sliderText = config.SliderText or "Slider"
-    slider.min = config.Min or 0
-    slider.max = config.Max or 100
-    slider.value = config.Value or slider.min
-    slider.callback = config.Callback or function() end
-    
-    print("Slider component hidden:", slider.sliderText)
-    
-    return slider
-end
+	local screen = ScreenGui
+	local main = screen:FindFirstChild("MainFrame")
+	local headerBar = main:FindFirstChild("Header")
+	local footer = main:FindFirstChild("Footer")
+	local page = main:FindFirstChild("Page")
 
-function Tab:CreateLabel(config)
-    local label = {}
-    label.config = config or {}
-    label.labelText = config.LabelText or "Label"
-    
-    print("Label component hidden:", label.labelText)
-    
-    return label
-end
+	local title = headerBar:FindFirstChild("Libary_Name")
+	if title then
+		title.Text = string.format("%s<font color=\"#7D45DC\">.rbx</font>", opts.Libary_Name or "examplelibary")
+	end
 
-function Tab:CreateTextInput(config)
-    local textInput = {}
-    textInput.config = config or {}
-    textInput.textInputText = config.TextInputText or "Text Input"
-    textInput.callback = config.Callback or function() end
-    textInput.value = ""
-    
-    print("TextInput component hidden:", textInput.textInputText)
-    
-    return textInput
-end
+	local leftFooter = footer and footer:FindFirstChild("footer_left_label")
+	if leftFooter then
+		leftFooter.Text = opts.Footer_Left_Text or "gamename"
+	end
 
-function Tab:CreateDropdown(config)
-    local dropdown = {}
-    dropdown.config = config or {}
-    dropdown.dropdownText = config.DropdownText or "Dropdown"
-    dropdown.options = config.Options or {}
-    dropdown.callback = config.Callback or function() end
-    dropdown.value = nil
-    
-    print("Dropdown component hidden:", dropdown.dropdownText)
-    
-    return dropdown
-end
+	local tabsHolder = headerBar:FindFirstChild("Container")
+	for _, ch in ipairs(tabsHolder:GetChildren()) do
+		if ch:IsA("GuiObject") and ch.Name == "Tab" then ch:Destroy() end
+	end
 
-function Tab:CreateKeybind(config)
-    local keybind = {}
-    keybind.config = config or {}
-    keybind.keybindText = config.KeybindText or "Keybind"
-    keybind.callback = config.Callback or function() end
-    keybind.key = nil
-    
-    print("Keybind component hidden:", keybind.keybindText)
-    
-    return keybind
-end
+	for _, ch in ipairs(page:GetChildren()) do
+		if ch:IsA("GuiObject") then ch:Destroy() end
+	end
 
-function Tab:CreateButton(config)
-    local button = {}
-    button.config = config or {}
-    button.buttonText = config.ButtonText or "Button"
-    button.callback = config.Callback or function() end
-    
-    print("Button component hidden:", button.buttonText)
-    
-    return button
-end
+	local pages = Instance.new("Folder")
+	pages.Name = "Pages"
+	pages.Parent = page
 
-function Tab:CreateColorpicker(config)
-    local colorpicker = {}
-    colorpicker.config = config or {}
-    colorpicker.colorpickerText = config.ColorpickerText or "Color Picker"
-    colorpicker.callback = config.Callback or function() end
-    colorpicker.value = Color3.fromRGB(255, 255, 255)
-    
-    print("Colorpicker component hidden:", colorpicker.colorpickerText)
-    
-    return colorpicker
-end
+	local function setActive(tabMeta, active)
+		if active then
+			tabMeta.Label.TextColor3 = ACCENT
+			tabMeta.Page.Visible = true
+		else
+			tabMeta.Label.TextColor3 = Color3.fromRGB(169, 169, 169)
+			tabMeta.Page.Visible = false
+		end
+	end
 
-function Tab:CreateToggleWithKeybind(config)
-    local toggleWithKeybind = {}
-    toggleWithKeybind.config = config or {}
-    toggleWithKeybind.toggleText = config.ToggleText or "Toggle with Keybind"
-    toggleWithKeybind.callback = config.Callback or function() end
-    toggleWithKeybind.value = false
-    toggleWithKeybind.key = nil
-    
-    print("ToggleWithKeybind component hidden:", toggleWithKeybind.toggleText)
-    
-    return toggleWithKeybind
-end
+	window._tabs = {}
+	window._active = nil
 
-function Tab:AddColorToggle(config)
-    local colorToggle = {}
-    colorToggle.config = config or {}
-    colorToggle.text = config.Text or "Color Toggle"
-    colorToggle.defaultColor = config.DefaultColor or Color3.fromRGB(255, 255, 255)
-    colorToggle.callback = config.Callback or function() end
-    
-    print("ColorToggle component hidden:", colorToggle.text)
-    
-    return colorToggle
-end
+	function window:CreateTab(topt)
+		local name = (topt and topt.TabText) or "Tab"
 
-function Tab:CreateConfig(config)
-    local configManager = {}
-    configManager.config = config or {}
-    configManager.text = config.Text or "Config"
-    configManager.callback = config.Callback or function() end
-    
-    print("Config component hidden:", configManager.text)
-    
-    return configManager
-end
+		local tab = Instance.new("Frame")
+		tab.Name = "Tab"
+		tab.BackgroundTransparency = 1
+		tab.AutomaticSize = Enum.AutomaticSize.X
+		tab.Size = UDim2.new(0, 47, 0, 40)
+		tab.Parent = tabsHolder
 
-function libary:CreateNotification(config)
-    local notification = {}
-    notification.config = config or {}
-    notification.icon = config.Icon or "default"
-    notification.title = config.NotiTitle or "Notification"
-    notification.description = config.NotiDescription or "Description"
-    notification.time = config.Time or 3
-    
-    print("Notification component hidden:", notification.title)
-    
-    return notification
+		local underline = Instance.new("Frame")
+		underline.Name = "Inline"
+		underline.AnchorPoint = Vector2.new(0, 1)
+		underline.Position = UDim2.new(0, 0, 1, 0)
+		underline.Size = UDim2.new(1, 1, 0, 4)
+		underline.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+		underline.BorderSizePixel = 0
+		underline.Parent = tab
+
+		local ug = Instance.new("UIGradient")
+		ug.Rotation = 90
+		ug.Transparency = NumberSequence.new({
+			NumberSequenceKeypoint.new(0, 1),
+			NumberSequenceKeypoint.new(0.436, 0.6625),
+			NumberSequenceKeypoint.new(1, 0)
+		})
+		ug.Color = colorSequenceFrom(ACCENT)
+		ug.Parent = underline
+
+		local label = Instance.new("TextButton")
+		label.Name = "Tab_Name"
+		label.BackgroundTransparency = 1
+		label.AnchorPoint = Vector2.new(0.5, 0.5)
+		label.Position = UDim2.new(0.5, 0, 0.5, 0)
+		label.AutomaticSize = Enum.AutomaticSize.XY
+		label.Text = name
+		label.TextSize = 15
+		label.FontFace = Font.new("rbxassetid://12187365364", Enum.FontWeight.Regular, Enum.FontStyle.Normal)
+		label.Parent = tab
+
+		local pageFrame = Instance.new("Frame")
+		pageFrame.Name = name .. "_Page"
+		pageFrame.Size = UDim2.new(1, 0, 1, -26)
+		pageFrame.Position = UDim2.new(0, 0, 0, 0)
+		pageFrame.BackgroundTransparency = 1
+		pageFrame.Parent = pages
+
+		local columns = Instance.new("Frame")
+		columns.Name = "Columns"
+		columns.BackgroundTransparency = 1
+		columns.Size = UDim2.new(1, -24, 1, -26)
+		columns.Position = UDim2.new(0, 12, 0, 12)
+		columns.Parent = pageFrame
+
+		local leftCol = Instance.new("Frame")
+		leftCol.BackgroundTransparency = 1
+		leftCol.AutomaticSize = Enum.AutomaticSize.Y
+		leftCol.Size = UDim2.new(0, 260, 0, 1)
+		leftCol.Parent = columns
+
+		local rightCol = Instance.new("Frame")
+		rightCol.BackgroundTransparency = 1
+		rightCol.AutomaticSize = Enum.AutomaticSize.Y
+		rightCol.Size = UDim2.new(0, 260, 0, 1)
+		rightCol.Position = UDim2.new(0, 260 + 16, 0, 0)
+		rightCol.Parent = columns
+
+		local meta = {Label = label, Page = pageFrame, Columns = {left = leftCol, right = rightCol}}
+		table.insert(self._tabs, meta)
+
+		label.MouseButton1Click:Connect(function()
+			self._active = meta
+			for _, t in ipairs(self._tabs) do setActive(t, t == self._active) end
+		end)
+
+		if not self._active then
+			self._active = meta
+			setActive(meta, true)
+		else
+			setActive(meta, false)
+		end
+
+		local tabObj = {}
+		function tabObj:CreateSection(sopt)
+			local pos = ((sopt and sopt.position) == "right") and "right" or "left"
+			local txt = (sopt and sopt.SectionText) or "Section"
+			local sec = createSectionFrame(meta.Columns[pos], txt)
+			local api = {}
+			function api:CreateToggle() return {} end
+			function api:CreateSlider() return {} end
+			function api:CreateLabel() return {} end
+			function api:CreateTextInput() return {} end
+			function api:CreateDropdown() return {} end
+			function api:CreateKeybind() return {} end
+			function api:CreateColorpicker() return {} end
+			function api:CreateButton() return {} end
+			function api:CreateConfig() return {} end
+			function api:AddColorToggle() return {key = "none"} end
+			function api:CreateToggleWithKeybind() return {key = "none"} end
+			return api
+		end
+
+		return tabObj
+	end
+
+	function window:CreateSection(sopt)
+		if not self._active then return nil end
+		local pos = ((sopt and sopt.position) == "right") and "right" or "left"
+		local txt = (sopt and sopt.SectionText) or "Section"
+		local sec = createSectionFrame(self._active.Columns[pos], txt)
+		local api = {}
+		function api:CreateToggle() return {} end
+		function api:CreateSlider() return {} end
+		function api:CreateLabel() return {} end
+		function api:CreateTextInput() return {} end
+		function api:CreateDropdown() return {} end
+		function api:CreateKeybind() return {} end
+		function api:CreateColorpicker() return {} end
+		function api:CreateButton() return {} end
+		function api:CreateConfig() return {} end
+		function api:AddColorToggle() return {key = "none"} end
+		function api:CreateToggleWithKeybind() return {key = "none"} end
+		return api
+	end
+
+	local keyName = opts.interface_keybind or "Insert"
+	local keyEnum = Enum.KeyCode[keyName] or Enum.KeyCode.Insert
+	local visible = true
+
+	local fadeInInfo = TweenInfo.new(0.25, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+	local fadeOutInfo = TweenInfo.new(0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.In)
+
+	local function show()
+		main.Visible = true
+		main.BackgroundTransparency = 1
+		TweenService:Create(main, fadeInInfo, {BackgroundTransparency = 0}):Play()
+	end
+
+	local function hide()
+		local t = TweenService:Create(main, fadeOutInfo, {BackgroundTransparency = 1})
+		t:Play()
+		t.Completed:Connect(function() main.Visible = false end)
+	end
+
+	UserInputService.InputBegan:Connect(function(input, processed)
+		if processed then return end
+		if input.KeyCode == keyEnum then
+			visible = not visible
+			if visible then show() else hide() end
+		end
+	end)
+
+	local dragging = false
+	local dragStart
+	local startPos
+	local headerInput
+	local headerBarForDrag = headerBar
+
+	headerBarForDrag.InputBegan:Connect(function(input)
+		if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+			dragging = true
+			dragStart = input.Position
+			startPos = main.Position
+			input.Changed:Connect(function()
+				if input.UserInputState == Enum.UserInputState.End then dragging = false end
+			end)
+		end
+	end)
+
+	headerBarForDrag.InputChanged:Connect(function(input)
+		if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+			headerInput = input
+		end
+	end)
+
+	UserInputService.InputChanged:Connect(function(input)
+		if input == headerInput and dragging then
+			local delta = input.Position - dragStart
+			main.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+		end
+	end)
+
+	return window
 end
 
 return libary
