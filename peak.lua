@@ -40,6 +40,10 @@ local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "CharlieWareUI"
 ScreenGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
 
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "CharlieWareUI"
+ScreenGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
+
 local MainFrame = Instance.new("Frame")
 MainFrame.ClipsDescendants = true
 MainFrame.BorderColor3 = Color3.fromRGB(0, 0, 0)
@@ -515,6 +519,9 @@ UIGradient.Color = ColorSequence.new{
 	ColorSequenceKeypoint.new(1, Color3.fromRGB(117, 65, 204))
 }
 UIGradient.Parent = Inline
+
+
+
 
 -- Function implementations
 function Tab:CreateSection(config)
