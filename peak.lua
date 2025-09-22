@@ -1,6 +1,115 @@
+-- CharlieWare UI Library
+local Library = {}
+Library.__index = Library
+
+-- Services
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+
+-- CreateNewText function for creating text elements
+function Library:CreateNewText(text)
+    return text -- Return the text string as is
+end
+
+-- CreateWindow function
+function Library:CreateWindow(options)
+    local config = options.libary_config or {}
+    local windowName = config.Libary_Name or "CharlieWare"
+    
+    local Window = {}
+    Window.__index = Window
+    Window.Tabs = {}
+    Window.CurrentTab = nil
+    Window.Config = config
+    
+    -- Create ScreenGui for the UI
+    local ScreenGui = Instance.new("ScreenGui")
+    ScreenGui.Name = "CharliewareUI"
+    ScreenGui.ResetOnSpawn = false
+    ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
+    
+    -- Create main UI elements (simplified for now)
+    local BG_BLUR = Instance.new("Frame")
+    BG_BLUR.BackgroundTransparency = 0.2
+    BG_BLUR.Name = "BG_BLUR"
+    BG_BLUR.BorderColor3 = Color3.fromRGB(0, 0, 0)
+    BG_BLUR.Size = UDim2.new(1, 0, 1, 0)
+    BG_BLUR.Position = UDim2.new(0, 0, 0, 0)
+    BG_BLUR.AnchorPoint = Vector2.new(0, 0)
+    BG_BLUR.BorderSizePixel = 0
+    BG_BLUR.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+    BG_BLUR.ZIndex = 0
+    BG_BLUR.Parent = ScreenGui
+    
+    local MainFrame = Instance.new("Frame")
+    MainFrame.ClipsDescendants = true
+    MainFrame.BorderColor3 = Color3.fromRGB(0, 0, 0)
+    MainFrame.AnchorPoint = Vector2.new(0.5, 0.5)
+    MainFrame.Name = "MainFrame"
+    MainFrame.Position = UDim2.new(0.5, 0, 0.5, 0)
+    MainFrame.Size = UDim2.new(0, 563, 0, 400)
+    MainFrame.BorderSizePixel = 0
+    MainFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+    MainFrame.ZIndex = 1
+    MainFrame.Parent = BG_BLUR
+    
+    -- Store references
+    Window.ScreenGui = ScreenGui
+    Window.MainFrame = MainFrame
+    Window.BG_BLUR = BG_BLUR
+    
+    -- CreateTab function
+    function Window:CreateTab(options)
+        local Tab = {}
+        Tab.__index = Tab
+        Tab.Sections = {}
+        Tab.Name = options.TabText or "Tab"
+        Tab.Window = Window
+        Tab.Visible = false
+        
+        -- Add placeholder component creation methods
+        function Tab:CreateSection(options)
+            local Section = {}
+            Section.__index = Section
+            Section.Name = options.SectionText or "Section"
+            Section.Position = options.position or "left"
+            Section.Components = {}
+            
+            -- Add placeholder component creation methods
+            function Section:CreateToggle(options) return {Enabled = false} end
+            function Section:CreateSlider(options) return {Value = options.Value or 0} end
+            function Section:CreateDropdown(options) return {Selected = ""} end
+            function Section:CreateButton(options) return {} end
+            function Section:CreateKeybind(options) return {Key = ""} end
+            function Section:CreateColorpicker(options) return {Color = Color3.new(1,1,1)} end
+            function Section:CreateTextInput(options) return {Text = ""} end
+            function Section:CreateLabel(options) return {} end
+            function Section:CreateConfig(options) return {} end
+            function Section:CreateToggleWithKeybind(options) return {Enabled = false, Key = ""} end
+            function Section:AddColorToggle(options) return {Enabled = false, Color = Color3.new(1,1,1)} end
+            
+            table.insert(Tab.Sections, Section)
+            return Section
+        end
+        
+        table.insert(Window.Tabs, Tab)
+        return Tab
+    end
+    
+    -- Window CreateSection method (for backwards compatibility)
+    function Window:CreateSection(options)
+        if Window.CurrentTab then
+            return Window.CurrentTab:CreateSection(options)
+        else
+            error("No active tab. Create a tab first.")
+        end
+    end
+    
+    return Window
+end
 
 local libary = {}
 local Windows = {}
@@ -1291,4 +1400,5 @@ UserInputService.InputBegan:Connect(function(input, gameProcessed)
     end
 end)
 
-
+-- Return the Library
+return Library
