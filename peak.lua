@@ -1225,23 +1225,13 @@ local function CreateTab(options)
     tab.TextColor3 = Color3.fromRGB(255, 255, 255)
     tab.TextSize = 14
     tab.Font = Enum.Font.Gotham
-    tab.Parent = TabContainer
+    tab.Parent = Container
     
     -- Tab click functionality
     tab.MouseButton1Click:Connect(function()
-        -- Hide all pages
-        for _, page in pairs(PageContainer:GetChildren()) do
-            if page:IsA("Frame") then
-                page.Visible = false
-            end
-        end
-        
-        -- Show corresponding page
-        local pageName = tabText .. "_Page"
-        local page = PageContainer:FindFirstChild(pageName)
-        if page then
-            page.Visible = true
-        end
+        -- For now, just print the tab name
+        -- This can be expanded later when page system is implemented
+        print("Switched to tab:", tabText)
     end)
     
     return tab
@@ -1333,7 +1323,13 @@ UserInputService.InputBegan:Connect(function(input, gameProcessed)
 end)
 
 -- Example usage of tab and section creation
+local Home = CreateTab({TabText = "Home"})
+local Combat = CreateTab({TabText = "Combat"})
+local Misc = CreateTab({TabText = "Misc"})
 
+local AimSection = CreateSection({SectionText = "Aim Settings", position = "left"})
+local MovementSection = CreateSection({SectionText = "Movement", position = "right"})
+local OtherSection = CreateSection({SectionText = "Other Options", position = "left"})
 
 print("CHARLIEWARE UI Loaded! Press Insert to toggle.")
 print("Tab and Section creation functions are now available!")
