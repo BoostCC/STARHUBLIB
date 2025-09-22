@@ -1,11 +1,25 @@
--- CharlieWare Library
-local library = {}
+-- CharlieWare UI Library
+local Library = {}
+Library.__index = Library
 
--- Create ScreenGui for the UI
-local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "CharliewareUI"
-ScreenGui.ResetOnSpawn = false
-ScreenGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
+-- Services
+local TweenService = game:GetService("TweenService")
+local UserInputService = game:GetService("UserInputService")
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+
+-- Library Functions
+function Library:CreateWindow(windowName)
+    local Window = {}
+    Window.__index = Window
+    Window.Tabs = {}
+    Window.CurrentTab = nil
+    
+    -- Create ScreenGui for the UI
+    local ScreenGui = Instance.new("ScreenGui")
+    ScreenGui.Name = "CharliewareUI"
+    ScreenGui.ResetOnSpawn = false
+    ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
 
 local BG_BLUR = Instance.new("Frame")
 BG_BLUR.BackgroundTransparency = 0.2
@@ -41,170 +55,341 @@ Header.BorderSizePixel = 0
 Header.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
 Header.Parent = MainFrame
 
-local Libary_Name = Instance.new("TextLabel")
-Libary_Name.FontFace = Font.new("rbxassetid://12187365364", Enum.FontWeight.Regular, Enum.FontStyle.Normal)
-Libary_Name.TextStrokeTransparency = 0.800000011920929
-Libary_Name.AnchorPoint = Vector2.new(0, 0.5)
-Libary_Name.TextSize = 15
-Libary_Name.Size = UDim2.new(0, 1, 0, 1)
-Libary_Name.RichText = true
-Libary_Name.TextColor3 = Color3.fromRGB(255, 255, 255)
-Libary_Name.BorderColor3 = Color3.fromRGB(0, 0, 0)
-Libary_Name.Text = 'examplelibary<font color="#7D45DC">.rbx</font>'
-Libary_Name.Name = "Libary_Name"
-Libary_Name.BackgroundTransparency = 1
-Libary_Name.Position = UDim2.new(0, 12, 0.5, 0)
-Libary_Name.TextWrapped = true
-Libary_Name.BorderSizePixel = 0
-Libary_Name.AutomaticSize = Enum.AutomaticSize.XY
-Libary_Name.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-Libary_Name.Parent = Header
+    local Libary_Name = Instance.new("TextLabel")
+    Libary_Name.FontFace = Font.new("rbxassetid://12187365364", Enum.FontWeight.Regular, Enum.FontStyle.Normal)
+    Libary_Name.TextStrokeTransparency = 0.800000011920929
+    Libary_Name.AnchorPoint = Vector2.new(0, 0.5)
+    Libary_Name.TextSize = 15
+    Libary_Name.Size = UDim2.new(0, 1, 0, 1)
+    Libary_Name.RichText = true
+    Libary_Name.TextColor3 = Color3.fromRGB(255, 255, 255)
+    Libary_Name.BorderColor3 = Color3.fromRGB(0, 0, 0)
+    Libary_Name.Text = (windowName or 'CharlieWare') .. '<font color="#7D45DC">.rbx</font>'
+    Libary_Name.Name = "Libary_Name"
+    Libary_Name.BackgroundTransparency = 1
+    Libary_Name.Position = UDim2.new(0, 12, 0.5, 0)
+    Libary_Name.TextWrapped = true
+    Libary_Name.BorderSizePixel = 0
+    Libary_Name.AutomaticSize = Enum.AutomaticSize.XY
+    Libary_Name.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    Libary_Name.Parent = Header
 
-local Container = Instance.new("Frame")
-Container.BorderColor3 = Color3.fromRGB(0, 0, 0)
-Container.AnchorPoint = Vector2.new(1, 0.5)
-Container.BackgroundTransparency = 12
-Container.Position = UDim2.new(1, 0, 0.5, 0)
-Container.Name = "Container"
-Container.Size = UDim2.new(0, 425, 0, 40)
-Container.BorderSizePixel = 0
-Container.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-Container.Parent = Header
+    local TabContainer = Instance.new("Frame")
+    TabContainer.BorderColor3 = Color3.fromRGB(0, 0, 0)
+    TabContainer.AnchorPoint = Vector2.new(1, 0.5)
+    TabContainer.BackgroundTransparency = 12
+    TabContainer.Position = UDim2.new(1, 0, 0.5, 0)
+    TabContainer.Name = "TabContainer"
+    TabContainer.Size = UDim2.new(0, 425, 0, 40)
+    TabContainer.BorderSizePixel = 0
+    TabContainer.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    TabContainer.Parent = Header
 
-local UIListLayout = Instance.new("UIListLayout")
-UIListLayout.FillDirection = Enum.FillDirection.Horizontal
-UIListLayout.HorizontalAlignment = Enum.HorizontalAlignment.Right
-UIListLayout.Padding = UDim.new(0, 18)
-UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
-UIListLayout.Parent = Container
+    local TabListLayout = Instance.new("UIListLayout")
+    TabListLayout.FillDirection = Enum.FillDirection.Horizontal
+    TabListLayout.HorizontalAlignment = Enum.HorizontalAlignment.Right
+    TabListLayout.Padding = UDim.new(0, 18)
+    TabListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+    TabListLayout.Parent = TabContainer
 
-local Tab = Instance.new("Frame")
-Tab.BorderColor3 = Color3.fromRGB(0, 0, 0)
-Tab.Name = "Tab"
-Tab.BackgroundTransparency = 1
-Tab.Position = UDim2.new(0.12941177189350128, 0, 0, 0)
-Tab.Size = UDim2.new(0, 47, 0, 40)
-Tab.BorderSizePixel = 0
-Tab.AutomaticSize = Enum.AutomaticSize.X
-Tab.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-Tab.Parent = Container
+    local UIPadding = Instance.new("UIPadding")
+    UIPadding.PaddingRight = UDim.new(0, 12)
+    UIPadding.Parent = TabContainer
 
-local Inline = Instance.new("Frame")
-Inline.AnchorPoint = Vector2.new(0, 1)
-Inline.Name = "Inline"
-Inline.Position = UDim2.new(0, 0, 1, 0)
-Inline.BorderColor3 = Color3.fromRGB(0, 0, 0)
-Inline.Size = UDim2.new(1, 1, 0, 4)
-Inline.BorderSizePixel = 0
-Inline.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-Inline.Parent = Tab
+    local Page = Instance.new("Frame")
+    Page.BorderColor3 = Color3.fromRGB(0, 0, 0)
+    Page.AnchorPoint = Vector2.new(0.5, 1)
+    Page.BackgroundTransparency = 1
+    Page.Position = UDim2.new(0.5, 0, 1, 0)
+    Page.Name = "Page"
+    Page.Size = UDim2.new(0, 563, 0, 360)
+    Page.BorderSizePixel = 0
+    Page.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    Page.Parent = MainFrame
 
-local UIGradient = Instance.new("UIGradient")
-UIGradient.Rotation = 90
-UIGradient.Transparency = NumberSequence.new{
-	NumberSequenceKeypoint.new(0, 1),
-	NumberSequenceKeypoint.new(0.436, 0.6625000238418579),
-	NumberSequenceKeypoint.new(1, 0)
-}
-UIGradient.Color = ColorSequence.new{
-	ColorSequenceKeypoint.new(0, Color3.fromRGB(125, 69, 220)),
-	ColorSequenceKeypoint.new(1, Color3.fromRGB(125, 69, 220))
-}
-UIGradient.Parent = Inline
+    local PageContainer = Instance.new("ScrollingFrame")
+    PageContainer.ScrollBarImageColor3 = Color3.fromRGB(125, 69, 220)
+    PageContainer.MidImage = "rbxassetid://78742712038042"
+    PageContainer.Active = true
+    PageContainer.BorderColor3 = Color3.fromRGB(0, 0, 0)
+    PageContainer.Name = "PageContainer"
+    PageContainer.Size = UDim2.new(0, 563, 0, 334)
+    PageContainer.TopImage = ""
+    PageContainer.BackgroundTransparency = 1
+    PageContainer.BottomImage = ""
+    PageContainer.BorderSizePixel = 0
+    PageContainer.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    PageContainer.Parent = Page
 
-local Tab_Name = Instance.new("TextLabel")
-Tab_Name.FontFace = Font.new("rbxassetid://12187365364", Enum.FontWeight.Regular, Enum.FontStyle.Normal)
-Tab_Name.TextStrokeTransparency = 0.8999999761581421
-Tab_Name.AnchorPoint = Vector2.new(0.5, 0.5)
-Tab_Name.TextSize = 15
-Tab_Name.Size = UDim2.new(0, 1, 0, 1)
-Tab_Name.RichText = true
-Tab_Name.TextColor3 = Color3.fromRGB(125, 69, 220)
-Tab_Name.BorderColor3 = Color3.fromRGB(0, 0, 0)
-Tab_Name.Text = "Home"
-Tab_Name.Name = "Tab_Name"
-Tab_Name.BackgroundTransparency = 1
-Tab_Name.Position = UDim2.new(0.5, 0, 0.5, 0)
-Tab_Name.TextWrapped = true
-Tab_Name.BorderSizePixel = 0
-Tab_Name.AutomaticSize = Enum.AutomaticSize.XY
-Tab_Name.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-Tab_Name.Parent = Tab
+    local PageListLayout = Instance.new("UIListLayout")
+    PageListLayout.Wraps = true
+    PageListLayout.Padding = UDim.new(0, 16)
+    PageListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+    PageListLayout.FillDirection = Enum.FillDirection.Horizontal
+    PageListLayout.Parent = PageContainer
 
-local Tab = Instance.new("Frame")
-Tab.BorderColor3 = Color3.fromRGB(0, 0, 0)
-Tab.Name = "Tab"
-Tab.BackgroundTransparency = 1
-Tab.Position = UDim2.new(0.12941177189350128, 0, 0, 0)
-Tab.Size = UDim2.new(0, 47, 0, 40)
-Tab.BorderSizePixel = 0
-Tab.AutomaticSize = Enum.AutomaticSize.X
-Tab.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-Tab.Parent = Container
+    local PagePadding = Instance.new("UIPadding")
+    PagePadding.PaddingTop = UDim.new(0, 12)
+    PagePadding.PaddingLeft = UDim.new(0, 12)
+    PagePadding.Parent = PageContainer
+    
+    -- Store references for the window
+    Window.ScreenGui = ScreenGui
+    Window.MainFrame = MainFrame
+    Window.TabContainer = TabContainer
+    Window.PageContainer = PageContainer
+    Window.BG_BLUR = BG_BLUR
 
-local Tab_Name = Instance.new("TextLabel")
-Tab_Name.FontFace = Font.new("rbxassetid://12187365364", Enum.FontWeight.Regular, Enum.FontStyle.Normal)
-Tab_Name.TextStrokeTransparency = 0.8999999761581421
-Tab_Name.AnchorPoint = Vector2.new(0.5, 0.5)
-Tab_Name.TextSize = 15
-Tab_Name.Size = UDim2.new(0, 1, 0, 1)
-Tab_Name.RichText = true
-Tab_Name.TextColor3 = Color3.fromRGB(169, 169, 169)
-Tab_Name.BorderColor3 = Color3.fromRGB(0, 0, 0)
-Tab_Name.Text = "Settings"
-Tab_Name.Name = "Tab_Name"
-Tab_Name.BackgroundTransparency = 1
-Tab_Name.Position = UDim2.new(0.5, 0, 0.5, 0)
-Tab_Name.TextWrapped = true
-Tab_Name.BorderSizePixel = 0
-Tab_Name.AutomaticSize = Enum.AutomaticSize.XY
-Tab_Name.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-Tab_Name.Parent = Tab
+    -- CreateTab function
+    function Window:CreateTab(options)
+        local Tab = {}
+        Tab.__index = Tab
+        Tab.Sections = {}
+        Tab.Name = options.TabText or "Tab"
+        Tab.Window = Window
+        Tab.Visible = false
+        
+        -- Create tab button
+        local TabFrame = Instance.new("Frame")
+        TabFrame.BorderColor3 = Color3.fromRGB(0, 0, 0)
+        TabFrame.Name = "Tab"
+        TabFrame.BackgroundTransparency = 1
+        TabFrame.Size = UDim2.new(0, 47, 0, 40)
+        TabFrame.BorderSizePixel = 0
+        TabFrame.AutomaticSize = Enum.AutomaticSize.X
+        TabFrame.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+        TabFrame.Parent = TabContainer
+        
+        local TabInline = Instance.new("Frame")
+        TabInline.AnchorPoint = Vector2.new(0, 1)
+        TabInline.Name = "Inline"
+        TabInline.Position = UDim2.new(0, 0, 1, 0)
+        TabInline.BorderColor3 = Color3.fromRGB(0, 0, 0)
+        TabInline.Size = UDim2.new(1, 1, 0, 4)
+        TabInline.BorderSizePixel = 0
+        TabInline.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+        TabInline.Parent = TabFrame
+        TabInline.Visible = false
+        
+        local TabGradient = Instance.new("UIGradient")
+        TabGradient.Rotation = 90
+        TabGradient.Transparency = NumberSequence.new{
+            NumberSequenceKeypoint.new(0, 1),
+            NumberSequenceKeypoint.new(0.436, 0.6625000238418579),
+            NumberSequenceKeypoint.new(1, 0)
+        }
+        TabGradient.Color = ColorSequence.new{
+            ColorSequenceKeypoint.new(0, Color3.fromRGB(125, 69, 220)),
+            ColorSequenceKeypoint.new(1, Color3.fromRGB(125, 69, 220))
+        }
+        TabGradient.Parent = TabInline
+        
+        local TabLabel = Instance.new("TextLabel")
+        TabLabel.FontFace = Font.new("rbxassetid://12187365364", Enum.FontWeight.Regular, Enum.FontStyle.Normal)
+        TabLabel.TextStrokeTransparency = 0.8999999761581421
+        TabLabel.AnchorPoint = Vector2.new(0.5, 0.5)
+        TabLabel.TextSize = 15
+        TabLabel.Size = UDim2.new(0, 1, 0, 1)
+        TabLabel.RichText = true
+        TabLabel.TextColor3 = Color3.fromRGB(169, 169, 169)
+        TabLabel.BorderColor3 = Color3.fromRGB(0, 0, 0)
+        TabLabel.Text = Tab.Name
+        TabLabel.Name = "Tab_Name"
+        TabLabel.BackgroundTransparency = 1
+        TabLabel.Position = UDim2.new(0.5, 0, 0.5, 0)
+        TabLabel.TextWrapped = true
+        TabLabel.BorderSizePixel = 0
+        TabLabel.AutomaticSize = Enum.AutomaticSize.XY
+        TabLabel.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+        TabLabel.Parent = TabFrame
+        
+        -- Create tab content frame
+        local TabContent = Instance.new("Frame")
+        TabContent.Name = Tab.Name .. "_Content"
+        TabContent.BackgroundTransparency = 1
+        TabContent.Size = UDim2.new(1, 0, 1, 0)
+        TabContent.BorderSizePixel = 0
+        TabContent.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+        TabContent.Parent = PageContainer
+        TabContent.Visible = false
+        
+        local TabContentLayout = Instance.new("UIListLayout")
+        TabContentLayout.Wraps = true
+        TabContentLayout.Padding = UDim.new(0, 16)
+        TabContentLayout.SortOrder = Enum.SortOrder.LayoutOrder
+        TabContentLayout.FillDirection = Enum.FillDirection.Horizontal
+        TabContentLayout.Parent = TabContent
+        
+        -- Tab selection logic
+        local function selectTab()
+            -- Hide all other tabs
+            for _, existingTab in pairs(Window.Tabs) do
+                existingTab.Frame:FindFirstChild("Inline").Visible = false
+                existingTab.Frame:FindFirstChild("Tab_Name").TextColor3 = Color3.fromRGB(169, 169, 169)
+                existingTab.Content.Visible = false
+            end
+            
+            -- Show this tab
+            TabInline.Visible = true
+            TabLabel.TextColor3 = Color3.fromRGB(125, 69, 220)
+            TabContent.Visible = true
+            Window.CurrentTab = Tab
+        end
+        
+        -- Click detection
+        local TabButton = Instance.new("TextButton")
+        TabButton.Size = UDim2.new(1, 0, 1, 0)
+        TabButton.BackgroundTransparency = 1
+        TabButton.Text = ""
+        TabButton.Parent = TabFrame
+        TabButton.MouseButton1Click:Connect(selectTab)
+        
+        Tab.Frame = TabFrame
+        Tab.Content = TabContent
+        Tab.SelectTab = selectTab
+        
+        -- CreateSection function for tabs
+        function Tab:CreateSection(options)
+            local Section = {}
+            Section.__index = Section
+            Section.Name = options.SectionText or "Section"
+            Section.Position = options.position or "left"
+            Section.Components = {}
+            
+            -- Create section frame
+            local SectionFrame = Instance.new("Frame")
+            SectionFrame.BorderColor3 = Color3.fromRGB(0, 0, 0)
+            SectionFrame.Name = "Section_" .. Section.Position
+            SectionFrame.BackgroundTransparency = 1
+            SectionFrame.Size = UDim2.new(0, 260, 0, 60)
+            SectionFrame.BorderSizePixel = 0
+            SectionFrame.AutomaticSize = Enum.AutomaticSize.Y
+            SectionFrame.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+            SectionFrame.Parent = TabContent
+            
+            local SectionHeader = Instance.new("Frame")
+            SectionHeader.AnchorPoint = Vector2.new(0.5, 0)
+            SectionHeader.Name = "Header"
+            SectionHeader.Position = UDim2.new(0.5, 0, 0, 0)
+            SectionHeader.BorderColor3 = Color3.fromRGB(0, 0, 0)
+            SectionHeader.Size = UDim2.new(0, 260, 0, 32)
+            SectionHeader.BorderSizePixel = 0
+            SectionHeader.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+            SectionHeader.Parent = SectionFrame
+            
+            local SectionInline = Instance.new("Frame")
+            SectionInline.AnchorPoint = Vector2.new(0, 1)
+            SectionInline.Name = "Inline"
+            SectionInline.Position = UDim2.new(0, 0, 1, 0)
+            SectionInline.BorderColor3 = Color3.fromRGB(0, 0, 0)
+            SectionInline.Size = UDim2.new(1, 1, 0, 4)
+            SectionInline.BorderSizePixel = 0
+            SectionInline.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+            SectionInline.Parent = SectionHeader
+            
+            local SectionGradient = Instance.new("UIGradient")
+            SectionGradient.Rotation = 90
+            SectionGradient.Transparency = NumberSequence.new{
+                NumberSequenceKeypoint.new(0, 1),
+                NumberSequenceKeypoint.new(0.436, 0.6625000238418579),
+                NumberSequenceKeypoint.new(1, 0)
+            }
+            SectionGradient.Color = ColorSequence.new{
+                ColorSequenceKeypoint.new(0, Color3.fromRGB(125, 69, 220)),
+                ColorSequenceKeypoint.new(1, Color3.fromRGB(125, 69, 220))
+            }
+            SectionGradient.Parent = SectionInline
+            
+            local SectionHolder = Instance.new("Frame")
+            SectionHolder.BorderColor3 = Color3.fromRGB(0, 0, 0)
+            SectionHolder.AnchorPoint = Vector2.new(0.5, 0)
+            SectionHolder.Name = "Holder"
+            SectionHolder.BackgroundTransparency = 1
+            SectionHolder.Position = UDim2.new(0.5004807710647583, 0, 1, 0)
+            SectionHolder.Size = UDim2.new(0, 1, 0, 1)
+            SectionHolder.BorderSizePixel = 0
+            SectionHolder.AutomaticSize = Enum.AutomaticSize.XY
+            SectionHolder.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+            SectionHolder.Parent = SectionHeader
+            
+            local SectionListLayout = Instance.new("UIListLayout")
+            SectionListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+            SectionListLayout.Parent = SectionHolder
+            
+            local SectionPadding = Instance.new("UIPadding")
+            SectionPadding.PaddingBottom = UDim.new(0, 35)
+            SectionPadding.PaddingTop = UDim.new(0, 4)
+            SectionPadding.Parent = SectionHolder
+            
+            local SectionName = Instance.new("TextLabel")
+            SectionName.FontFace = Font.new("rbxassetid://12187365364", Enum.FontWeight.Regular, Enum.FontStyle.Normal)
+            SectionName.TextColor3 = Color3.fromRGB(125, 69, 220)
+            SectionName.BorderColor3 = Color3.fromRGB(0, 0, 0)
+            SectionName.Text = Section.Name
+            SectionName.Name = "Section_Name"
+            SectionName.TextStrokeTransparency = 0.8500000238418579
+            SectionName.AnchorPoint = Vector2.new(0.5, 0.5)
+            SectionName.Size = UDim2.new(0, 1, 0, 1)
+            SectionName.BackgroundTransparency = 1
+            SectionName.Position = UDim2.new(0.5, 0, 0.5, 0)
+            SectionName.BorderSizePixel = 0
+            SectionName.AutomaticSize = Enum.AutomaticSize.XY
+            SectionName.TextSize = 14
+            SectionName.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+            SectionName.Parent = SectionHeader
+            
+            local SectionStroke = Instance.new("UIStroke")
+            SectionStroke.Color = Color3.fromRGB(35, 35, 35)
+            SectionStroke.Parent = SectionFrame
+            
+            Section.Frame = SectionFrame
+            Section.Holder = SectionHolder
+            
+            -- Add placeholder component creation methods
+            function Section:CreateToggle(options) return {Enabled = false} end
+            function Section:CreateSlider(options) return {Value = options.Value or 0} end
+            function Section:CreateDropdown(options) return {Selected = ""} end
+            function Section:CreateButton(options) return {} end
+            function Section:CreateKeybind(options) return {Key = ""} end
+            function Section:CreateColorpicker(options) return {Color = Color3.new(1,1,1)} end
+            function Section:CreateTextInput(options) return {Text = ""} end
+            function Section:CreateLabel(options) return {} end
+            function Section:CreateConfig(options) return {} end
+            function Section:CreateToggleWithKeybind(options) return {Enabled = false, Key = ""} end
+            function Section:AddColorToggle(options) return {Enabled = false, Color = Color3.new(1,1,1)} end
+            
+            table.insert(Tab.Sections, Section)
+            return Section
+        end
+        
+        -- Store tab and select first one
+        table.insert(Window.Tabs, Tab)
+        if #Window.Tabs == 1 then
+            selectTab()
+        end
+        
+        return Tab
+    end
+    
+    -- Window CreateSection method (for backwards compatibility)
+    function Window:CreateSection(options)
+        if Window.CurrentTab then
+            return Window.CurrentTab:CreateSection(options)
+        else
+            error("No active tab. Create a tab first.")
+        end
+    end
+    
+    -- Add footer and toggle functionality
+    addFooterAndToggle(Window)
+    
+    print("CHARLIEWARE UI Loaded! Press Insert to toggle.")
+    
+    return Window
+end
 
-local UIPadding = Instance.new("UIPadding")
-UIPadding.PaddingRight = UDim.new(0, 12)
-UIPadding.Parent = Container
-
-local Page = Instance.new("Frame")
-Page.BorderColor3 = Color3.fromRGB(0, 0, 0)
-Page.AnchorPoint = Vector2.new(0.5, 1)
-Page.BackgroundTransparency = 1
-Page.Position = UDim2.new(0.5, 0, 1, 0)
-Page.Name = "Page"
-Page.Size = UDim2.new(0, 563, 0, 360)
-Page.BorderSizePixel = 0
-Page.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-Page.Parent = MainFrame
-
-local Container = Instance.new("ScrollingFrame")
-Container.ScrollBarImageColor3 = Color3.fromRGB(125, 69, 220)
-Container.MidImage = "rbxassetid://78742712038042"
-
-Container.Active = true
-Container.BorderColor3 = Color3.fromRGB(0, 0, 0)
-Container.Name = "Container"
-
-Container.Size = UDim2.new(0, 563, 0, 334)
-Container.TopImage = ""
-
-Container.BackgroundTransparency = 1
-Container.BottomImage = ""
-Container.BorderSizePixel = 0
-Container.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-Container.Parent = Page
-
-local UIListLayout = Instance.new("UIListLayout")
-UIListLayout.Wraps = true
-UIListLayout.Padding = UDim.new(0, 16)
-UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
-UIListLayout.FillDirection = Enum.FillDirection.Horizontal
-UIListLayout.Parent = Container
-
-local UIPadding = Instance.new("UIPadding")
-UIPadding.PaddingTop = UDim.new(0, 12)
-UIPadding.PaddingLeft = UDim.new(0, 12)
-UIPadding.Parent = Container
-
+-- Hide all example sections below this point
+--[[
 local Section_Left = Instance.new("Frame")
 Section_Left.BorderColor3 = Color3.fromRGB(0, 0, 0)
 Section_Left.Name = "Section_Left"
@@ -1215,285 +1400,174 @@ example_text.AutomaticSize = Enum.AutomaticSize.XY
 example_text.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
 example_text.Parent = Libary_Bottom_Text
 
--- Make UI toggleable with Insert key
-local UserInputService = game:GetService("UserInputService")
-local TweenService = game:GetService("TweenService")
+--]]
 
-local isVisible = true
-
-local function toggleUI()
-    isVisible = not isVisible
-    local targetTransparency = isVisible and 0 or 1
-    local targetSize = isVisible and UDim2.new(0, 563, 0, 400) or UDim2.new(0, 0, 0, 0)
+-- Add footer and toggle functionality at the end
+local function addFooterAndToggle(Window)
+    local MainFrame = Window.MainFrame
+    local BG_BLUR = Window.BG_BLUR
     
-    local tweenInfo = TweenInfo.new(0.3, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+    -- Create footer
+    local Footer = Instance.new("Frame")
+    Footer.AnchorPoint = Vector2.new(0.5, 1)
+    Footer.Name = "Footer"
+    Footer.Position = UDim2.new(0.5, 0, 0.9999998211860657, 0)
+    Footer.BorderColor3 = Color3.fromRGB(0, 0, 0)
+    Footer.Size = UDim2.new(0, 563, 0, 28)
+    Footer.BorderSizePixel = 0
+    Footer.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+    Footer.Parent = MainFrame
     
-    local tween1 = TweenService:Create(MainFrame, tweenInfo, {
-        Size = targetSize,
-        BackgroundTransparency = targetTransparency
-    })
+    local footer_left_label = Instance.new("TextLabel")
+    footer_left_label.FontFace = Font.new("rbxassetid://12187365364", Enum.FontWeight.Regular, Enum.FontStyle.Normal)
+    footer_left_label.TextStrokeTransparency = 0.800000011920929
+    footer_left_label.AnchorPoint = Vector2.new(0, 0.5)
+    footer_left_label.TextSize = 15
+    footer_left_label.Size = UDim2.new(0, 1, 0, 1)
+    footer_left_label.RichText = true
+    footer_left_label.TextColor3 = Color3.fromRGB(255, 255, 255)
+    footer_left_label.BorderColor3 = Color3.fromRGB(0, 0, 0)
+    footer_left_label.Text = "CharlieWare"
+    footer_left_label.Name = "footer_left_label"
+    footer_left_label.BackgroundTransparency = 1
+    footer_left_label.Position = UDim2.new(0, 12, 0.5, 0)
+    footer_left_label.TextWrapped = true
+    footer_left_label.BorderSizePixel = 0
+    footer_left_label.AutomaticSize = Enum.AutomaticSize.XY
+    footer_left_label.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    footer_left_label.Parent = Footer
     
-    local tween2 = TweenService:Create(BG_BLUR, tweenInfo, {
-        BackgroundTransparency = isVisible and 0.2 or 1
-    })
+    local FooterContainer = Instance.new("Frame")
+    FooterContainer.BorderColor3 = Color3.fromRGB(0, 0, 0)
+    FooterContainer.AnchorPoint = Vector2.new(1, 0.5)
+    FooterContainer.Name = "Container"
+    FooterContainer.BackgroundTransparency = 12
+    FooterContainer.Position = UDim2.new(1, 0, 0.5000065565109253, 0)
+    FooterContainer.Size = UDim2.new(0, 105, 0, 28)
+    FooterContainer.BorderSizePixel = 0
+    FooterContainer.AutomaticSize = Enum.AutomaticSize.XY
+    FooterContainer.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    FooterContainer.Parent = Footer
     
-    -- Hide/show the Libary_Bottom_Text frame
-    Libary_Bottom_Text.Visible = isVisible
+    local FooterListLayout = Instance.new("UIListLayout")
+    FooterListLayout.FillDirection = Enum.FillDirection.Horizontal
+    FooterListLayout.HorizontalAlignment = Enum.HorizontalAlignment.Right
+    FooterListLayout.Padding = UDim.new(0, 12)
+    FooterListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+    FooterListLayout.Parent = FooterContainer
     
-    local tween3 = TweenService:Create(example_text, tweenInfo, {
-        TextTransparency = isVisible and 0 or 1
-    })
+    local FooterPadding = Instance.new("UIPadding")
+    FooterPadding.PaddingTop = UDim.new(0, 6)
+    FooterPadding.PaddingRight = UDim.new(0, 12)
+    FooterPadding.Parent = FooterContainer
     
-    tween1:Play()
-    tween2:Play()
-    tween3:Play()
+    local footer_text = Instance.new("TextLabel")
+    footer_text.FontFace = Font.new("rbxassetid://12187365364", Enum.FontWeight.Regular, Enum.FontStyle.Normal)
+    footer_text.TextStrokeTransparency = 0.800000011920929
+    footer_text.AnchorPoint = Vector2.new(1, 0.5)
+    footer_text.TextSize = 15
+    footer_text.Size = UDim2.new(0, 1, 0, 1)
+    footer_text.RichText = true
+    footer_text.TextColor3 = Color3.fromRGB(255, 255, 255)
+    footer_text.BorderColor3 = Color3.fromRGB(0, 0, 0)
+    footer_text.Text = "uptime:0:00"
+    footer_text.Name = "footer_text"
+    footer_text.BackgroundTransparency = 1
+    footer_text.Position = UDim2.new(0.3552631437778473, -90, -3.299999952316284, 0)
+    footer_text.TextWrapped = true
+    footer_text.BorderSizePixel = 0
+    footer_text.AutomaticSize = Enum.AutomaticSize.XY
+    footer_text.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    footer_text.Parent = FooterContainer
+    
+    -- Create bottom text
+    local Libary_Bottom_Text = Instance.new("Frame")
+    Libary_Bottom_Text.BorderColor3 = Color3.fromRGB(0, 0, 0)
+    Libary_Bottom_Text.AnchorPoint = Vector2.new(0, 1)
+    Libary_Bottom_Text.Name = "Libary_Bottom_Text"
+    Libary_Bottom_Text.BackgroundTransparency = 12
+    Libary_Bottom_Text.Position = UDim2.new(0, 15, 1, -10)
+    Libary_Bottom_Text.Size = UDim2.new(0, 105, 0, 28)
+    Libary_Bottom_Text.BorderSizePixel = 0
+    Libary_Bottom_Text.AutomaticSize = Enum.AutomaticSize.XY
+    Libary_Bottom_Text.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    Libary_Bottom_Text.Parent = BG_BLUR
+    
+    local BottomListLayout = Instance.new("UIListLayout")
+    BottomListLayout.FillDirection = Enum.FillDirection.Horizontal
+    BottomListLayout.HorizontalAlignment = Enum.HorizontalAlignment.Right
+    BottomListLayout.Padding = UDim.new(0, 12)
+    BottomListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+    BottomListLayout.Parent = Libary_Bottom_Text
+    
+    local BottomPadding = Instance.new("UIPadding")
+    BottomPadding.PaddingTop = UDim.new(0, 6)
+    BottomPadding.PaddingRight = UDim.new(0, 12)
+    BottomPadding.Parent = Libary_Bottom_Text
+    
+    local example_text = Instance.new("TextLabel")
+    example_text.FontFace = Font.new("rbxassetid://12187365364", Enum.FontWeight.Regular, Enum.FontStyle.Normal)
+    example_text.TextStrokeTransparency = 0.800000011920929
+    example_text.AnchorPoint = Vector2.new(1, 0.5)
+    example_text.TextSize = 15
+    example_text.Size = UDim2.new(0, 1, 0, 1)
+    example_text.RichText = true
+    example_text.TextColor3 = Color3.fromRGB(255, 255, 255)
+    example_text.BorderColor3 = Color3.fromRGB(0, 0, 0)
+    example_text.Text = "Menu:Insert"
+    example_text.Name = "example_text"
+    example_text.BackgroundTransparency = 1
+    example_text.Position = UDim2.new(0.9928951859474182, -8, -1, 0)
+    example_text.TextWrapped = true
+    example_text.BorderSizePixel = 0
+    example_text.AutomaticSize = Enum.AutomaticSize.XY
+    example_text.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    example_text.Parent = Libary_Bottom_Text
+    
+    -- Toggle functionality
+    local isVisible = true
+    
+    local function toggleUI()
+        isVisible = not isVisible
+        local targetTransparency = isVisible and 0 or 1
+        local targetSize = isVisible and UDim2.new(0, 563, 0, 400) or UDim2.new(0, 0, 0, 0)
+        
+        local tweenInfo = TweenInfo.new(0.3, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+        
+        local tween1 = TweenService:Create(MainFrame, tweenInfo, {
+            Size = targetSize,
+            BackgroundTransparency = targetTransparency
+        })
+        
+        local tween2 = TweenService:Create(BG_BLUR, tweenInfo, {
+            BackgroundTransparency = isVisible and 0.2 or 1
+        })
+        
+        Libary_Bottom_Text.Visible = isVisible
+        
+        local tween3 = TweenService:Create(example_text, tweenInfo, {
+            TextTransparency = isVisible and 0 or 1
+        })
+        
+        tween1:Play()
+        tween2:Play()
+        tween3:Play()
+    end
+    
+    UserInputService.InputBegan:Connect(function(input, gameProcessed)
+        if gameProcessed then return end
+        
+        if input.KeyCode == Enum.KeyCode.Insert then
+            toggleUI()
+        end
+    end)
+    
+    -- Store references
+    Window.Footer = Footer
+    Window.BottomText = Libary_Bottom_Text
+    Window.ToggleUI = toggleUI
 end
 
-UserInputService.InputBegan:Connect(function(input, gameProcessed)
-    if gameProcessed then return end
-    
-    if input.KeyCode == Enum.KeyCode.Insert then
-        toggleUI()
-    end
-end)
-
--- Library Methods
-function library:CreateWindow(config)
-    local window = {}
-    window.tabs = {}
-    window.sections = {}
-    
-    -- Update library name if provided
-    if config and config.Libary_Name then
-        Libary_Name.Text = config.Libary_Name
-    end
-    
-    -- Update footer text if provided
-    if config and config.Footer_Left_Text then
-        footer_left_label.Text = config.Footer_Left_Text
-    end
-    
-    -- Create default tab
-    local defaultTab = window:CreateTab({TabText = "Home"})
-    defaultTab.tabName.TextColor3 = Color3.fromRGB(125, 69, 220) -- Make it active
-    
-    function window:CreateTab(options)
-        local tab = {}
-        tab.name = options.TabText or "Tab"
-        tab.sections = {}
-        
-        -- Create new tab UI
-        local newTab = Instance.new("Frame")
-        newTab.BorderColor3 = Color3.fromRGB(0, 0, 0)
-        newTab.Name = "Tab_" .. tab.name
-        newTab.BackgroundTransparency = 1
-        newTab.Position = UDim2.new(0.12941177189350128, 0, 0, 0)
-        newTab.Size = UDim2.new(0, 47, 0, 40)
-        newTab.BorderSizePixel = 0
-        newTab.AutomaticSize = Enum.AutomaticSize.X
-        newTab.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-        newTab.Parent = Container
-        
-        -- Tab name label
-        local tabName = Instance.new("TextLabel")
-        tabName.FontFace = Font.new("rbxassetid://12187365364", Enum.FontWeight.Regular, Enum.FontStyle.Normal)
-        tabName.TextStrokeTransparency = 0.8999999761581421
-        tabName.AnchorPoint = Vector2.new(0.5, 0.5)
-        tabName.TextSize = 15
-        tabName.Size = UDim2.new(0, 1, 0, 1)
-        tabName.RichText = true
-        tabName.TextColor3 = Color3.fromRGB(169, 169, 169)
-        tabName.BorderColor3 = Color3.fromRGB(0, 0, 0)
-        tabName.Text = tab.name
-        tabName.Name = "Tab_Name"
-        tabName.BackgroundTransparency = 1
-        tabName.Position = UDim2.new(0.5, 0, 0.5, 0)
-        tabName.TextWrapped = true
-        tabName.BorderSizePixel = 0
-        tabName.AutomaticSize = Enum.AutomaticSize.XY
-        tabName.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-        tabName.Parent = newTab
-        
-        -- Tab click functionality
-        local function onTabClick()
-            -- Hide all sections
-            for _, section in pairs(window.sections) do
-                if section.frame then
-                    section.frame.Visible = false
-                end
-            end
-            
-            -- Show sections for this tab
-            for _, section in pairs(tab.sections) do
-                if section.frame then
-                    section.frame.Visible = true
-                end
-            end
-            
-            -- Update tab colors
-            for _, existingTab in pairs(window.tabs) do
-                if existingTab.tabName then
-                    existingTab.tabName.TextColor3 = Color3.fromRGB(169, 169, 169)
-                end
-            end
-            tabName.TextColor3 = Color3.fromRGB(125, 69, 220)
-        end
-        
-        -- Make tab clickable
-        local clickDetector = Instance.new("TextButton")
-        clickDetector.Size = UDim2.new(1, 0, 1, 0)
-        clickDetector.BackgroundTransparency = 1
-        clickDetector.Text = ""
-        clickDetector.Parent = newTab
-        clickDetector.MouseButton1Click:Connect(onTabClick)
-        
-        tab.tabName = tabName
-        tab.frame = newTab
-        
-        function tab:CreateSection(options)
-            local section = {}
-            section.name = options.SectionText or "Section"
-            section.position = options.position or "left"
-            
-            -- Create section frame
-            local sectionFrame = Instance.new("Frame")
-            sectionFrame.BorderColor3 = Color3.fromRGB(0, 0, 0)
-            sectionFrame.Name = "Section_" .. section.name
-            sectionFrame.BackgroundTransparency = 1
-            sectionFrame.Position = UDim2.new(0.021314388141036034, 0, 0.03055555559694767, 0)
-            sectionFrame.Size = UDim2.new(0, 260, 0, 60)
-            sectionFrame.BorderSizePixel = 0
-            sectionFrame.AutomaticSize = Enum.AutomaticSize.Y
-            sectionFrame.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-            sectionFrame.Parent = Container
-            
-            -- Section header
-            local header = Instance.new("Frame")
-            header.AnchorPoint = Vector2.new(0.5, 0)
-            header.Name = "Header"
-            header.Position = UDim2.new(0.5, 0, 0, 0)
-            header.BorderColor3 = Color3.fromRGB(0, 0, 0)
-            header.Size = UDim2.new(0, 260, 0, 32)
-            header.BorderSizePixel = 0
-            header.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
-            header.Parent = sectionFrame
-            
-            -- Header gradient line
-            local inline = Instance.new("Frame")
-            inline.AnchorPoint = Vector2.new(0, 1)
-            inline.Name = "Inline"
-            inline.Position = UDim2.new(0, 0, 1, 0)
-            inline.BorderColor3 = Color3.fromRGB(0, 0, 0)
-            inline.Size = UDim2.new(1, 1, 0, 4)
-            inline.BorderSizePixel = 0
-            inline.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-            inline.Parent = header
-            
-            local gradient = Instance.new("UIGradient")
-            gradient.Rotation = 90
-            gradient.Transparency = NumberSequence.new{
-                NumberSequenceKeypoint.new(0, 1),
-                NumberSequenceKeypoint.new(0.436, 0.6625000238418579),
-                NumberSequenceKeypoint.new(1, 0)
-            }
-            gradient.Color = ColorSequence.new{
-                ColorSequenceKeypoint.new(0, Color3.fromRGB(125, 69, 220)),
-                ColorSequenceKeypoint.new(1, Color3.fromRGB(125, 69, 220))
-            }
-            gradient.Parent = inline
-            
-            -- Section name label
-            local sectionName = Instance.new("TextLabel")
-            sectionName.FontFace = Font.new("rbxassetid://12187365364", Enum.FontWeight.Regular, Enum.FontStyle.Normal)
-            sectionName.TextColor3 = Color3.fromRGB(125, 69, 220)
-            sectionName.BorderColor3 = Color3.fromRGB(0, 0, 0)
-            sectionName.Text = section.name
-            sectionName.Name = "Section_Name"
-            sectionName.TextStrokeTransparency = 0.8500000238418579
-            sectionName.AnchorPoint = Vector2.new(0.5, 0.5)
-            sectionName.Size = UDim2.new(0, 1, 0, 1)
-            sectionName.BackgroundTransparency = 1
-            sectionName.Position = UDim2.new(0.5, 0, 0.5, 0)
-            sectionName.BorderSizePixel = 0
-            sectionName.AutomaticSize = Enum.AutomaticSize.XY
-            sectionName.TextSize = 14
-            sectionName.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-            sectionName.Parent = header
-            
-            -- Section holder for components
-            local holder = Instance.new("Frame")
-            holder.BorderColor3 = Color3.fromRGB(0, 0, 0)
-            holder.AnchorPoint = Vector2.new(0.5, 0)
-            holder.Name = "Holder"
-            holder.BackgroundTransparency = 1
-            holder.Position = UDim2.new(0.5004807710647583, 0, 1, 0)
-            holder.Size = UDim2.new(0, 1, 0, 1)
-            holder.BorderSizePixel = 0
-            holder.AutomaticSize = Enum.AutomaticSize.XY
-            holder.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-            holder.Parent = header
-            
-            local listLayout = Instance.new("UIListLayout")
-            listLayout.SortOrder = Enum.SortOrder.LayoutOrder
-            listLayout.Parent = holder
-            
-            local padding = Instance.new("UIPadding")
-            padding.PaddingBottom = UDim.new(0, 35)
-            padding.PaddingTop = UDim.new(0, 4)
-            padding.Parent = holder
-            
-            -- Section stroke
-            local stroke = Instance.new("UIStroke")
-            stroke.Color = Color3.fromRGB(35, 35, 35)
-            stroke.Parent = sectionFrame
-            
-            section.frame = sectionFrame
-            section.holder = holder
-            section.nameLabel = sectionName
-            
-            -- Add to tab's sections
-            table.insert(tab.sections, section)
-            table.insert(window.sections, section)
-            
-            -- Initially hide section (will be shown when tab is clicked)
-            sectionFrame.Visible = false
-            
-            -- Add placeholder text for now (will be replaced with actual components later)
-            local placeholder = Instance.new("TextLabel")
-            placeholder.FontFace = Font.new("rbxassetid://12187365364", Enum.FontWeight.Regular, Enum.FontStyle.Normal)
-            placeholder.TextColor3 = Color3.fromRGB(169, 169, 169)
-            placeholder.Text = "Section: " .. section.name .. " (Components coming soon)"
-            placeholder.Size = UDim2.new(1, -24, 0, 20)
-            placeholder.Position = UDim2.new(0, 12, 0, 0)
-            placeholder.BackgroundTransparency = 1
-            placeholder.TextSize = 12
-            placeholder.Parent = holder
-            
-            return section
-        end
-        
-        -- Add to window tabs
-        table.insert(window.tabs, tab)
-        
-        return tab
-    end
-    
-    function window:CreateSection(options)
-        -- Create a default tab if none exists
-        if #window.tabs == 0 then
-            local defaultTab = window:CreateTab({TabText = "Home"})
-            return defaultTab:CreateSection(options)
-        else
-            -- Use the first tab
-            return window.tabs[1]:CreateSection(options)
-        end
-    end
-    
-    return window
-end
-
--- Make library globally accessible
-_G.library = library
-
-print("CHARLIEWARE UI Loaded! Press Insert to toggle.")
+-- Return the library
+return Library
 
