@@ -279,7 +279,7 @@ MainFrame.Position = UDim2.new(0.5, 0, 0.5, 0)
 MainFrame.Size = UDim2.new(0, 563, 0, 400)
 MainFrame.BorderSizePixel = 0
 MainFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
-MainFrame.Parent = game.StarterGui.ReCreations.Interfaces.Charlieware.ScreenGui.BG_BLUR
+MainFrame.Parent = screenGui
 
 local Header = Instance.new("Frame")
 Header.AnchorPoint = Vector2.new(0.5, 0)
