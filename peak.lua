@@ -1,3 +1,6 @@
+-- CharlieWare Library
+local library = {}
+
 -- Create ScreenGui for the UI
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "CharliewareUI"
@@ -1212,74 +1215,6 @@ example_text.AutomaticSize = Enum.AutomaticSize.XY
 example_text.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
 example_text.Parent = Libary_Bottom_Text
 
--- Tab and Section Creation Functions
-local function CreateTab(options)
-    local tabText = options.TabText or "Tab"
-    
-    local tab = Instance.new("TextButton")
-    tab.Name = tabText
-    tab.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
-    tab.BorderSizePixel = 0
-    tab.Size = UDim2.new(0, 100, 0, 30)
-    tab.Text = tabText
-    tab.TextColor3 = Color3.fromRGB(255, 255, 255)
-    tab.TextSize = 14
-    tab.Font = Enum.Font.Gotham
-    tab.Parent = Container
-    
-    -- Tab click functionality
-    tab.MouseButton1Click:Connect(function()
-        -- For now, just print the tab name
-        -- This can be expanded later when page system is implemented
-        print("Switched to tab:", tabText)
-    end)
-    
-    return tab
-end
-
-local function CreateSection(options)
-    local sectionText = options.SectionText or "Section"
-    local position = options.position or "left"
-    
-    local section = Instance.new("Frame")
-    section.Name = sectionText
-    section.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
-    section.BorderSizePixel = 0
-    section.Size = UDim2.new(0, 260, 0, 60)
-    section.Parent = Container
-    
-    local header = Instance.new("Frame")
-    header.Name = "Header"
-    header.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
-    header.BorderSizePixel = 0
-    header.Size = UDim2.new(1, 0, 0, 32)
-    header.Parent = section
-    
-    local title = Instance.new("TextLabel")
-    title.Name = "Title"
-    title.BackgroundTransparency = 1
-    title.Size = UDim2.new(1, 0, 1, 0)
-    title.Text = sectionText
-    title.TextColor3 = Color3.fromRGB(255, 255, 255)
-    title.TextSize = 14
-    title.Font = Enum.Font.Gotham
-    title.Parent = header
-    
-    local content = Instance.new("Frame")
-    content.Name = "Content"
-    content.BackgroundTransparency = 1
-    content.Size = UDim2.new(1, 0, 1, -32)
-    content.Position = UDim2.new(0, 0, 0, 32)
-    content.Parent = section
-    
-    local layout = Instance.new("UIListLayout")
-    layout.SortOrder = Enum.SortOrder.LayoutOrder
-    layout.Padding = UDim.new(0, 5)
-    layout.Parent = content
-    
-    return section
-end
-
 -- Make UI toggleable with Insert key
 local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
@@ -1322,15 +1257,243 @@ UserInputService.InputBegan:Connect(function(input, gameProcessed)
     end
 end)
 
--- Example usage of tab and section creation
-local Home = CreateTab({TabText = "Home"})
-local Combat = CreateTab({TabText = "Combat"})
-local Misc = CreateTab({TabText = "Misc"})
+-- Library Methods
+function library:CreateWindow(config)
+    local window = {}
+    window.tabs = {}
+    window.sections = {}
+    
+    -- Update library name if provided
+    if config and config.Libary_Name then
+        Libary_Name.Text = config.Libary_Name
+    end
+    
+    -- Update footer text if provided
+    if config and config.Footer_Left_Text then
+        footer_left_label.Text = config.Footer_Left_Text
+    end
+    
+    -- Create default tab
+    local defaultTab = window:CreateTab({TabText = "Home"})
+    defaultTab.tabName.TextColor3 = Color3.fromRGB(125, 69, 220) -- Make it active
+    
+    function window:CreateTab(options)
+        local tab = {}
+        tab.name = options.TabText or "Tab"
+        tab.sections = {}
+        
+        -- Create new tab UI
+        local newTab = Instance.new("Frame")
+        newTab.BorderColor3 = Color3.fromRGB(0, 0, 0)
+        newTab.Name = "Tab_" .. tab.name
+        newTab.BackgroundTransparency = 1
+        newTab.Position = UDim2.new(0.12941177189350128, 0, 0, 0)
+        newTab.Size = UDim2.new(0, 47, 0, 40)
+        newTab.BorderSizePixel = 0
+        newTab.AutomaticSize = Enum.AutomaticSize.X
+        newTab.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+        newTab.Parent = Container
+        
+        -- Tab name label
+        local tabName = Instance.new("TextLabel")
+        tabName.FontFace = Font.new("rbxassetid://12187365364", Enum.FontWeight.Regular, Enum.FontStyle.Normal)
+        tabName.TextStrokeTransparency = 0.8999999761581421
+        tabName.AnchorPoint = Vector2.new(0.5, 0.5)
+        tabName.TextSize = 15
+        tabName.Size = UDim2.new(0, 1, 0, 1)
+        tabName.RichText = true
+        tabName.TextColor3 = Color3.fromRGB(169, 169, 169)
+        tabName.BorderColor3 = Color3.fromRGB(0, 0, 0)
+        tabName.Text = tab.name
+        tabName.Name = "Tab_Name"
+        tabName.BackgroundTransparency = 1
+        tabName.Position = UDim2.new(0.5, 0, 0.5, 0)
+        tabName.TextWrapped = true
+        tabName.BorderSizePixel = 0
+        tabName.AutomaticSize = Enum.AutomaticSize.XY
+        tabName.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+        tabName.Parent = newTab
+        
+        -- Tab click functionality
+        local function onTabClick()
+            -- Hide all sections
+            for _, section in pairs(window.sections) do
+                if section.frame then
+                    section.frame.Visible = false
+                end
+            end
+            
+            -- Show sections for this tab
+            for _, section in pairs(tab.sections) do
+                if section.frame then
+                    section.frame.Visible = true
+                end
+            end
+            
+            -- Update tab colors
+            for _, existingTab in pairs(window.tabs) do
+                if existingTab.tabName then
+                    existingTab.tabName.TextColor3 = Color3.fromRGB(169, 169, 169)
+                end
+            end
+            tabName.TextColor3 = Color3.fromRGB(125, 69, 220)
+        end
+        
+        -- Make tab clickable
+        local clickDetector = Instance.new("TextButton")
+        clickDetector.Size = UDim2.new(1, 0, 1, 0)
+        clickDetector.BackgroundTransparency = 1
+        clickDetector.Text = ""
+        clickDetector.Parent = newTab
+        clickDetector.MouseButton1Click:Connect(onTabClick)
+        
+        tab.tabName = tabName
+        tab.frame = newTab
+        
+        function tab:CreateSection(options)
+            local section = {}
+            section.name = options.SectionText or "Section"
+            section.position = options.position or "left"
+            
+            -- Create section frame
+            local sectionFrame = Instance.new("Frame")
+            sectionFrame.BorderColor3 = Color3.fromRGB(0, 0, 0)
+            sectionFrame.Name = "Section_" .. section.name
+            sectionFrame.BackgroundTransparency = 1
+            sectionFrame.Position = UDim2.new(0.021314388141036034, 0, 0.03055555559694767, 0)
+            sectionFrame.Size = UDim2.new(0, 260, 0, 60)
+            sectionFrame.BorderSizePixel = 0
+            sectionFrame.AutomaticSize = Enum.AutomaticSize.Y
+            sectionFrame.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+            sectionFrame.Parent = Container
+            
+            -- Section header
+            local header = Instance.new("Frame")
+            header.AnchorPoint = Vector2.new(0.5, 0)
+            header.Name = "Header"
+            header.Position = UDim2.new(0.5, 0, 0, 0)
+            header.BorderColor3 = Color3.fromRGB(0, 0, 0)
+            header.Size = UDim2.new(0, 260, 0, 32)
+            header.BorderSizePixel = 0
+            header.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+            header.Parent = sectionFrame
+            
+            -- Header gradient line
+            local inline = Instance.new("Frame")
+            inline.AnchorPoint = Vector2.new(0, 1)
+            inline.Name = "Inline"
+            inline.Position = UDim2.new(0, 0, 1, 0)
+            inline.BorderColor3 = Color3.fromRGB(0, 0, 0)
+            inline.Size = UDim2.new(1, 1, 0, 4)
+            inline.BorderSizePixel = 0
+            inline.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+            inline.Parent = header
+            
+            local gradient = Instance.new("UIGradient")
+            gradient.Rotation = 90
+            gradient.Transparency = NumberSequence.new{
+                NumberSequenceKeypoint.new(0, 1),
+                NumberSequenceKeypoint.new(0.436, 0.6625000238418579),
+                NumberSequenceKeypoint.new(1, 0)
+            }
+            gradient.Color = ColorSequence.new{
+                ColorSequenceKeypoint.new(0, Color3.fromRGB(125, 69, 220)),
+                ColorSequenceKeypoint.new(1, Color3.fromRGB(125, 69, 220))
+            }
+            gradient.Parent = inline
+            
+            -- Section name label
+            local sectionName = Instance.new("TextLabel")
+            sectionName.FontFace = Font.new("rbxassetid://12187365364", Enum.FontWeight.Regular, Enum.FontStyle.Normal)
+            sectionName.TextColor3 = Color3.fromRGB(125, 69, 220)
+            sectionName.BorderColor3 = Color3.fromRGB(0, 0, 0)
+            sectionName.Text = section.name
+            sectionName.Name = "Section_Name"
+            sectionName.TextStrokeTransparency = 0.8500000238418579
+            sectionName.AnchorPoint = Vector2.new(0.5, 0.5)
+            sectionName.Size = UDim2.new(0, 1, 0, 1)
+            sectionName.BackgroundTransparency = 1
+            sectionName.Position = UDim2.new(0.5, 0, 0.5, 0)
+            sectionName.BorderSizePixel = 0
+            sectionName.AutomaticSize = Enum.AutomaticSize.XY
+            sectionName.TextSize = 14
+            sectionName.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+            sectionName.Parent = header
+            
+            -- Section holder for components
+            local holder = Instance.new("Frame")
+            holder.BorderColor3 = Color3.fromRGB(0, 0, 0)
+            holder.AnchorPoint = Vector2.new(0.5, 0)
+            holder.Name = "Holder"
+            holder.BackgroundTransparency = 1
+            holder.Position = UDim2.new(0.5004807710647583, 0, 1, 0)
+            holder.Size = UDim2.new(0, 1, 0, 1)
+            holder.BorderSizePixel = 0
+            holder.AutomaticSize = Enum.AutomaticSize.XY
+            holder.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+            holder.Parent = header
+            
+            local listLayout = Instance.new("UIListLayout")
+            listLayout.SortOrder = Enum.SortOrder.LayoutOrder
+            listLayout.Parent = holder
+            
+            local padding = Instance.new("UIPadding")
+            padding.PaddingBottom = UDim.new(0, 35)
+            padding.PaddingTop = UDim.new(0, 4)
+            padding.Parent = holder
+            
+            -- Section stroke
+            local stroke = Instance.new("UIStroke")
+            stroke.Color = Color3.fromRGB(35, 35, 35)
+            stroke.Parent = sectionFrame
+            
+            section.frame = sectionFrame
+            section.holder = holder
+            section.nameLabel = sectionName
+            
+            -- Add to tab's sections
+            table.insert(tab.sections, section)
+            table.insert(window.sections, section)
+            
+            -- Initially hide section (will be shown when tab is clicked)
+            sectionFrame.Visible = false
+            
+            -- Add placeholder text for now (will be replaced with actual components later)
+            local placeholder = Instance.new("TextLabel")
+            placeholder.FontFace = Font.new("rbxassetid://12187365364", Enum.FontWeight.Regular, Enum.FontStyle.Normal)
+            placeholder.TextColor3 = Color3.fromRGB(169, 169, 169)
+            placeholder.Text = "Section: " .. section.name .. " (Components coming soon)"
+            placeholder.Size = UDim2.new(1, -24, 0, 20)
+            placeholder.Position = UDim2.new(0, 12, 0, 0)
+            placeholder.BackgroundTransparency = 1
+            placeholder.TextSize = 12
+            placeholder.Parent = holder
+            
+            return section
+        end
+        
+        -- Add to window tabs
+        table.insert(window.tabs, tab)
+        
+        return tab
+    end
+    
+    function window:CreateSection(options)
+        -- Create a default tab if none exists
+        if #window.tabs == 0 then
+            local defaultTab = window:CreateTab({TabText = "Home"})
+            return defaultTab:CreateSection(options)
+        else
+            -- Use the first tab
+            return window.tabs[1]:CreateSection(options)
+        end
+    end
+    
+    return window
+end
 
-local AimSection = CreateSection({SectionText = "Aim Settings", position = "left"})
-local MovementSection = CreateSection({SectionText = "Movement", position = "right"})
-local OtherSection = CreateSection({SectionText = "Other Options", position = "left"})
+-- Make library globally accessible
+_G.library = library
 
 print("CHARLIEWARE UI Loaded! Press Insert to toggle.")
-print("Tab and Section creation functions are now available!")
 
